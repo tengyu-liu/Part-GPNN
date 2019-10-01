@@ -1,0 +1,444 @@
+`bottleneck` is a tool that can be used as an initial step for debugging
+bottlenecks in your program.
+
+It summarizes runs of your script with the Python profiler and PyTorch's
+autograd profiler. Because your script will be profiled, please ensure that it
+exits in a finite amount of time.
+
+For more complicated uses of the profilers, please see
+https://docs.python.org/3/library/profile.html and
+https://pytorch.org/docs/master/autograd.html#profiler for more information.
+Running environment analysis...
+Running your script with cProfile
+loading annotations into memory...
+Done (t=1.01s)
+creating index...
+index created!
+Dataset sizes: 2533 training, 2867 validation, 4946 testing.
+loading annotations into memory...
+Done (t=1.13s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=1.36s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=1.20s)
+creating index...
+index created!
+loading vcoco annotations...
+=> loading best model '../../tmp/checkpoints/vcoco/debug/model_best.pth'
+=> loaded best model '../../tmp/checkpoints/vcoco/debug/model_best.pth' (epoch 8)
+Epoch: [8][0/2533]	Time 0.575 (0.575)	Data 0.014 (0.014)	Loss 1.2336 (1.2336)	Mean Avg Precision 0.4468 (0.4468)	Detected HOIs (200, 27)
+Epoch: [8][10/2533]	Time 0.130 (0.347)	Data 0.003 (0.016)	Loss 1.5887 (1.5771)	Mean Avg Precision 0.2021 (0.2021)	Detected HOIs (1242, 27)
+Epoch: [8][20/2533]	Time 0.093 (0.476)	Data 0.028 (0.029)	Loss 2.0174 (1.5264)	Mean Avg Precision 0.2384 (0.2384)	Detected HOIs (2790, 27)
+Epoch: [8][30/2533]	Time 0.204 (0.805)	Data 0.033 (0.089)	Loss 1.7390 (1.4724)	Mean Avg Precision 0.3070 (0.3070)	Detected HOIs (5602, 27)
+Epoch: [8] Avg Mean Precision 0.3070; Average Loss 1.4724; Avg Time x Batch 0.8052
+Time elapsed: 33.63s
+Running your script with the autograd profiler...
+Dataset sizes: 2533 training, 2867 validation, 4946 testing.
+loading annotations into memory...
+Done (t=0.96s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=1.37s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=1.19s)
+creating index...
+index created!
+loading vcoco annotations...
+=> loading best model '../../tmp/checkpoints/vcoco/debug/model_best.pth'
+=> loaded best model '../../tmp/checkpoints/vcoco/debug/model_best.pth' (epoch 8)
+Epoch: [8][0/2533]	Time 0.640 (0.640)	Data 0.007 (0.007)	Loss 1.2336 (1.2336)	Mean Avg Precision 0.4468 (0.4468)	Detected HOIs (200, 27)
+Epoch: [8][10/2533]	Time 0.137 (0.373)	Data 0.002 (0.010)	Loss 1.5887 (1.5771)	Mean Avg Precision 0.2021 (0.2021)	Detected HOIs (1242, 27)
+Epoch: [8][20/2533]	Time 0.069 (0.502)	Data 0.003 (0.015)	Loss 2.0174 (1.5264)	Mean Avg Precision 0.2384 (0.2384)	Detected HOIs (2790, 27)
+Epoch: [8][30/2533]	Time 0.186 (0.818)	Data 0.003 (0.027)	Loss 1.7390 (1.4724)	Mean Avg Precision 0.3070 (0.3070)	Detected HOIs (5602, 27)
+Epoch: [8] Avg Mean Precision 0.3070; Average Loss 1.4724; Avg Time x Batch 0.8181
+Time elapsed: 29.82s
+Dataset sizes: 2533 training, 2867 validation, 4946 testing.
+loading annotations into memory...
+Done (t=0.84s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=0.73s)
+creating index...
+index created!
+loading vcoco annotations...
+loading annotations into memory...
+Done (t=0.73s)
+creating index...
+index created!
+loading vcoco annotations...
+=> loading best model '../../tmp/checkpoints/vcoco/debug/model_best.pth'
+=> loaded best model '../../tmp/checkpoints/vcoco/debug/model_best.pth' (epoch 8)
+Epoch: [8][0/2533]	Time 1.127 (1.127)	Data 0.008 (0.008)	Loss 1.2336 (1.2336)	Mean Avg Precision 0.4468 (0.4468)	Detected HOIs (200, 27)
+Epoch: [8][10/2533]	Time 0.257 (0.691)	Data 0.002 (0.007)	Loss 1.5887 (1.5771)	Mean Avg Precision 0.2021 (0.2021)	Detected HOIs (1242, 27)
+Epoch: [8][20/2533]	Time 0.125 (1.046)	Data 0.003 (0.009)	Loss 2.0174 (1.5264)	Mean Avg Precision 0.2384 (0.2384)	Detected HOIs (2790, 27)
+Epoch: [8][30/2533]	Time 0.436 (1.968)	Data 0.004 (0.020)	Loss 1.7390 (1.4724)	Mean Avg Precision 0.3070 (0.3070)	Detected HOIs (5602, 27)
+Epoch: [8] Avg Mean Precision 0.3070; Average Loss 1.4724; Avg Time x Batch 1.9682
+Time elapsed: 64.20s
+--------------------------------------------------------------------------------
+  Environment Summary
+--------------------------------------------------------------------------------
+PyTorch 1.1.0 compiled w/ CUDA 10.0.130
+Running with Python 3.6 and CUDA 10.0.130
+
+`pip3 list` truncated output:
+numpy==1.16.4
+torch==1.1.0
+torchvision==0.3.0
+--------------------------------------------------------------------------------
+  cProfile output
+--------------------------------------------------------------------------------
+         2400160 function calls (2333625 primitive calls) in 34.485 seconds
+
+   Ordered by: internal time
+   List reduced from 4219 to 100 due to restriction <100>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       31   15.381    0.496   15.381    0.496 {method 'run_backward' of 'torch._C._EngineBase' objects}
+       12    4.699    0.392    4.701    0.392 /home/tengyu/lib/python3.6/json/decoder.py:345(raw_decode)
+       31    3.343    0.108    3.372    0.109 vcoco.py:131(loss_fn)
+     4063    3.230    0.001    3.230    0.001 {method 'cuda' of 'torch._C._TensorBase' objects}
+       64    1.803    0.028    1.803    0.028 {built-in method numpy.fromfile}
+       31    0.453    0.015    0.464    0.015 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/datasets/utils.py:107(collate_fn_vcoco)
+     3585    0.452    0.000    0.452    0.000 {built-in method gru}
+       31    0.418    0.013    2.726    0.088 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/models/GPNN_VCOCO.py:46(forward)
+        1    0.374    0.374   34.490   34.490 vcoco.py:8(<module>)
+        4    0.349    0.087    0.386    0.096 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/pycocotools-2.0-py3.6-linux-x86_64.egg/pycocotools/coco.py:90(createIndex)
+    11950    0.336    0.000    0.336    0.000 {built-in method addmm}
+        1    0.274    0.274   25.005   25.005 vcoco.py:334(train)
+      264    0.198    0.001    0.198    0.001 {method 'read' of '_io.BufferedReader' objects}
+     5634    0.187    0.000    0.187    0.000 {built-in method numpy.array}
+       22    0.158    0.007    0.158    0.007 {method 'uniform_' of 'torch._C._TensorBase' objects}
+    17925    0.148    0.000    0.148    0.000 {method 'contiguous' of 'torch._C._TensorBase' objects}
+       63    0.143    0.002    0.143    0.002 {method '_set_from_file' of 'torch._C.CudaFloatStorageBase' objects}
+     3585    0.125    0.000    0.125    0.000 {built-in method cat}
+       11    0.115    0.010    0.203    0.018 {method 'read' of '_io.TextIOWrapper' objects}
+       36    0.110    0.003    0.110    0.003 {built-in method _pickle.load}
+      122    0.088    0.001    0.088    0.001 {built-in method _codecs.utf_8_decode}
+     3585    0.084    0.000    1.239    0.000 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/units/MessageFunction.py:113(m_linear_concat_relu)
+28414/278    0.084    0.000    2.749    0.010 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/module.py:487(__call__)
+       31    0.081    0.003    0.106    0.003 vcoco.py:52(append_result)
+     1364    0.078    0.000    0.078    0.000 {method 'mul_' of 'torch._C._TensorBase' objects}
+      155    0.073    0.000    0.073    0.000 {method 'pin_memory' of 'torch._C._TensorBase' objects}
+     3740    0.073    0.000    0.073    0.000 {built-in method zeros}
+    14464    0.063    0.000    0.063    0.000 {method 'view' of 'torch._C._TensorBase' objects}
+     3585    0.058    0.000    0.058    0.000 {built-in method sum}
+    14402    0.052    0.000    0.052    0.000 {method 'permute' of 'torch._C._TensorBase' objects}
+      184    0.049    0.000    0.049    0.000 {method 'cpu' of 'torch._C._TensorBase' objects}
+   847212    0.046    0.000    0.046    0.000 {method 'append' of 'list' objects}
+    11950    0.045    0.000    0.045    0.000 {method 't' of 'torch._C._TensorBase' objects}
+      548    0.044    0.000    0.044    0.000 {built-in method marshal.loads}
+     2576    0.040    0.000    0.040    0.000 {built-in method relu}
+     1364    0.038    0.000    0.038    0.000 {method 'add_' of 'torch._C._TensorBase' objects}
+    62063    0.038    0.000    0.038    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/module.py:525(__getattr__)
+       31    0.032    0.001    2.735    0.088 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/utils/data/dataloader.py:557(__next__)
+73233/72733    0.031    0.000    0.040    0.000 {built-in method builtins.isinstance}
+       36    0.030    0.001    0.030    0.001 {method 'sort' of 'numpy.ndarray' objects}
+       84    0.027    0.000    0.028    0.000 {built-in method _imp.create_dynamic}
+    794/1    0.025    0.000   34.490   34.490 {built-in method builtins.exec}
+        5    0.024    0.005    0.024    0.005 {method 'argsort' of 'numpy.ndarray' objects}
+200582/178226    0.022    0.000    0.028    0.000 {built-in method builtins.len}
+    10755    0.022    0.000    0.040    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/container.py:125(_get_abs_string_index)
+      279    0.021    0.000    0.021    0.000 {built-in method conv2d}
+    11950    0.021    0.000    0.434    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/linear.py:90(forward)
+    11950    0.020    0.000    0.404    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/functional.py:1390(linear)
+1682/1587    0.020    0.000    0.063    0.000 {built-in method builtins.__build_class__}
+     3585    0.018    0.000    0.528    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/rnn.py:185(forward)
+    28414    0.018    0.000    0.018    0.000 {built-in method torch._C._get_tracing_state}
+     2467    0.016    0.000    0.027    0.000 /home/tengyu/lib/python3.6/inspect.py:614(cleandoc)
+     3585    0.015    0.000    0.015    0.000 {method 'unsqueeze' of 'torch._C._TensorBase' objects}
+    10755    0.015    0.000    0.059    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/container.py:134(__getitem__)
+       31    0.015    0.000    0.160    0.005 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/optim/adam.py:49(step)
+        6    0.015    0.002    0.042    0.007 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/numpy/lib/npyio.py:1041(read_data)
+      307    0.013    0.000    0.036    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/scipy/_lib/doccer.py:12(docformat)
+     3585    0.013    0.000    0.013    0.000 {method 'expand_as' of 'torch._C._TensorBase' objects}
+    23405    0.012    0.000    0.012    0.000 {method 'size' of 'torch._C._TensorBase' objects}
+    26708    0.012    0.000    0.017    0.000 {built-in method builtins.getattr}
+     3585    0.011    0.000    1.250    0.000 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/units/MessageFunction.py:26(forward)
+     2390    0.011    0.000    0.011    0.000 {method 'squeeze' of 'torch._C._TensorBase' objects}
+      682    0.011    0.000    0.011    0.000 {method 'sqrt' of 'torch._C._TensorBase' objects}
+     3585    0.010    0.000    0.576    0.000 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/units/UpdateFunction.py:53(u_gru)
+     2160    0.010    0.000    0.010    0.000 {built-in method numpy.concatenate}
+     2390    0.010    0.000    0.229    0.000 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/units/ReadoutFunction.py:87(r_fc)
+      682    0.009    0.000    0.009    0.000 {method 'addcmul_' of 'torch._C._TensorBase' objects}
+      163    0.009    0.000    0.009    0.000 {built-in method numpy.zeros}
+  897/207    0.009    0.000    0.025    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/sre_parse.py:470(_parse)
+      682    0.008    0.000    0.008    0.000 {method 'addcdiv_' of 'torch._C._TensorBase' objects}
+     2998    0.008    0.000    0.008    0.000 {built-in method posix.stat}
+    22090    0.008    0.000    0.008    0.000 {method 'copy' of 'dict' objects}
+    59499    0.008    0.000    0.008    0.000 {method 'values' of 'collections.OrderedDict' objects}
+       11    0.007    0.001    4.911    0.446 /home/tengyu/lib/python3.6/json/__init__.py:274(load)
+      216    0.007    0.000    0.007    0.000 {built-in method sigmoid}
+        3    0.007    0.002    0.209    0.070 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/vsrl_eval.py:426(_load_vcoco)
+    10349    0.007    0.000    0.014    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/numpy/lib/npyio.py:1029(split_line)
+    26377    0.007    0.000    0.007    0.000 {method 'format' of 'str' objects}
+14924/14915    0.007    0.000    0.007    0.000 {built-in method builtins.hasattr}
+    21529    0.007    0.000    0.009    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/container.py:154(__len__)
+     1159    0.007    0.000    0.027    0.000 <frozen importlib._bootstrap_external>:1233(find_spec)
+        3    0.006    0.002    0.211    0.070 /mnt/hdd-12t/tengyu/PartGPNN/gpnn/src/python/vsrl_utils.py:38(load_vcoco)
+     1472    0.006    0.000    0.021    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/tokenize.py:492(_tokenize)
+       30    0.006    0.000    0.021    0.001 vcoco.py:34(evaluation)
+      248    0.006    0.000    0.006    0.000 {method 'clone' of 'torch._C._TensorBase' objects}
+       62    0.006    0.000    0.010    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/functional.py:2322(multilabel_soft_margin_loss)
+ 1656/198    0.006    0.000    0.020    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/sre_compile.py:64(_compile)
+      660    0.006    0.000    0.006    0.000 {method 'zero_' of 'torch._C._TensorBase' objects}
+      312    0.006    0.000    0.010    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/scipy/_lib/doccer.py:179(indentcount_lines)
+     7558    0.005    0.000    0.005    0.000 {method 'splitlines' of 'str' objects}
+      991    0.005    0.000    0.014    0.000 /home/tengyu/lib/python3.6/inspect.py:2095(_signature_from_function)
+    35827    0.005    0.000    0.005    0.000 {built-in method builtins.min}
+      318    0.005    0.000    0.005    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+     3151    0.005    0.000    0.005    0.000 {method 'match' of '_sre.SRE_Pattern' objects}
+     3585    0.005    0.000    0.019    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/rnn.py:174(check_forward_args)
+      550    0.005    0.000    0.009    0.000 <frozen importlib._bootstrap_external>:830(get_data)
+     3587    0.005    0.000    0.030    0.000 /home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/modules/rnn.py:255(_flat_weights)
+        1    0.005    0.005   33.630   33.630 vcoco.py:231(main)
+18291/18275    0.004    0.000    0.006    0.000 {method 'join' of 'str' objects}
+    84/76    0.004    0.000    0.007    0.000 {built-in method _imp.exec_dynamic}
+
+
+--------------------------------------------------------------------------------
+  autograd profiler output (CPU mode)
+--------------------------------------------------------------------------------
+        top 100 events sorted by cpu_time_total
+
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+Name                                Self CPU total %   Self CPU total      CPU total %        CPU total     CPU time avg     CUDA total %       CUDA total    CUDA time avg  Number of Calls
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+uniform_                                     13.00%         65.593ms           13.00%         65.593ms         65.593ms              NaN          0.000us          0.000us                1
+uniform_                                      5.51%         27.787ms            5.51%         27.787ms         27.787ms              NaN          0.000us          0.000us                1
+uniform_                                      3.59%         18.100ms            3.59%         18.100ms         18.100ms              NaN          0.000us          0.000us                1
+uniform_                                      3.51%         17.723ms            3.51%         17.723ms         17.723ms              NaN          0.000us          0.000us                1
+to                                            3.50%         17.683ms            3.50%         17.683ms         17.683ms              NaN          0.000us          0.000us                1
+empty                                         3.50%         17.639ms            3.50%         17.639ms         17.639ms              NaN          0.000us          0.000us                1
+to                                            2.87%         14.468ms            2.87%         14.468ms         14.468ms              NaN          0.000us          0.000us                1
+empty                                         2.86%         14.427ms            2.86%         14.427ms         14.427ms              NaN          0.000us          0.000us                1
+to                                            2.83%         14.281ms            2.83%         14.281ms         14.281ms              NaN          0.000us          0.000us                1
+to                                            2.14%         10.793ms            2.14%         10.793ms         10.793ms              NaN          0.000us          0.000us                1
+to                                            2.14%         10.788ms            2.14%         10.788ms         10.788ms              NaN          0.000us          0.000us                1
+empty                                         2.13%         10.750ms            2.13%         10.750ms         10.750ms              NaN          0.000us          0.000us                1
+to                                            1.96%          9.908ms            1.96%          9.908ms          9.908ms              NaN          0.000us          0.000us                1
+to                                            1.62%          8.151ms            1.62%          8.151ms          8.151ms              NaN          0.000us          0.000us                1
+to                                            1.58%          7.979ms            1.58%          7.979ms          7.979ms              NaN          0.000us          0.000us                1
+empty                                         1.57%          7.944ms            1.57%          7.944ms          7.944ms              NaN          0.000us          0.000us                1
+to                                            1.47%          7.407ms            1.47%          7.407ms          7.407ms              NaN          0.000us          0.000us                1
+to                                            1.44%          7.270ms            1.44%          7.270ms          7.270ms              NaN          0.000us          0.000us                1
+to                                            1.28%          6.451ms            1.28%          6.451ms          6.451ms              NaN          0.000us          0.000us                1
+to                                            1.16%          5.868ms            1.16%          5.868ms          5.868ms              NaN          0.000us          0.000us                1
+to                                            1.11%          5.599ms            1.11%          5.599ms          5.599ms              NaN          0.000us          0.000us                1
+empty                                         1.10%          5.549ms            1.10%          5.549ms          5.549ms              NaN          0.000us          0.000us                1
+to                                            1.09%          5.482ms            1.09%          5.482ms          5.482ms              NaN          0.000us          0.000us                1
+to                                            1.04%          5.272ms            1.04%          5.272ms          5.272ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.96%          4.848ms            0.96%          4.848ms          4.848ms              NaN          0.000us          0.000us                1
+uniform_                                      0.91%          4.604ms            0.91%          4.604ms          4.604ms              NaN          0.000us          0.000us                1
+to                                            0.87%          4.373ms            0.87%          4.373ms          4.373ms              NaN          0.000us          0.000us                1
+pin_memory                                    0.80%          4.052ms            0.80%          4.052ms          4.052ms              NaN          0.000us          0.000us                1
+to                                            0.74%          3.757ms            0.74%          3.757ms          3.757ms              NaN          0.000us          0.000us                1
+to                                            0.72%          3.611ms            0.72%          3.611ms          3.611ms              NaN          0.000us          0.000us                1
+to                                            0.71%          3.579ms            0.71%          3.579ms          3.579ms              NaN          0.000us          0.000us                1
+to                                            0.69%          3.479ms            0.69%          3.479ms          3.479ms              NaN          0.000us          0.000us                1
+to                                            0.67%          3.381ms            0.67%          3.381ms          3.381ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.60%          3.036ms            0.60%          3.036ms          3.036ms              NaN          0.000us          0.000us                1
+to                                            0.60%          3.009ms            0.60%          3.009ms          3.009ms              NaN          0.000us          0.000us                1
+pin_memory                                    0.56%          2.820ms            0.56%          2.820ms          2.820ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.55%          2.769ms            0.55%          2.769ms          2.769ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.55%          2.759ms            0.55%          2.759ms          2.759ms              NaN          0.000us          0.000us                1
+AsStridedBackward                             0.55%          2.754ms            0.55%          2.754ms          2.754ms              NaN          0.000us          0.000us                1
+zeros                                         0.54%          2.749ms            0.54%          2.749ms          2.749ms              NaN          0.000us          0.000us                1
+as_strided                                    0.54%          2.742ms            0.54%          2.742ms          2.742ms              NaN          0.000us          0.000us                1
+AsStridedBackward                             0.54%          2.731ms            0.54%          2.731ms          2.731ms              NaN          0.000us          0.000us                1
+zeros                                         0.54%          2.717ms            0.54%          2.717ms          2.717ms              NaN          0.000us          0.000us                1
+to                                            0.54%          2.707ms            0.54%          2.707ms          2.707ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.54%          2.703ms            0.54%          2.703ms          2.703ms              NaN          0.000us          0.000us                1
+to                                            0.52%          2.641ms            0.52%          2.641ms          2.641ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.52%          2.619ms            0.52%          2.619ms          2.619ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.52%          2.617ms            0.52%          2.617ms          2.617ms              NaN          0.000us          0.000us                1
+ViewBackward                                  0.51%          2.597ms            0.51%          2.597ms          2.597ms              NaN          0.000us          0.000us                1
+torch::autograd::CopyBackwards                0.51%          2.591ms            0.51%          2.591ms          2.591ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.51%          2.571ms            0.51%          2.571ms          2.571ms              NaN          0.000us          0.000us                1
+zeros                                         0.51%          2.562ms            0.51%          2.562ms          2.562ms              NaN          0.000us          0.000us                1
+to                                            0.51%          2.556ms            0.51%          2.556ms          2.556ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.51%          2.555ms            0.51%          2.555ms          2.555ms              NaN          0.000us          0.000us                1
+ViewBackward                                  0.51%          2.549ms            0.51%          2.549ms          2.549ms              NaN          0.000us          0.000us                1
+reshape                                       0.50%          2.548ms            0.50%          2.548ms          2.548ms              NaN          0.000us          0.000us                1
+zeros                                         0.50%          2.544ms            0.50%          2.544ms          2.544ms              NaN          0.000us          0.000us                1
+to                                            0.50%          2.540ms            0.50%          2.540ms          2.540ms              NaN          0.000us          0.000us                1
+AsStridedBackward                             0.50%          2.527ms            0.50%          2.527ms          2.527ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.50%          2.521ms            0.50%          2.521ms          2.521ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.50%          2.520ms            0.50%          2.520ms          2.520ms              NaN          0.000us          0.000us                1
+zeros                                         0.50%          2.515ms            0.50%          2.515ms          2.515ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.50%          2.512ms            0.50%          2.512ms          2.512ms              NaN          0.000us          0.000us                1
+AsStridedBackward                             0.50%          2.509ms            0.50%          2.509ms          2.509ms              NaN          0.000us          0.000us                1
+ViewBackward                                  0.50%          2.505ms            0.50%          2.505ms          2.505ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.50%          2.500ms            0.50%          2.500ms          2.500ms              NaN          0.000us          0.000us                1
+torch::autograd::CopyBackwards                0.49%          2.496ms            0.49%          2.496ms          2.496ms              NaN          0.000us          0.000us                1
+zeros                                         0.49%          2.496ms            0.49%          2.496ms          2.496ms              NaN          0.000us          0.000us                1
+zero_                                         0.49%          2.493ms            0.49%          2.493ms          2.493ms              NaN          0.000us          0.000us                1
+zeros                                         0.49%          2.489ms            0.49%          2.489ms          2.489ms              NaN          0.000us          0.000us                1
+zero_                                         0.49%          2.486ms            0.49%          2.486ms          2.486ms              NaN          0.000us          0.000us                1
+torch::autograd::CopySlices                   0.49%          2.450ms            0.49%          2.450ms          2.450ms              NaN          0.000us          0.000us                1
+pin_memory                                    0.46%          2.324ms            0.46%          2.324ms          2.324ms              NaN          0.000us          0.000us                1
+to                                            0.45%          2.253ms            0.45%          2.253ms          2.253ms              NaN          0.000us          0.000us                1
+uniform_                                      0.44%          2.226ms            0.44%          2.226ms          2.226ms              NaN          0.000us          0.000us                1
+to                                            0.42%          2.104ms            0.42%          2.104ms          2.104ms              NaN          0.000us          0.000us                1
+to                                            0.41%          2.065ms            0.41%          2.065ms          2.065ms              NaN          0.000us          0.000us                1
+empty                                         0.40%          2.038ms            0.40%          2.038ms          2.038ms              NaN          0.000us          0.000us                1
+to                                            0.37%          1.853ms            0.37%          1.853ms          1.853ms              NaN          0.000us          0.000us                1
+pin_memory                                    0.36%          1.802ms            0.36%          1.802ms          1.802ms              NaN          0.000us          0.000us                1
+select                                        0.34%          1.738ms            0.34%          1.738ms          1.738ms              NaN          0.000us          0.000us                1
+to                                            0.34%          1.717ms            0.34%          1.717ms          1.717ms              NaN          0.000us          0.000us                1
+to                                            0.30%          1.513ms            0.30%          1.513ms          1.513ms              NaN          0.000us          0.000us                1
+to                                            0.29%          1.488ms            0.29%          1.488ms          1.488ms              NaN          0.000us          0.000us                1
+empty                                         0.29%          1.464ms            0.29%          1.464ms          1.464ms              NaN          0.000us          0.000us                1
+pin_memory                                    0.28%          1.394ms            0.28%          1.394ms          1.394ms              NaN          0.000us          0.000us                1
+to                                            0.27%          1.386ms            0.27%          1.386ms          1.386ms              NaN          0.000us          0.000us                1
+to                                            0.27%          1.368ms            0.27%          1.368ms          1.368ms              NaN          0.000us          0.000us                1
+SliceBackward                                 0.27%          1.367ms            0.27%          1.367ms          1.367ms              NaN          0.000us          0.000us                1
+SelectBackward                                0.27%          1.338ms            0.27%          1.338ms          1.338ms              NaN          0.000us          0.000us                1
+to                                            0.26%          1.300ms            0.26%          1.300ms          1.300ms              NaN          0.000us          0.000us                1
+zeros                                         0.26%          1.294ms            0.26%          1.294ms          1.294ms              NaN          0.000us          0.000us                1
+zero_                                         0.26%          1.292ms            0.26%          1.292ms          1.292ms              NaN          0.000us          0.000us                1
+zeros                                         0.25%          1.267ms            0.25%          1.267ms          1.267ms              NaN          0.000us          0.000us                1
+zero_                                         0.25%          1.264ms            0.25%          1.264ms          1.264ms              NaN          0.000us          0.000us                1
+empty                                         0.25%          1.262ms            0.25%          1.262ms          1.262ms              NaN          0.000us          0.000us                1
+to                                            0.25%          1.256ms            0.25%          1.256ms          1.256ms              NaN          0.000us          0.000us                1
+SliceBackward                                 0.24%          1.226ms            0.24%          1.226ms          1.226ms              NaN          0.000us          0.000us                1
+to                                            0.24%          1.218ms            0.24%          1.218ms          1.218ms              NaN          0.000us          0.000us                1
+to                                            0.24%          1.205ms            0.24%          1.205ms          1.205ms              NaN          0.000us          0.000us                1
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+Self CPU time total: 504.617ms
+CUDA time total: 0.000us
+
+--------------------------------------------------------------------------------
+  autograd profiler output (CUDA mode)
+--------------------------------------------------------------------------------
+        top 100 events sorted by cpu_time_total
+
+	Because the autograd profiler uses the CUDA event API,
+	the CUDA time column reports approximately max(cuda_time, cpu_time).
+	Please ignore this output if your code does not use CUDA.
+
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+Name                                Self CPU total %   Self CPU total      CPU total %        CPU total     CPU time avg     CUDA total %       CUDA total    CUDA time avg  Number of Calls
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+to                                            4.79%         69.047ms            4.79%         69.047ms         69.047ms            4.86%         69.052ms         69.052ms                1
+empty                                         4.54%         65.401ms            4.54%         65.401ms         65.401ms            4.60%         65.400ms         65.400ms                1
+uniform_                                      3.73%         53.810ms            3.73%         53.810ms         53.810ms            3.79%         53.812ms         53.812ms                1
+to                                            3.20%         46.048ms            3.20%         46.048ms         46.048ms            3.24%         46.044ms         46.044ms                1
+empty                                         3.19%         45.979ms            3.19%         45.979ms         45.979ms            3.24%         45.984ms         45.984ms                1
+to                                            1.92%         27.618ms            1.92%         27.618ms         27.618ms            1.94%         27.618ms         27.618ms                1
+empty                                         1.91%         27.493ms            1.91%         27.493ms         27.493ms            1.94%         27.496ms         27.496ms                1
+uniform_                                      1.87%         26.988ms            1.87%         26.988ms         26.988ms            1.90%         26.990ms         26.990ms                1
+torch::autograd::CopySlices                   1.70%         24.566ms            1.70%         24.566ms         24.566ms            1.73%         24.568ms         24.568ms                1
+as_strided                                    1.70%         24.434ms            1.70%         24.434ms         24.434ms            1.72%         24.440ms         24.440ms                1
+AsStridedBackward                             1.48%         21.292ms            1.48%         21.292ms         21.292ms            1.50%         21.292ms         21.292ms                1
+as_strided                                    1.47%         21.212ms            1.47%         21.212ms         21.212ms            1.49%         21.220ms         21.220ms                1
+AsStridedBackward                             1.41%         20.270ms            1.41%         20.270ms         20.270ms            1.43%         20.268ms         20.268ms                1
+as_strided                                    1.40%         20.198ms            1.40%         20.198ms         20.198ms            1.42%         20.204ms         20.204ms                1
+uniform_                                      1.25%         17.988ms            1.25%         17.988ms         17.988ms            1.27%         17.989ms         17.989ms                1
+uniform_                                      1.24%         17.921ms            1.24%         17.921ms         17.921ms            1.26%         17.922ms         17.922ms                1
+AsStridedBackward                             1.24%         17.920ms            1.24%         17.920ms         17.920ms            1.26%         17.924ms         17.924ms                1
+zeros                                         1.24%         17.870ms            1.24%         17.870ms         17.870ms            1.26%         17.872ms         17.872ms                1
+to                                            1.21%         17.464ms            1.21%         17.464ms         17.464ms            1.23%         17.464ms         17.464ms                1
+empty                                         1.21%         17.429ms            1.21%         17.429ms         17.429ms            1.23%         17.428ms         17.428ms                1
+to                                            1.15%         16.636ms            1.15%         16.636ms         16.636ms            1.17%         16.636ms         16.636ms                1
+empty                                         1.15%         16.598ms            1.15%         16.598ms         16.598ms            1.17%         16.602ms         16.602ms                1
+torch::autograd::CopySlices                   1.13%         16.329ms            1.13%         16.329ms         16.329ms            1.15%         16.330ms         16.330ms                1
+empty_strided                                 1.12%         16.198ms            1.12%         16.198ms         16.198ms            1.14%         16.206ms         16.206ms                1
+AsStridedBackward                             1.11%         16.011ms            1.11%         16.011ms         16.011ms            1.13%         16.012ms         16.012ms                1
+zeros                                         1.11%         15.964ms            1.11%         15.964ms         15.964ms            1.12%         15.964ms         15.964ms                1
+AsStridedBackward                             1.04%         15.057ms            1.04%         15.057ms         15.057ms            1.06%         15.056ms         15.056ms                1
+as_strided                                    1.04%         15.006ms            1.04%         15.006ms         15.006ms            1.06%         15.012ms         15.012ms                1
+AsStridedBackward                             1.01%         14.525ms            1.01%         14.525ms         14.525ms            1.02%         14.524ms         14.524ms                1
+zeros                                         1.00%         14.483ms            1.00%         14.483ms         14.483ms            1.02%         14.480ms         14.480ms                1
+to                                            0.99%         14.272ms            0.99%         14.272ms         14.272ms            1.00%         14.184ms         14.184ms                1
+to                                            0.93%         13.452ms            0.93%         13.452ms         13.452ms            0.95%         13.452ms         13.452ms                1
+empty                                         0.93%         13.397ms            0.93%         13.397ms         13.397ms            0.94%         13.400ms         13.400ms                1
+torch::autograd::CopySlices                   0.92%         13.192ms            0.92%         13.192ms         13.192ms            0.93%         13.196ms         13.196ms                1
+clone                                         0.91%         13.083ms            0.91%         13.083ms         13.083ms            0.92%         13.092ms         13.092ms                1
+SelectBackward                                0.86%         12.350ms            0.86%         12.350ms         12.350ms            0.87%         12.352ms         12.352ms                1
+select                                        0.85%         12.300ms            0.85%         12.300ms         12.300ms            0.87%         12.304ms         12.304ms                1
+SelectBackward                                0.85%         12.290ms            0.85%         12.290ms         12.290ms            0.87%         12.292ms         12.292ms                1
+select                                        0.85%         12.237ms            0.85%         12.237ms         12.237ms            0.86%         12.240ms         12.240ms                1
+AsStridedBackward                             0.83%         11.928ms            0.83%         11.928ms         11.928ms            0.84%         11.928ms         11.928ms                1
+zeros                                         0.83%         11.897ms            0.83%         11.897ms         11.897ms            0.84%         11.896ms         11.896ms                1
+torch::autograd::CopySlices                   0.81%         11.693ms            0.81%         11.693ms         11.693ms            0.82%         11.692ms         11.692ms                1
+torch::autograd::CopyBackwards                0.81%         11.632ms            0.81%         11.632ms         11.632ms            0.82%         11.632ms         11.632ms                1
+zeros_like                                    0.81%         11.623ms            0.81%         11.623ms         11.623ms            0.82%         11.624ms         11.624ms                1
+empty                                         0.80%         11.598ms            0.80%         11.598ms         11.598ms            0.82%         11.604ms         11.604ms                1
+SelectBackward                                0.77%         11.136ms            0.77%         11.136ms         11.136ms            0.42%          5.948ms          5.948ms                1
+select                                        0.77%         11.087ms            0.77%         11.087ms         11.087ms            0.42%          5.916ms          5.916ms                1
+to                                            0.75%         10.811ms            0.75%         10.811ms         10.811ms            0.76%         10.812ms         10.812ms                1
+SelectBackward                                0.74%         10.704ms            0.74%         10.704ms         10.704ms            0.75%         10.704ms         10.704ms                1
+zeros                                         0.74%         10.673ms            0.74%         10.673ms         10.673ms            0.75%         10.674ms         10.674ms                1
+SelectBackward                                0.70%         10.145ms            0.70%         10.145ms         10.145ms            0.71%         10.144ms         10.144ms                1
+zeros                                         0.70%         10.116ms            0.70%         10.116ms         10.116ms            0.71%         10.112ms         10.112ms                1
+AsStridedBackward                             0.69%          9.988ms            0.69%          9.988ms          9.988ms            0.70%          9.988ms          9.988ms                1
+zeros                                         0.69%          9.946ms            0.69%          9.946ms          9.946ms            0.70%          9.948ms          9.948ms                1
+torch::autograd::CopySlices                   0.69%          9.911ms            0.69%          9.911ms          9.911ms            0.70%          9.916ms          9.916ms                1
+to                                            0.69%          9.889ms            0.69%          9.889ms          9.889ms            0.69%          9.804ms          9.804ms                1
+as_strided                                    0.68%          9.850ms            0.68%          9.850ms          9.850ms            0.69%          9.852ms          9.852ms                1
+torch::autograd::CopySlices                   0.67%          9.655ms            0.67%          9.655ms          9.655ms            0.68%          9.656ms          9.656ms                1
+empty_strided                                 0.66%          9.578ms            0.66%          9.578ms          9.578ms            0.67%          9.580ms          9.580ms                1
+SelectBackward                                0.66%          9.569ms            0.66%          9.569ms          9.569ms            0.67%          9.568ms          9.568ms                1
+AsStridedBackward                             0.66%          9.556ms            0.66%          9.556ms          9.556ms            0.67%          9.558ms          9.558ms                1
+zeros                                         0.66%          9.543ms            0.66%          9.543ms          9.543ms            0.67%          9.540ms          9.540ms                1
+zeros                                         0.66%          9.519ms            0.66%          9.519ms          9.519ms            0.67%          9.522ms          9.522ms                1
+SelectBackward                                0.63%          9.056ms            0.63%          9.056ms          9.056ms            0.64%          9.052ms          9.052ms                1
+to                                            0.63%          9.044ms            0.63%          9.044ms          9.044ms            0.64%          9.044ms          9.044ms                1
+zeros                                         0.63%          9.028ms            0.63%          9.028ms          9.028ms            0.64%          9.028ms          9.028ms                1
+SelectBackward                                0.60%          8.686ms            0.60%          8.686ms          8.686ms            0.61%          8.688ms          8.688ms                1
+zeros                                         0.60%          8.662ms            0.60%          8.662ms          8.662ms            0.61%          8.660ms          8.660ms                1
+AsStridedBackward                             0.60%          8.661ms            0.60%          8.661ms          8.661ms            0.61%          8.660ms          8.660ms                1
+as_strided                                    0.60%          8.612ms            0.60%          8.612ms          8.612ms            0.61%          8.620ms          8.620ms                1
+torch::autograd::CopySlices                   0.60%          8.611ms            0.60%          8.611ms          8.611ms            0.61%          8.612ms          8.612ms                1
+SelectBackward                                0.60%          8.596ms            0.60%          8.596ms          8.596ms            0.61%          8.596ms          8.596ms                1
+zeros                                         0.59%          8.568ms            0.59%          8.568ms          8.568ms            0.60%          8.564ms          8.564ms                1
+SelectBackward                                0.59%          8.557ms            0.59%          8.557ms          8.557ms            0.60%          8.560ms          8.560ms                1
+SelectBackward                                0.59%          8.550ms            0.59%          8.550ms          8.550ms            0.60%          8.548ms          8.548ms                1
+TBackward                                     0.59%          8.548ms            0.59%          8.548ms          8.548ms            0.24%          3.456ms          3.456ms                1
+unsigned short                                0.59%          8.539ms            0.59%          8.539ms          8.539ms            0.24%          3.452ms          3.452ms                1
+zeros                                         0.59%          8.522ms            0.59%          8.522ms          8.522ms            0.60%          8.524ms          8.524ms                1
+zeros                                         0.59%          8.518ms            0.59%          8.518ms          8.518ms            0.60%          8.524ms          8.524ms                1
+clone                                         0.59%          8.515ms            0.59%          8.515ms          8.515ms            0.60%          8.520ms          8.520ms                1
+SelectBackward                                0.59%          8.483ms            0.59%          8.483ms          8.483ms            0.60%          8.484ms          8.484ms                1
+AsStridedBackward                             0.59%          8.480ms            0.59%          8.480ms          8.480ms            0.60%          8.480ms          8.480ms                1
+zeros                                         0.59%          8.453ms            0.59%          8.453ms          8.453ms            0.59%          8.452ms          8.452ms                1
+torch::autograd::CopySlices                   0.58%          8.416ms            0.58%          8.416ms          8.416ms            0.59%          8.416ms          8.416ms                1
+as_strided                                    0.58%          8.416ms            0.58%          8.416ms          8.416ms            0.59%          8.416ms          8.416ms                1
+torch::autograd::CopySlices                   0.58%          8.385ms            0.58%          8.385ms          8.385ms            0.59%          8.384ms          8.384ms                1
+torch::autograd::CopySlices                   0.58%          8.375ms            0.58%          8.375ms          8.375ms            0.59%          8.376ms          8.376ms                1
+torch::autograd::CopySlices                   0.58%          8.375ms            0.58%          8.375ms          8.375ms            0.59%          8.376ms          8.376ms                1
+AsStridedBackward                             0.58%          8.370ms            0.58%          8.370ms          8.370ms            0.59%          8.368ms          8.368ms                1
+AsStridedBackward                             0.58%          8.364ms            0.58%          8.364ms          8.364ms            0.59%          8.364ms          8.364ms                1
+torch::autograd::CopySlices                   0.58%          8.364ms            0.58%          8.364ms          8.364ms            0.59%          8.364ms          8.364ms                1
+torch::autograd::CopySlices                   0.58%          8.356ms            0.58%          8.356ms          8.356ms            0.59%          8.360ms          8.360ms                1
+torch::autograd::CopySlices                   0.58%          8.350ms            0.58%          8.350ms          8.350ms            0.59%          8.352ms          8.352ms                1
+torch::autograd::CopySlices                   0.58%          8.346ms            0.58%          8.346ms          8.346ms            0.59%          8.348ms          8.348ms                1
+SelectBackward                                0.58%          8.337ms            0.58%          8.337ms          8.337ms            0.59%          8.336ms          8.336ms                1
+zeros                                         0.58%          8.335ms            0.58%          8.335ms          8.335ms            0.59%          8.332ms          8.332ms                1
+SelectBackward                                0.58%          8.333ms            0.58%          8.333ms          8.333ms            0.59%          8.332ms          8.332ms                1
+AsStridedBackward                             0.58%          8.329ms            0.58%          8.329ms          8.329ms            0.59%          8.328ms          8.328ms                1
+torch::autograd::CopySlices                   0.58%          8.328ms            0.58%          8.328ms          8.328ms            0.59%          8.328ms          8.328ms                1
+torch::autograd::CopyBackwards                0.58%          8.325ms            0.58%          8.325ms          8.325ms            0.59%          8.324ms          8.324ms                1
+----------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------
+Self CPU time total: 1.441s
+CUDA time total: 1.421s
+/home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/_reduction.py:46: UserWarning: size_average and reduce args will be deprecated, please use reduction='mean' instead.
+  warnings.warn(warning.format(ret))
+/home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/_reduction.py:46: UserWarning: size_average and reduce args will be deprecated, please use reduction='mean' instead.
+  warnings.warn(warning.format(ret))
+/home/tengyu/.virtualenvs/gpnn/lib/python3.6/site-packages/torch/nn/_reduction.py:46: UserWarning: size_average and reduce args will be deprecated, please use reduction='mean' instead.
+  warnings.warn(warning.format(ret))
+
