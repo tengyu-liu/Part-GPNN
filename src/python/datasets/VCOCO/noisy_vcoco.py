@@ -38,6 +38,9 @@ def get_model():
     feature_network.load_state_dict(checkpoint['state_dict'])
     return feature_network
 
+def combine_box(box1, box2):
+    return np.hstack((np.minimum(box1[:2], box2[:2]), np.maximum(box1[2:], box2[2:])))
+
 class NoisyVCOCO(torch.utils.data.Dataset):
     def __init__(self, root, imageset, node_feature_appd=False):
         self.root = root
@@ -79,7 +82,6 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         node_labels = data['node_labels']
         node_roles = data['node_roles']
         obj_boxes = data['obj_boxes']
-        edge_boxes = data['edge_boxes']
         part_boxes = data['part_boxes']
         human_boxes = data['human_boxes']
         human_num = data['human_num']
@@ -90,9 +92,14 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         part_human_id = data['part_human_id']
         part_adj_mat = None # data['part_adj_mat']
 
+        edge_boxes = np.empty([0,4])
+        for part_box in part_boxes:
+            for obj_box in obj_boxes:
+                edge_boxes = np.vstack([edge_boxes, [combine_box(obj_box, part_box)]])
+
         part_images = []
         obj_images = []
-        edge_iamges = []
+        edge_images = []
         node_features = np.zeros([part_num + obj_num, 2000])
         edge_features = np.zeros([part_num + obj_num, part_num + obj_num, 1000])
         for part_box in part_boxes:
@@ -100,7 +107,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         for obj_box in obj_boxes:
             obj_images.append(cv2.resize(img[obj_boxes[1]:obj_boxes[3] + 1, obj_boxes[0]:obj_boxes[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
         for edge_box in edge_boxes:
-            edge_iamges.append(cv2.resize(img[edge_box[1]:edge_box[3] + 1, edge_box[0]:edge_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+            edge_images.append(cv2.resize(img[edge_box[1]:edge_box[3] + 1, edge_box[0]:edge_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
         
         part_images = torch.autograd.Variable(part_images).cuda()
         feat, pred = self.model(part_images)
