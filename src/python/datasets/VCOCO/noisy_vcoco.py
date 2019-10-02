@@ -52,14 +52,25 @@ class NoisyVCOCO(torch.utils.data.Dataset):
     def __getitem__(self, index):
         input_h, input_w = 224, 224
 
+        # for i in range(len(self.unique_image_ids)):
+        #     img_id = self.coco.loadImgs(ids=[self.unique_image_ids[i]])[0]['file_name']
+        #     if '000000165' in img_id or '000000368' in img_id or '000000436' in img_id or '000000531' in img_id:
+        #         print(i, img_id)
+        # exit()
+
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
-            img = io.imread(self.root, 'coco/coco/images', img_type, img_name)
-            data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
-            _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
-            _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
+            # img = io.imread(os.path.join(self.root, 'coco/coco/images', img_type, img_name))
+            img = io.imread(os.path.join('/media/tengyu/data/mscoco/', img_type, img_name))
+            # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
+            # _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
+            # _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
+            data = pickle.load(open(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
+            _edge_features = np.load(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_edge_features.npy').format(img_name))
+            _node_features = np.load(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_node_features.npy').format(img_name))
         except IOError:
+            raise
             warnings.warn('data missing for {}'.format(img_name))
             return self.__getitem__(3)
 
@@ -140,7 +151,7 @@ def main(args):
     subset = ['train', 'val', 'test']
     training_set = NoisyVCOCO(args.data_root, subset[0])
     print('{} instances.'.format(len(training_set)))
-    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[0]
+    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
     print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
 
 
