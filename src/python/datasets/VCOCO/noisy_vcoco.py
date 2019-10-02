@@ -24,12 +24,11 @@ import vcoco_config
 import feature_model
 import metadata
 
-def get_model():
+def get_model(paths):
     feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
     feature_network.cuda()
-    # checkpoint_dir = os.path.join(os.path.dirname(__file__), '../../tmp', 'checkpoints', 'vcoco', 'finetune_resnet_noisy'.format(feature_mode))
-    # best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
-    best_model_file = os.path.join(os.path.dirname(__file__), '../../../../data/model_resnet_noisy/finetune_resnet_noisy/model_best.pth')
+    checkpoint_dir = os.path.join(os.path.dirname(__file__), '../../tmp', 'checkpoints', 'vcoco', 'finetune_resnet_noisy'.format(feature_mode))
+    best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
     checkpoint = torch.load(best_model_file)
     for k in list(checkpoint['state_dict'].keys()):
         if k[:7] == 'module.':
@@ -48,6 +47,11 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         self.node_feature_appd = node_feature_appd
 
         self.model = get_model()
+
+        # action_role = dict()
+        # for i, x in enumerate(vcoco_all):
+        #     action_role[x['action_name']] = x['role_name']
+        # print 'action_role', action_role
 
     def __getitem__(self, index):
         input_h, input_w = 224, 224
@@ -81,7 +85,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
         part_images = []
         obj_images = []
-        edge_images = []
+        edge_iamges = []
         node_features = np.zeros([part_num + obj_num, 2000])
         edge_features = np.zeros([part_num + obj_num, part_num + obj_num, 1000])
         for part_box in part_boxes:
@@ -138,7 +142,7 @@ def main(args):
     start_time = time.time()
 
     subset = ['train', 'val', 'test']
-    training_set = NoisyVCOCO(args.data_root, subset[0])
+    training_set = VCOCO(args.data_root, subset[0])
     print('{} instances.'.format(len(training_set)))
     edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[0]
     print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
