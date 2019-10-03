@@ -15,14 +15,19 @@ import argparse
 import warnings
 
 import cv2
-from skimage import io, transform
 import torch.utils.data
 import numpy as np
 import vsrl_utils as vu
+import scipy.misc
 
 import vcoco_config
 import feature_model
 import metadata
+
+import torchvision
+import torchvision.transforms
+
+import matplotlib.pyplot as plt
 
 def get_model():
     feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
@@ -36,10 +41,53 @@ def get_model():
             checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
             del checkpoint['state_dict'][k]
     feature_network.load_state_dict(checkpoint['state_dict'])
-    return feature_network
+
+    transform = torchvision.transforms.Compose([
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225]),
+    ])
+
+    return feature_network, transform
 
 def combine_box(box1, box2):
     return np.hstack((np.minimum(box1[:2], box2[:2]), np.maximum(box1[2:], box2[2:])))
+
+mean = np.array([0.485, 0.456, 0.406])
+std = np.array([0.229, 0.224, 0.225])
+
+def img_to_torch(img, t):
+    """
+    input: H x W x C img iterables with range 0-255
+    output: C x H x W img tensor with range 0-1, normalized
+    """
+
+    # img = np.array(img) / 255.
+    # img = (img - mean) / std
+    # if len(img.shape) == 3:
+    #     img = img.transpose([2,0,1])
+    # elif len(img.shape) == 4:
+    #     img = img.transpose([0,3,1,2])
+    # elif len(img.shape) == 5:
+    #     img = img.transpose([0,1,4,2,3])
+    # img = torch.autograd.Variable(torch.Tensor(img)).cuda()
+    # return img
+
+    img = np.array(img)
+    if len(img.shape) == 4:
+        new_img = []
+        for _i in img:
+            new_img.append(t(_i))
+        return torch.autograd.Variable(torch.stack(new_img, dim=0)).cuda()
+    if len(img.shape) == 5:
+        new_img = []
+        for _j in img:
+            new_img.append([])
+            for _i in _j:
+                new_img[-1].append(t(_i))
+            new_img[-1] = torch.stack(new_img[-1], dim=0)
+        return torch.autograd.Variable(torch.stack(new_img, dim=0)).cuda()
+
 
 class NoisyVCOCO(torch.utils.data.Dataset):
     def __init__(self, root, imageset, node_feature_appd=False):
@@ -50,7 +98,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         self.unique_image_ids = list(set(self.image_ids))
         self.node_feature_appd = node_feature_appd
 
-        self.model = get_model()
+        self.model, self.transform = get_model()
 
     def __getitem__(self, index):
         input_h, input_w = 224, 224
@@ -64,8 +112,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
-            # img = io.imread(os.path.join(self.root, 'coco/coco/images', img_type, img_name))
-            img = io.imread(os.path.join('/media/tengyu/data/mscoco/', img_type, img_name))
+            img = scipy.misc.imread(os.path.join('/media/tengyu/data/mscoco/', img_type, img_name), mode='RGB')
             # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
             # _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
             # _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
@@ -92,37 +139,41 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         part_human_id = data['part_human_id']
         part_adj_mat = None # data['part_adj_mat']
 
-        edge_boxes = np.empty([0,4])
-        for part_box in part_boxes:
-            for obj_box in obj_boxes:
-                edge_boxes = np.vstack([edge_boxes, [combine_box(obj_box, part_box)]])
-
         part_images = []
         obj_images = []
         edge_images = []
         node_features = np.zeros([part_num + obj_num, 2000])
         edge_features = np.zeros([part_num + obj_num, part_num + obj_num, 1000])
-        for part_box in part_boxes:
+
+        for part_box in part_boxes.astype(int):
             part_images.append(cv2.resize(img[part_box[1]:part_box[3] + 1, part_box[0]:part_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-        for obj_box in obj_boxes:
-            obj_images.append(cv2.resize(img[obj_boxes[1]:obj_boxes[3] + 1, obj_boxes[0]:obj_boxes[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-        for edge_box in edge_boxes:
-            edge_images.append(cv2.resize(img[edge_box[1]:edge_box[3] + 1, edge_box[0]:edge_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+        for obj_box in obj_boxes.astype(int):
+            obj_images.append(cv2.resize(img[obj_box[1]:obj_box[3] + 1, obj_box[0]:obj_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+        for part_box in part_boxes:
+            edge_images.append([])
+            for obj_box in obj_boxes:
+                edge_box = combine_box(obj_box, part_box).astype(int)
+                edge_images[-1].append(cv2.resize(img[edge_box[1]:edge_box[3] + 1, edge_box[0]:edge_box[2] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
         
-        part_images = torch.autograd.Variable(part_images).cuda()
+        part_images = img_to_torch(part_images, self.transform)
         feat, pred = self.model(part_images)
-        node_features[:part_num, :1000] = feat
+        node_features[:part_num, :1000] = feat.detach().cpu().numpy()
 
-        obj_images = torch.autograd.Variable(obj_images).cuda()
+        obj_images = img_to_torch(obj_images, self.transform)
         feat, pred = self.model(obj_images)
-        node_features[part_num:, 1000:] = feat
+        node_features[part_num:, 1000:] = feat.detach().cpu().numpy()
 
-        edge_images = torch.autograd.Variable(edge_images).cuda()
-        feat, pred = self.model(edge_images)
-        edge_features = feat
+        edge_images = img_to_torch(edge_images, self.transform)
+        for i_part in range(len(edge_images)):
+            feat, pred = self.model(edge_images[i_part])
+            edge_features[i_part, part_num:, :] = feat.detach().cpu().numpy()
+            edge_features[part_num:, i_part, :] = edge_features[i_part, part_num:, :]
 
-        print(np.linalg.norm(node_features.detach().cpu().numpy() - _node_features))
-        print(np.linalg.norm(edge_features.detach().cpu().numpy() - _edge_features))
+        np.save(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_node_features2.npy').format(img_name), node_features)
+        np.save(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_edge_features2.npy').format(img_name), edge_features)
+
+        print(np.linalg.norm(node_features - _node_features) / np.linalg.norm(_node_features))
+        print(np.linalg.norm(edge_features - _edge_features) / np.linalg.norm(_node_features))
 
         # # append bbox and class to node features
         # if self.node_feature_appd:
