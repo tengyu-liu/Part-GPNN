@@ -112,13 +112,13 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
-            img = scipy.misc.imread(os.path.join('/media/tengyu/data/mscoco/', img_type, img_name), mode='RGB')
+            img = scipy.misc.imread(os.path.dirname(__file__), '../../../../', '/data/COCO_train2014_000000000368.jpg', mode='RGB')
             # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
             # _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
             # _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
-            data = pickle.load(open(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
-            _edge_features = np.load(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_edge_features.npy').format(img_name))
-            _node_features = np.load(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_node_features.npy').format(img_name))
+            data = pickle.load(open(os.path.join(os.path.dirname(__file__), '../../../../', '/data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
+            _edge_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', '/data/feature_resnet_noisy', '{}_edge_features.npy').format(img_name))
+            _node_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', '/data/feature_resnet_noisy', '{}_node_features.npy').format(img_name))
         except IOError:
             raise
             warnings.warn('data missing for {}'.format(img_name))
@@ -169,8 +169,8 @@ class NoisyVCOCO(torch.utils.data.Dataset):
             edge_features[i_part, part_num:, :] = feat.detach().cpu().numpy()
             edge_features[part_num:, i_part, :] = edge_features[i_part, part_num:, :]
 
-        np.save(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_node_features2.npy').format(img_name), node_features)
-        np.save(os.path.join('/media/tengyu/research/projects/Part-GPNN/data/feature_resnet_noisy', '{}_edge_features2.npy').format(img_name), edge_features)
+        np.save(os.path.join(os.path.dirname(__file__), '../../../../', '/data/feature_resnet_noisy', '{}_node_features2.npy').format(img_name), node_features)
+        np.save(os.path.join(os.path.dirname(__file__), '../../../../', '/data/feature_resnet_noisy', '{}_edge_features2.npy').format(img_name), edge_features)
 
         print(np.linalg.norm(node_features - _node_features) / np.linalg.norm(_node_features))
         print(np.linalg.norm(edge_features - _edge_features) / np.linalg.norm(_node_features))
