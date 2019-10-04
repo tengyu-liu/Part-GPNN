@@ -18,7 +18,7 @@ class AdaptiveMaxPool2d(Function):
         indices = input.new().long()
         self.save_for_backward(input)
         self.indices = indices
-        self._backend = type2backend[type(input)]
+        self._backend = type2backend[input.type()]
         self._backend.SpatialAdaptiveMaxPooling_updateOutput(
             self._backend.library_state, input, output, indices,
             self.out_w, self.out_h)

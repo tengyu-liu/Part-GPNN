@@ -60,9 +60,9 @@ class Vgg16(torch.nn.Module):
         for x in range(len(pretrained_vgg.features)):
             self.features.add_module(str(x), pretrained_vgg.features[x])
 
-        if feature_mode == 'roi_vgg':
-            self.classifier = torch.nn.Sequential()
-            self.classifier.add_module(str(0), pretrained_vgg.classifier[0])
+        # if feature_mode == 'roi_vgg':
+        #     self.classifier = torch.nn.Sequential()
+        #     self.classifier.add_module(str(0), pretrained_vgg.classifier[0])
 
         # self.classifier.add_module(str(1), pretrained_vgg.classifier[1])
         # for x in range(len(pretrained_vgg.classifier)-last_layer):
@@ -76,9 +76,9 @@ class Vgg16(torch.nn.Module):
     def forward(self, x):
         x = self.features(x)
 
-        if feature_mode == 'roi_vgg':
-            x = x.view(x.size(0), -1)
-            x = self.classifier(x)
+        # if feature_mode == 'roi_vgg':
+        #     x = x.view(x.size(0), -1)
+        #     x = self.classifier(x)
         return x
 
 

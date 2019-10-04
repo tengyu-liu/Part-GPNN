@@ -252,6 +252,36 @@ class Resnet152(torch.nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 
+class MobileNetV2(torch.nn.Module):
+    def __init__(self, num_classes=1000):
+        super(MobileNetV2, self).__init__()
+        # self.learn_modules = torch.nn.Sequential()
+        # pretrained_resnet = torchvision.models.resnet152(pretrained=True)
+        # for i, m in enumerate(pretrained_resnet.modules()):
+        #     if isinstance(m, torch.nn.Linear):
+        #         break
+        #     self.learn_modules.add_module(str(i), m)
+        self.learn_modules = torchvision.models.mobilenet_v2(pretrained=True)
+        self.fc = torch.nn.Linear(1000, num_classes)
+        # self.fc = torch.nn.Sequential(
+        #     torch.nn.ReLU(True),
+        #     # torch.nn.Dropout(),
+        #     torch.nn.Linear(1000, num_classes),
+        # )
+        # self._initialize_weights()
+
+    def forward(self, x):
+        x = self.learn_modules(x)
+        x = x.view(x.size(0), -1)
+        output = self.fc(x)
+        return x, output
+
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Linear):
+                m.weight.data.normal_(0, 0.01)
+                m.bias.data.zero_()
+
 
 class Densenet(torch.nn.Module):
     def __init__(self, num_classes=1000):

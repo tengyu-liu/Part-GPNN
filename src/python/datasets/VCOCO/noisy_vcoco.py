@@ -20,8 +20,9 @@ import numpy as np
 import vsrl_utils as vu
 
 import vcoco_config
-import feature_model
+# import feature_model
 import metadata
+import roi_pooling
 
 import torchvision
 import torchvision.transforms
@@ -29,18 +30,48 @@ import torchvision.transforms
 import matplotlib.pyplot as plt
 from skimage import io, transform, color
 
+class Vgg16(torch.nn.Module):
+    def __init__(self, last_layer=0, requires_grad=False):
+        super(Vgg16, self).__init__()
+        pretrained_vgg = torchvision.models.vgg16(pretrained=True)
+        self.features = torch.nn.Sequential()
+        for x in range(len(pretrained_vgg.features)):
+            self.features.add_module(str(x), pretrained_vgg.features[x])
+
+        # if feature_mode == 'roi_vgg':
+        #     self.classifier = torch.nn.Sequential()
+        #     self.classifier.add_module(str(0), pretrained_vgg.classifier[0])
+
+        # self.classifier.add_module(str(1), pretrained_vgg.classifier[1])
+        # for x in range(len(pretrained_vgg.classifier)-last_layer):
+        #     print pretrained_vgg.classifier[x]
+        #     self.classifier.add_module(str(x), pretrained_vgg.classifier[x])
+
+        if not requires_grad:
+            for param in self.parameters():
+                param.requires_grad = False
+
+    def forward(self, x):
+        x = self.features(x)
+
+        # if feature_mode == 'roi_vgg':
+        #     x = x.view(x.size(0), -1)
+        #     x = self.classifier(x)
+        return x
+
+
 def get_model():
-    feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
+    feature_network = Vgg16(last_layer=1)
     feature_network.cuda()
     # checkpoint_dir = os.path.join(os.path.dirname(__file__), '../../tmp', 'checkpoints', 'vcoco', 'finetune_resnet_noisy'.format(feature_mode))
     # best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
-    best_model_file = os.path.join(os.path.dirname(__file__), '../../../../data/model_resnet_noisy/finetune_resnet_noisy/model_best.pth')
-    checkpoint = torch.load(best_model_file)
-    for k in list(checkpoint['state_dict'].keys()):
-        if k[:7] == 'module.':
-            checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
-            del checkpoint['state_dict'][k]
-    feature_network.load_state_dict(checkpoint['state_dict'])
+    # best_model_file = os.path.join(os.path.dirname(__file__), '../../../../data/model_resnet_noisy/finetune_resnet_noisy/model_best.pth')
+    # checkpoint = torch.load(best_model_file)
+    # for k in list(checkpoint['state_dict'].keys()):
+    #     if k[:7] == 'module.':
+    #         checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
+    #         del checkpoint['state_dict'][k]
+    # feature_network.load_state_dict(checkpoint['state_dict'])
 
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
@@ -64,7 +95,7 @@ def img_to_torch(img, t):
     img = np.array(img) / 255.
     img = (img - mean) / std
     if len(img.shape) == 3:
-        img = img.transpose([2,0,1])
+        img = np.expand_dims(img.transpose([2,0,1]), axis=0)
     elif len(img.shape) == 4:
         img = img.transpose([0,3,1,2])
     elif len(img.shape) == 5:
@@ -101,6 +132,9 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         input_h, input_w = 224, 224
+        feature_length = 4096
+        feature_size = [7, 7]
+        adaptive_max_pool = roi_pooling.AdaptiveMaxPool2d(*feature_size)
 
         # for i in range(len(self.unique_image_ids)):
         #     img_id = self.coco.loadImgs(ids=[self.unique_image_ids[i]])[0]['file_name']
@@ -111,6 +145,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
+            t0 = time.time()
             # img_path = os.path.join(vcoco_path, 'coco/coco/images', '{}2014'.format(img_type), img_name)
             # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
             img = io.imread(os.path.join(os.path.dirname(__file__), '../../../../', 'data/COCO_train2014_000000000368.jpg'))
@@ -120,11 +155,13 @@ class NoisyVCOCO(torch.utils.data.Dataset):
             data = pickle.load(open(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
             # _edge_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}_edge_features.npy').format(img_name))
             # _node_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}_node_features.npy').format(img_name))
+            print('Loading data: %f'%(time.time() - t0))
         except IOError:
             raise
             warnings.warn('data missing for {}'.format(img_name))
             return self.__getitem__(3)
 
+        t0 = time.time()
         h, w, _ = img.shape
         img_id = data['img_id']
         adj_mat = data['adj_mat']
@@ -140,12 +177,12 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         part_classes = data['part_classes']
         part_human_id = data['part_human_id']
         part_adj_mat = None # data['part_adj_mat']
+        print('Disecting data: %f'%(time.time() - t0))
 
+        t0 = time.time()
         part_images = []
         obj_images = []
         edge_images = []
-        node_features = np.zeros([part_num + obj_num, 2000])
-        edge_features = np.zeros([part_num + obj_num, part_num + obj_num, 1000])
 
         # apply transformation
         if random.random() < 0.2:
@@ -190,35 +227,91 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         mat = transformation.params
 
         img = (img * 255).astype(np.uint8)
-        img = transform.warp(img, transformation.inverse, order=0, output_shape=(img.shape[0] * 3, img.shape[1] * 3))
+        img = transform.warp(img, transformation.inverse, order=0, output_shape=(img.shape[0] * 2, img.shape[1] * 2))
+        print('Transform image: %f'%(time.time() - t0))
 
+        t0 = time.time()
         part_boxes = transform_bbox(part_boxes, mat)
         obj_boxes = transform_bbox(obj_boxes, mat)
+        print('Transform bbox: %f'%(time.time() - t0))
 
-        for part_box in part_boxes.astype(int):
-            part_images.append(cv2.resize(img[part_box[3]:part_box[1] + 1, part_box[2]:part_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))        
-        for obj_box in obj_boxes.astype(int):
-            obj_images.append(cv2.resize(img[obj_box[3]:obj_box[1] + 1, obj_box[2]:obj_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-        for part_box in part_boxes:
-            edge_images.append([])
-            for obj_box in obj_boxes:
-                edge_box = combine_box(obj_box, part_box).astype(int)
-                edge_images[-1].append(cv2.resize(img[edge_box[3]:edge_box[1] + 1, edge_box[2]:edge_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+        img_feature = self.model.features(img_to_torch(cv2.resize(img, (input_h, input_w), interpolation=cv2.INTER_LINEAR), self.transform))
+        img_feature = torch.autograd.Variable(img_feature)
+        scale_h = feature_size[0]/float(img.shape[0])
+        scale_w = feature_size[1]/float(img.shape[1])
+
+        obj_features = np.empty((obj_num, 512 * feature_size[0] * feature_size[1]))
+        objs = np.copy(obj_boxes)
+        objs[:, 0] *= scale_w
+        objs[:, 2] *= scale_w
+        objs[:, 1] *= scale_h
+        objs[:, 3] *= scale_h
         
-        part_images = img_to_torch(part_images, self.transform)
-        feat, pred = self.model(part_images)
-        node_features[:part_num, :1000] = feat.detach().cpu().numpy()
+        for i_box in range(objs.shape[0]):
+            obj = objs[i_box, :].astype(int)
+            obj_feature = adaptive_max_pool(img_feature[..., obj[3]:(obj[1] + 1), obj[2]:(obj[0] + 1)])
+            obj_features[i_box, :] = obj_feature.data.cpu().numpy().flatten()
 
-        obj_images = img_to_torch(obj_images, self.transform)
-        feat, pred = self.model(obj_images)
-        node_features[part_num:, 1000:] = feat.detach().cpu().numpy()
+        part_features = np.empty((part_num, 512 * feature_size[0] * feature_size[1]))
+        parts = np.copy(part_boxes)
+        parts[:, 0] *= scale_w
+        parts[:, 2] *= scale_w
+        parts[:, 1] *= scale_h
+        parts[:, 3] *= scale_h
 
-        edge_images = img_to_torch(edge_images, self.transform)
-        for i_part in range(len(edge_images)):
-            feat, pred = self.model(edge_images[i_part])
-            edge_features[i_part, part_num:, :] = feat.detach().cpu().numpy()
-            edge_features[part_num:, i_part, :] = edge_features[i_part, part_num:, :]
+        for i_box in range(parts.shape[0]):
+            part = parts[i_box, :].astype(int)
+            part_feature = adaptive_max_pool(img_feature[..., part[3]:(part[1] + 1), part[2]:(part[0] + 1)])
+            part_features[i_box, :] = part_feature.data.cpu().numpy().flatten()
+        
+        edge_features = np.empty((part_num + obj_num, part_num + obj_num, 512 * feature_size[0] * feature_size[1]))
 
+        for i_part, part_box in enumerate(part_boxes):
+            edge_images.append([])
+            for i_obj, obj_box in enumerate(obj_boxes):
+                edge_box = combine_box(obj_box, part_box).astype(int)
+                edge_box[0] *= scale_w
+                edge_box[2] *= scale_w
+                edge_box[1] *= scale_h
+                edge_box[3] *= scale_h
+
+                edge_box = edge_box.astype(int)
+                edge_feature = adaptive_max_pool(img_feature[..., edge_box[3]:(edge_box[1] + 1), edge_box[2]:(edge_box[0] + 1)])
+                edge_features[i_part, part_num + i_obj, :] = edge_feature.data.cpu().numpy().flatten()
+                edge_features[part_num + i_obj, i_part, :] = edge_feature.data.cpu().numpy().flatten()
+
+        node_features = np.concatenate([part_features, obj_features], axis=0)
+        # t0 = time.time()
+        # for part_box in part_boxes.astype(int):
+        #     part_images.append(cv2.resize(img[part_box[3]:part_box[1] + 1, part_box[2]:part_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))        
+        # for obj_box in obj_boxes.astype(int):
+        #     obj_images.append(cv2.resize(img[obj_box[3]:obj_box[1] + 1, obj_box[2]:obj_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+        # for part_box in part_boxes:
+        #     edge_images.append([])
+        #     for obj_box in obj_boxes:
+        #         edge_box = combine_box(obj_box, part_box).astype(int)
+        #         edge_images[-1].append(cv2.resize(img[edge_box[3]:edge_box[1] + 1, edge_box[2]:edge_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+        # print('Extracting images: %f'%(time.time() - t0))
+        
+        # t0 = time.time()
+        # part_images = img_to_torch(part_images, self.transform)
+        # feat, pred = self.model(part_images)
+        # node_features[:part_num, :feat_size] = feat.detach().cpu().numpy()
+
+        # obj_images = img_to_torch(obj_images, self.transform)
+        # feat, pred = self.model(obj_images)
+        # node_features[part_num:, feat_size:] = feat.detach().cpu().numpy()
+        # print('Extracting node features: %f'%(time.time() - t0))
+
+        # t0 = time.time()
+        # edge_images = img_to_torch(edge_images, self.transform)
+        # for i_part in range(len(edge_images)):
+        #     feat, pred = self.model(edge_images[i_part])
+        #     edge_features[i_part, part_num:, :] = feat.detach().cpu().numpy()
+        #     edge_features[part_num:, i_part, :] = edge_features[i_part, part_num:, :]
+        # print('Extracting edge features: %f'%(time.time() - t0))
+
+        t0 = time.time()
         # append bbox and class to node features
         if self.node_feature_appd:
             part_eye = np.eye(14)
@@ -247,6 +340,8 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
             node_features = np.concatenate([node_features, node_features_appd], axis=-1)
 
+        print('Computing bbox features: %f'%(time.time() - t0))
+
         return edge_features, \
                     node_features, \
                     part_human_id, \
@@ -274,6 +369,22 @@ def main(args):
     subset = ['train', 'val', 'test']
     training_set = NoisyVCOCO(args.data_root, subset[0])
     print('{} instances.'.format(len(training_set)))
+    start_time = time.time()
+    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
+    print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
+
+    start_time = time.time()
+    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
+    print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
+
+    start_time = time.time()
+    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
+    print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
+
+    start_time = time.time()
+    edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
+    print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
+
     start_time = time.time()
     edge_features, obj_features, part_features, part_human_id, adj_mat, obj_labels, obj_roles, human_labels, human_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, obj_num, obj_classes, part_classes = training_set[113]
     print('Time elapsed: {:.2f}s'.format(time.time() - start_time))
