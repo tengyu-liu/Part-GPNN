@@ -113,7 +113,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         try:
             # img_path = os.path.join(vcoco_path, 'coco/coco/images', '{}2014'.format(img_type), img_name)
             # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-            img = io.imread('/home/tengyu/Documents/github/Part-GPNN/data/COCO_train2014_000000000368.jpg')
+            img = io.imread(os.path.join(os.path.dirname(__file__), '../../../../', 'data/COCO_train2014_000000000368.jpg'))
             # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
             # _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
             # _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
