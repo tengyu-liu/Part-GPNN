@@ -206,7 +206,7 @@ def get_hico_data(args):
 def get_vcoco_data(args):
     root = os.path.join(args.data_root, 'data')
 
-    training_set = datasets.VCOCO(root, 'train', node_feature_appd=args.extra_feature)
+    training_set = datasets.NoisyVCOCO(root, 'train', node_feature_appd=args.extra_feature)
     valid_set = datasets.VCOCO(root, 'val', node_feature_appd=args.extra_feature)
     testing_set = datasets.VCOCO(root, 'test', node_feature_appd=args.extra_feature)
 

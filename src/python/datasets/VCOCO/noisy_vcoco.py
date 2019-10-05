@@ -63,15 +63,6 @@ class Vgg16(torch.nn.Module):
 def get_model():
     feature_network = Vgg16(last_layer=1)
     feature_network.cuda()
-    # checkpoint_dir = os.path.join(os.path.dirname(__file__), '../../tmp', 'checkpoints', 'vcoco', 'finetune_resnet_noisy'.format(feature_mode))
-    # best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
-    # best_model_file = os.path.join(os.path.dirname(__file__), '../../../../data/model_resnet_noisy/finetune_resnet_noisy/model_best.pth')
-    # checkpoint = torch.load(best_model_file)
-    # for k in list(checkpoint['state_dict'].keys()):
-    #     if k[:7] == 'module.':
-    #         checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
-    #         del checkpoint['state_dict'][k]
-    # feature_network.load_state_dict(checkpoint['state_dict'])
 
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
@@ -136,32 +127,17 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         feature_size = [7, 7]
         adaptive_max_pool = roi_pooling.AdaptiveMaxPool2d(*feature_size)
 
-        # for i in range(len(self.unique_image_ids)):
-        #     img_id = self.coco.loadImgs(ids=[self.unique_image_ids[i]])[0]['file_name']
-        #     if '000000165' in img_id or '000000368' in img_id or '000000436' in img_id or '000000531' in img_id:
-        #         print(i, img_id)
-        # exit()
-
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
-            t0 = time.time()
-            # img_path = os.path.join(vcoco_path, 'coco/coco/images', '{}2014'.format(img_type), img_name)
-            # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-            img = io.imread(os.path.join(os.path.dirname(__file__), '../../../../', 'data/COCO_train2014_000000000368.jpg'))
-            # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
-            # _edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
-            # _node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
-            data = pickle.load(open(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
-            # _edge_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}_edge_features.npy').format(img_name))
-            # _node_features = np.load(os.path.join(os.path.dirname(__file__), '../../../../', 'data/feature_resnet_noisy', '{}_node_features.npy').format(img_name))
-            print('Loading data: %f'%(time.time() - t0))
+            img_path = os.path.join(vcoco_path, 'coco/coco/images', '{}2014'.format(img_type), img_name)
+            img = io.imread(img_path)
+            data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
         except IOError:
             raise
             warnings.warn('data missing for {}'.format(img_name))
             return self.__getitem__(3)
 
-        t0 = time.time()
         h, w, _ = img.shape
         img_id = data['img_id']
         adj_mat = data['adj_mat']
@@ -177,9 +153,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         part_classes = data['part_classes']
         part_human_id = data['part_human_id']
         part_adj_mat = None # data['part_adj_mat']
-        print('Disecting data: %f'%(time.time() - t0))
 
-        t0 = time.time()
         part_images = []
         obj_images = []
         edge_images = []
@@ -228,12 +202,9 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
         img = (img * 255).astype(np.uint8)
         img = transform.warp(img, transformation.inverse, order=0, output_shape=(img.shape[0] * 2, img.shape[1] * 2))
-        print('Transform image: %f'%(time.time() - t0))
 
-        t0 = time.time()
         part_boxes = transform_bbox(part_boxes, mat)
         obj_boxes = transform_bbox(obj_boxes, mat)
-        print('Transform bbox: %f'%(time.time() - t0))
 
         img_feature = self.model.features(img_to_torch(cv2.resize(img, (input_h, input_w), interpolation=cv2.INTER_LINEAR), self.transform))
         img_feature = torch.autograd.Variable(img_feature)
@@ -281,37 +252,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
                 edge_features[part_num + i_obj, i_part, :] = edge_feature.data.cpu().numpy().flatten()
 
         node_features = np.concatenate([part_features, obj_features], axis=0)
-        # t0 = time.time()
-        # for part_box in part_boxes.astype(int):
-        #     part_images.append(cv2.resize(img[part_box[3]:part_box[1] + 1, part_box[2]:part_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))        
-        # for obj_box in obj_boxes.astype(int):
-        #     obj_images.append(cv2.resize(img[obj_box[3]:obj_box[1] + 1, obj_box[2]:obj_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-        # for part_box in part_boxes:
-        #     edge_images.append([])
-        #     for obj_box in obj_boxes:
-        #         edge_box = combine_box(obj_box, part_box).astype(int)
-        #         edge_images[-1].append(cv2.resize(img[edge_box[3]:edge_box[1] + 1, edge_box[2]:edge_box[0] + 1, :], (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-        # print('Extracting images: %f'%(time.time() - t0))
-        
-        # t0 = time.time()
-        # part_images = img_to_torch(part_images, self.transform)
-        # feat, pred = self.model(part_images)
-        # node_features[:part_num, :feat_size] = feat.detach().cpu().numpy()
 
-        # obj_images = img_to_torch(obj_images, self.transform)
-        # feat, pred = self.model(obj_images)
-        # node_features[part_num:, feat_size:] = feat.detach().cpu().numpy()
-        # print('Extracting node features: %f'%(time.time() - t0))
-
-        # t0 = time.time()
-        # edge_images = img_to_torch(edge_images, self.transform)
-        # for i_part in range(len(edge_images)):
-        #     feat, pred = self.model(edge_images[i_part])
-        #     edge_features[i_part, part_num:, :] = feat.detach().cpu().numpy()
-        #     edge_features[part_num:, i_part, :] = edge_features[i_part, part_num:, :]
-        # print('Extracting edge features: %f'%(time.time() - t0))
-
-        t0 = time.time()
         # append bbox and class to node features
         if self.node_feature_appd:
             part_eye = np.eye(14)
@@ -339,8 +280,6 @@ class NoisyVCOCO(torch.utils.data.Dataset):
             node_features_appd[np.isinf(node_features_appd)] = 0
 
             node_features = np.concatenate([node_features, node_features_appd], axis=-1)
-
-        print('Computing bbox features: %f'%(time.time() - t0))
 
         return edge_features, \
                     node_features, \
