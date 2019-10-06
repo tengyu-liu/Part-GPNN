@@ -231,12 +231,13 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
 
     _, roles_indices = torch.max(node_roles, 2)
 
-    print('pred_node_labels_lifted', np.any(pred_node_labels_lifted.detach().cpu().numpy() == 0), np.all(pred_node_labels_lifted.detach().cpu().numpy() == 0))
-    print('node_labels', np.any(node_labels.detach().cpu().numpy() == 0), np.all(node_labels.detach().cpu().numpy() == 0))
-    print('pred_adj_mat_lifted', np.any(pred_adj_mat_lifted.detach().cpu().numpy() == 0), np.all(pred_adj_mat_lifted.detach().cpu().numpy() == 0))
-    print('adj_mat', np.any(adj_mat.detach().cpu().numpy() == 0), np.all(adj_mat.detach().cpu().numpy() == 0))
-    print('pred_node_roles_lifted', np.any(pred_node_roles_lifted.detach().cpu().numpy() == 0), np.all(pred_node_roles_lifted.detach().cpu().numpy() == 0))
-    print('roles_indices', np.any(roles_indices.detach().cpu().numpy() == 0), np.all(roles_indices.detach().cpu().numpy() == 0))
+    np.save('pred_node_labels_lifted.npy', pred_node_labels_lifted)
+    np.save('node_labels.npy', node_labels)
+    np.save('pred_adj_mat_lifted.npy', pred_adj_mat_lifted)
+    np.save('adj_mat.npy', adj_mat)
+    np.save('pred_node_roles_lifted.npy', pred_node_roles_lifted)
+    np.save('roles_indices.npy', roles_indices)
+    exit()
 
     loss = 0
     batch_size = pred_node_labels.size()[0]
