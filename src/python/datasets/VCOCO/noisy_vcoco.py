@@ -310,9 +310,9 @@ class NoisyVCOCO(torch.utils.data.Dataset):
             edge_features[np.isnan(edge_features)] = 0
             edge_features[np.isinf(edge_features)] = 0
 
-            np.save('a.npy', node_features)
-            np.save('b.npy', edge_features)
-            exit()
+        np.save('a.npy', node_features)
+        np.save('b.npy', edge_features)
+        exit()
 
         return edge_features, \
                     node_features, \
