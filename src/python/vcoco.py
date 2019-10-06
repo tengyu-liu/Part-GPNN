@@ -146,7 +146,10 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     pred_node_labels = pred_node_labels#.cpu()
     pred_node_roles = pred_node_roles#.cpu()
 
-    np.save('d.npy', pred_node_labels.detach().cpu().numpy())
+    np.save('a.npy', pred_adj_mat.detach().cpu().numpy())
+    np.save('b.npy', pred_node_labels.detach().cpu().numpy())
+    np.save('c.npy', pred_node_roles.detach().cpu().numpy())
+    exit()
 
     det_indices = list()
     # lift predictions to human level
@@ -232,13 +235,6 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     # pred_node_roles_lifted = pred_node_roles_lifted.cuda()
 
     _, roles_indices = torch.max(node_roles, 2)
-
-    node_num = human_nums[0] + obj_nums[0]
-    part_num = part_nums[0]
-    np.save('a.npy', pred_node_labels_lifted.detach().cpu().numpy())
-    np.save('b.npy', node_labels.detach().cpu().numpy())
-    np.save('c.npy', weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num)).detach().cpu().numpy())
-    exit()
 
     loss = 0
     batch_size = pred_node_labels.size()[0]
