@@ -231,6 +231,8 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
 
     _, roles_indices = torch.max(node_roles, 2)
 
+    node_num = human_nums[0] + obj_nums[0]
+    part_num = part_nums[0]
     np.save('a.npy', pred_node_labels_lifted.detach().cpu().numpy())
     np.save('b.npy', node_labels.detach().cpu().numpy())
     np.save('c.npy', weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num)).detach().cpu().numpy())
