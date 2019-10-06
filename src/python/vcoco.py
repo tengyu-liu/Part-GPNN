@@ -231,12 +231,9 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
 
     _, roles_indices = torch.max(node_roles, 2)
 
-    np.save('pred_node_labels_lifted.npy', pred_node_labels_lifted.detach().cpu().numpy())
-    np.save('node_labels.npy', node_labels.detach().cpu().numpy())
-    np.save('pred_adj_mat_lifted.npy', pred_adj_mat_lifted.detach().cpu().numpy())
-    np.save('adj_mat.npy', adj_mat.detach().cpu().numpy())
-    np.save('pred_node_roles_lifted.npy', pred_node_roles_lifted.detach().cpu().numpy())
-    np.save('roles_indices.npy', roles_indices.detach().cpu().numpy())
+    np.save('a.npy', pred_node_labels_lifted.detach().cpu().numpy())
+    np.save('b.npy', node_labels.detach().cpu().numpy())
+    np.save('c.npy', weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num)).detach().cpu().numpy())
     exit()
 
     loss = 0
