@@ -229,12 +229,14 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     # pred_node_labels_lifted = pred_node_labels_lifted.cuda()
     # pred_node_roles_lifted = pred_node_roles_lifted.cuda()
 
-    print('pred_node_labels_lifted', np.any(np.isinf(pred_node_labels_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_node_labels_lifted.detach().cpu().numpy())))
-    print('node_labels', np.any(np.isinf(node_labels.detach().cpu().numpy())), np.all(np.isinf(node_labels.detach().cpu().numpy())))
-    print('pred_adj_mat_lifted', np.any(np.isinf(pred_adj_mat_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_adj_mat_lifted.detach().cpu().numpy())))
-    print('adj_mat', np.any(np.isinf(adj_mat.detach().cpu().numpy())), np.all(np.isinf(adj_mat.detach().cpu().numpy())))
-    print('pred_node_roles_lifted', np.any(np.isinf(pred_node_roles_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_node_roles_lifted.detach().cpu().numpy())))
-    print('roles_indices', np.any(np.isinf(roles_indices.detach().cpu().numpy())), np.all(np.isinf(roles_indices.detach().cpu().numpy())))
+    _, roles_indices = torch.max(node_roles, 2)
+
+    print('pred_node_labels_lifted', np.any(pred_node_labels_lifted.detach().cpu().numpy() == 0), np.all(pred_node_labels_lifted.detach().cpu().numpy() == 0))
+    print('node_labels', np.any(node_labels.detach().cpu().numpy() == 0), np.all(node_labels.detach().cpu().numpy() == 0))
+    print('pred_adj_mat_lifted', np.any(pred_adj_mat_lifted.detach().cpu().numpy() == 0), np.all(pred_adj_mat_lifted.detach().cpu().numpy() == 0))
+    print('adj_mat', np.any(adj_mat.detach().cpu().numpy() == 0), np.all(adj_mat.detach().cpu().numpy() == 0))
+    print('pred_node_roles_lifted', np.any(pred_node_roles_lifted.detach().cpu().numpy() == 0), np.all(pred_node_roles_lifted.detach().cpu().numpy() == 0))
+    print('roles_indices', np.any(roles_indices.detach().cpu().numpy() == 0), np.all(roles_indices.detach().cpu().numpy() == 0))
 
     loss = 0
     batch_size = pred_node_labels.size()[0]
@@ -257,7 +259,6 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     ce_loss = torch.nn.CrossEntropyLoss()
     if args.cuda:
         ce_loss = ce_loss.cuda()
-    _, roles_indices = torch.max(node_roles, 2)
     loss_4 = ce_loss(pred_node_roles_lifted.view(-1, roles_num), roles_indices.view(-1))
     loss += loss_4
 
