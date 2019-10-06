@@ -234,9 +234,11 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     for batch_i in range(batch_size):
         node_num = human_nums[batch_i] + obj_nums[batch_i]
         part_num = part_nums[batch_i]
-        loss += weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num)) \
-            + weighted_loss(pred_adj_mat_lifted[batch_i, :node_num, :node_num], adj_mat[batch_i, :node_num, :node_num])\
-            # + weighted_loss(pred_adj_mat[batch_i, :part_num, :part_num], part_adj_mat[batch_i, :part_num, :part_num])
+        loss_1 = weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num))
+        loss_2 = weighted_loss(pred_adj_mat_lifted[batch_i, :node_num, :node_num], adj_mat[batch_i, :node_num, :node_num])
+        print(1, np.any(np.isnan(loss_1)), 2, np.any(np.isnan(loss_2)))
+        # loss_3 = weighted_loss(pred_adj_mat[batch_i, :part_num, :part_num], part_adj_mat[batch_i, :part_num, :part_num])
+        loss += loss_1 + loss_2
 
         # Ablative analysis
         # loss = weighted_loss(pred_node_labels[batch_i, :node_num, :].view(-1, action_class_num),
@@ -250,7 +252,9 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     if args.cuda:
         ce_loss = ce_loss.cuda()
     _, roles_indices = torch.max(node_roles, 2)
-    loss += ce_loss(pred_node_roles_lifted.view(-1, roles_num), roles_indices.view(-1))
+    loss_4 = ce_loss(pred_node_roles_lifted.view(-1, roles_num), roles_indices.view(-1))
+    print(4, np.any(np.isnan(loss_4)))
+    loss += loss_4
 
     return pred_node_labels_lifted, det_indices, loss
 
