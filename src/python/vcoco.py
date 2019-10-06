@@ -146,6 +146,8 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     pred_node_labels = pred_node_labels#.cpu()
     pred_node_roles = pred_node_roles#.cpu()
 
+    np.save('d.npy', pred_node_labels.detach().cpu().numpy())
+
     det_indices = list()
     # lift predictions to human level
     pred_adj_mat_lifted = torch.autograd.Variable(torch.zeros(adj_mat.size()))
