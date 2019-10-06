@@ -124,7 +124,7 @@ class NoisyVCOCO(torch.utils.data.Dataset):
     def __getitem__(self, index):
         input_h, input_w = 224, 224
         feature_length = 4096
-        feature_size = [2, 2]
+        feature_size = [3, 3]
         adaptive_max_pool = roi_pooling.AdaptiveMaxPool2d(*feature_size)
 
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
