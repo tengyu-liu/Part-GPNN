@@ -229,12 +229,12 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     # pred_node_labels_lifted = pred_node_labels_lifted.cuda()
     # pred_node_roles_lifted = pred_node_roles_lifted.cuda()
 
-    print('pred_node_labels_lifted', np.any(np.isnan(pred_node_labels_lifted.detach().cpu().numpy())), np.all(np.isnan(pred_node_labels_lifted.detach().cpu().numpy())))
-    print('node_labels', np.any(np.isnan(node_labels.detach().cpu().numpy())), np.all(np.isnan(node_labels.detach().cpu().numpy())))
-    print('pred_adj_mat_lifted', np.any(np.isnan(pred_adj_mat_lifted.detach().cpu().numpy())), np.all(np.isnan(pred_adj_mat_lifted.detach().cpu().numpy())))
-    print('adj_mat', np.any(np.isnan(adj_mat.detach().cpu().numpy())), np.all(np.isnan(adj_mat.detach().cpu().numpy())))
-    print('pred_node_roles_lifted', np.any(np.isnan(pred_node_roles_lifted.detach().cpu().numpy())), np.all(np.isnan(pred_node_roles_lifted.detach().cpu().numpy())))
-    print('roles_indices', np.any(np.isnan(roles_indices.detach().cpu().numpy())), np.all(np.isnan(roles_indices.detach().cpu().numpy())))
+    print('pred_node_labels_lifted', np.any(np.isinf(pred_node_labels_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_node_labels_lifted.detach().cpu().numpy())))
+    print('node_labels', np.any(np.isinf(node_labels.detach().cpu().numpy())), np.all(np.isinf(node_labels.detach().cpu().numpy())))
+    print('pred_adj_mat_lifted', np.any(np.isinf(pred_adj_mat_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_adj_mat_lifted.detach().cpu().numpy())))
+    print('adj_mat', np.any(np.isinf(adj_mat.detach().cpu().numpy())), np.all(np.isinf(adj_mat.detach().cpu().numpy())))
+    print('pred_node_roles_lifted', np.any(np.isinf(pred_node_roles_lifted.detach().cpu().numpy())), np.all(np.isinf(pred_node_roles_lifted.detach().cpu().numpy())))
+    print('roles_indices', np.any(np.isinf(roles_indices.detach().cpu().numpy())), np.all(np.isinf(roles_indices.detach().cpu().numpy())))
 
     loss = 0
     batch_size = pred_node_labels.size()[0]
