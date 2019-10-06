@@ -19,10 +19,9 @@ import torch.utils.data
 import numpy as np
 import vsrl_utils as vu
 
-import vcoco_config
-# import feature_model
-import metadata
-import roi_pooling
+from . import vcoco_config
+from . import metadata
+from . import roi_pooling
 
 import torchvision
 import torchvision.transforms
@@ -111,31 +110,38 @@ def transform_bbox(boxes, mat):
     return boxes
 
 class NoisyVCOCO(torch.utils.data.Dataset):
-    def __init__(self, root, imageset, node_feature_appd=False):
+    def __init__(self, root, imageset, node_feature_appd=False, chance=0.0):
         self.root = root
         self.coco = vu.load_coco(root)
         vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), root)
         self.image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
         self.unique_image_ids = list(set(self.image_ids))
         self.node_feature_appd = node_feature_appd
+        self.chance = chance
 
         self.model, self.transform = get_model()
 
     def __getitem__(self, index):
         input_h, input_w = 224, 224
         feature_length = 4096
-        feature_size = [7, 7]
+        feature_size = [2, 2]
         adaptive_max_pool = roi_pooling.AdaptiveMaxPool2d(*feature_size)
 
         img_name = self.coco.loadImgs(ids=[self.unique_image_ids[index]])[0]['file_name']
         img_type = img_name.split('_')[1]
         try:
-            img_path = os.path.join(vcoco_path, 'coco/coco/images', '{}2014'.format(img_type), img_name)
+            # img_path = os.path.join(self.root, '../coco/coco/images', '{}2014'.format(img_type), img_name)
+            # data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
+            img_path = os.path.join('/media/tengyu/data/mscoco/%s/%s'%(img_type, img_name))
+            data = pickle.load(open(os.path.join(os.path.dirname(__file__), '../../../../data/feature_resnet_noisy', '{}.p'.format(img_name)), 'rb'))
             img = io.imread(img_path)
-            data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
+            if len(img.shape) == 2:
+                img = np.tile(np.expand_dims(img, axis=-1), [1,1,3])
         except IOError:
-            raise
             warnings.warn('data missing for {}'.format(img_name))
+            return self.__getitem__(3)
+        except ValueError:
+            warnings.warn('img grayscale for {}'.format(img_name))
             return self.__getitem__(3)
 
         h, w, _ = img.shape
@@ -159,24 +165,24 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         edge_images = []
 
         # apply transformation
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             shear = random.random() * 30 - 15        # -15 deg to +15 deg
             shear = np.deg2rad(shear)
         else:
             shear = 0
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             rotate = random.random() * 30 - 15       # -15 deg to +15 deg
             rotate = np.deg2rad(rotate)
         else:
             rotate = 0
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             scale = [random.random() * 0.3 + 0.85, random.random() * 0.3 + 0.85]     # 0.85 to 1.15
         else:
             scale = [1.0, 1.0]
 
         translation = [img.shape[0] * 0.5, img.shape[1] * 0.5]
 
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             # flip
             img = img[:,::-1,:]
             for b in part_boxes:
@@ -187,11 +193,11 @@ class NoisyVCOCO(torch.utils.data.Dataset):
                 b[2] = w - b[2]
 
         img = color.rgb2hsv(img)
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             # brightness
             img[:,:,2] += random.random() * 0.3 - 0.15  # -0.15 to + 0.15
             img = np.clip(img, 0, 1)
-        if random.random() < 0.2:
+        if random.random() < self.chance:
             # hue
             img[:,:,0] += random.random() * 0.5 - 0.25  # -0.15 to + 0.15
             img = np.clip(img, 0, 1)
@@ -208,8 +214,8 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
         img_feature = self.model.features(img_to_torch(cv2.resize(img, (input_h, input_w), interpolation=cv2.INTER_LINEAR), self.transform))
         img_feature = torch.autograd.Variable(img_feature)
-        scale_h = feature_size[0]/float(img.shape[0])
-        scale_w = feature_size[1]/float(img.shape[1])
+        scale_h = (feature_size[0] - 1)/float(img.shape[0])
+        scale_w = (feature_size[1] - 1)/float(img.shape[1])
 
         obj_features = np.empty((obj_num, 512 * feature_size[0] * feature_size[1]))
         objs = np.copy(obj_boxes)
@@ -220,8 +226,14 @@ class NoisyVCOCO(torch.utils.data.Dataset):
         
         for i_box in range(objs.shape[0]):
             obj = objs[i_box, :].astype(int)
-            obj_feature = adaptive_max_pool(img_feature[..., obj[3]:(obj[1] + 1), obj[2]:(obj[0] + 1)])
-            obj_features[i_box, :] = obj_feature.data.cpu().numpy().flatten()
+            if (obj[1] - obj[3]) < 1 or (obj[0] - obj[2]) < 1:
+                continue
+            try:
+                obj_feature = adaptive_max_pool(img_feature[..., obj[3]:(obj[1]), obj[2]:(obj[0])])
+                obj_features[i_box, :] = obj_feature.data.cpu().numpy().flatten()
+            except:
+                print(obj)
+                raise
 
         part_features = np.empty((part_num, 512 * feature_size[0] * feature_size[1]))
         parts = np.copy(part_boxes)
@@ -232,8 +244,14 @@ class NoisyVCOCO(torch.utils.data.Dataset):
 
         for i_box in range(parts.shape[0]):
             part = parts[i_box, :].astype(int)
-            part_feature = adaptive_max_pool(img_feature[..., part[3]:(part[1] + 1), part[2]:(part[0] + 1)])
-            part_features[i_box, :] = part_feature.data.cpu().numpy().flatten()
+            if (part[1] - part[3]) < 1 or (part[0] - part[2]) < 1:
+                continue
+            try:
+                part_feature = adaptive_max_pool(img_feature[..., part[3]:(part[1]), part[2]:(part[0])])
+                part_features[i_box, :] = part_feature.data.cpu().numpy().flatten()
+            except:
+                print(part)
+                raise
         
         edge_features = np.empty((part_num + obj_num, part_num + obj_num, 512 * feature_size[0] * feature_size[1]))
 
@@ -247,9 +265,15 @@ class NoisyVCOCO(torch.utils.data.Dataset):
                 edge_box[3] *= scale_h
 
                 edge_box = edge_box.astype(int)
-                edge_feature = adaptive_max_pool(img_feature[..., edge_box[3]:(edge_box[1] + 1), edge_box[2]:(edge_box[0] + 1)])
-                edge_features[i_part, part_num + i_obj, :] = edge_feature.data.cpu().numpy().flatten()
-                edge_features[part_num + i_obj, i_part, :] = edge_feature.data.cpu().numpy().flatten()
+                if (edge_box[1] - edge_box[3]) < 1 or (edge_box[0] - edge_box[2]) < 1:
+                    continue
+                try:
+                    edge_feature = adaptive_max_pool(img_feature[..., edge_box[3]:(edge_box[1]), edge_box[2]:(edge_box[0])])
+                    edge_features[i_part, part_num + i_obj, :] = edge_feature.data.cpu().numpy().flatten()
+                    edge_features[part_num + i_obj, i_part, :] = edge_feature.data.cpu().numpy().flatten()
+                except:
+                    print(edge_box)
+                    raise
 
         node_features = np.concatenate([part_features, obj_features], axis=0)
 
@@ -280,6 +304,11 @@ class NoisyVCOCO(torch.utils.data.Dataset):
             node_features_appd[np.isinf(node_features_appd)] = 0
 
             node_features = np.concatenate([node_features, node_features_appd], axis=-1)
+
+            node_features[np.isnan(node_features)] = 0
+            node_features[np.isinf(node_features)] = 0
+            edge_features[np.isnan(edge_features)] = 0
+            edge_features[np.isinf(edge_features)] = 0
 
         return edge_features, \
                     node_features, \

@@ -330,7 +330,7 @@ def main(args):
         'propagate_layers': args.prop_layer, 
         'hoi_classes': action_class_num, 
         'roles_num': roles_num, 
-        'resize_feature_to_message_size': False, 
+        'resize_feature_to_message_size': True, 
         'feature_type': args.feature_type}
 
     model = models.GPNN_VCOCO(model_args)
@@ -565,7 +565,7 @@ def parse_arguments():
 
     paths = config.Paths()
 
-    feature_type = 'resnet'
+    feature_type = 'vgg16'
 
     # Path settings
     parser = argparse.ArgumentParser(description='VCOCO dataset')
