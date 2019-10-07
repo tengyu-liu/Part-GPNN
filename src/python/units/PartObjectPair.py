@@ -13,7 +13,7 @@ class PartObjectPair(nn.Module):
         
     def forward(self, input_features, part_cls, obj_cls):
         if self.update_type == 'mult':
-            feature *= self.sigmoid(self.weights[part_cls][obj_cls])
+            feature = input_features * self.sigmoid(self.weights[part_cls][obj_cls])
         elif self.update_type == 'concat':
             feature = torch.concat([input_features, self.weights[part_cls][obj_cls]])
         return feature
