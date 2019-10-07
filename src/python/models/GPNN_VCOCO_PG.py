@@ -77,7 +77,7 @@ class GPNN_VCOCO_PG(torch.nn.Module):
                 h_w = hidden_node_states[passing_round]
                 e_vw = edge_features[:, :, i_node, :]
                 m_v = self.message_fun(h_v, h_w, e_vw, args)
-
+                m_v_ = []
                 for i_batch in range(node_features.size()[0]):
                     if i_node < (part_nums[i_batch] + obj_nums[i_batch]):
 
@@ -93,7 +93,8 @@ class GPNN_VCOCO_PG(torch.nn.Module):
                             else:
                                 j_cls = obj_classes[i_batch][j_node - part_nums[i_batch]]
 
-                            m_v[i_batch, :, j_node] = self.part_obj_fun(m_v[i_batch, :, j_node], i_cls, j_cls)
+                            m_v_.append(self.part_obj_fun(m_v[:, :, j_node], i_cls, j_cls))
+                m_v = torch.stack(m_v_, dim=-1)
 
                 # Sum up messages from different nodes according to weights
                 m_v = sigmoid_pred_adj_mat[:, i_node, :].unsqueeze(1).expand_as(m_v) * m_v
