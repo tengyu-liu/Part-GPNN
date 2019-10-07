@@ -16,9 +16,9 @@ import torch.autograd
 import units
 
 
-class GPNN_VCOCO(torch.nn.Module):
+class GPNN_VCOCO_v2(torch.nn.Module):
     def __init__(self, model_args):
-        super(GPNN_VCOCO, self).__init__()
+        super(GPNN_VCOCO_v2, self).__init__()
 
         self.model_args = model_args.copy()
         if model_args['resize_feature_to_message_size']:
