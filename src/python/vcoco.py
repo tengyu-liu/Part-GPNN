@@ -340,7 +340,10 @@ def main(args):
         'resize_feature_to_message_size': True, 
         'feature_type': args.feature_type}
 
-    model = models.GPNN_VCOCO(model_args)
+    if args.V2:
+        model = models.GPNN_VCOCO_v2(model_args)
+    else:
+        model = models.GPNN_VCOCO(model_args)
     del edge_features, node_features, adj_mat
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     mse_loss = torch.nn.MSELoss(size_average=True)
@@ -357,11 +360,12 @@ def main(args):
     epoch_errors = list()
     avg_epoch_error = np.inf
     best_epoch_error = np.inf
+
     for epoch in range(args.start_epoch, args.epochs):
         logger.log_value('learning_rate', args.lr).step()
 
         # train for one epoch
-        train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoch, train_vcocoeval, logger, obj_action_pairs)
+        part_obj_prior = train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoch, train_vcocoeval, logger, obj_action_pairs)
 
         if args.debug:
             break
@@ -593,6 +597,8 @@ def parse_arguments():
                         help='Number of update hidden layers (default: 1)')
     parser.add_argument('--link-layer', type=int, default=3, metavar='N',
                         help='Number of link hidden layers (default: 3)')
+    parser.add_argument('--V2', action='store_true', default=False, 
+                        help='Use V2 GPNN model')
 
 
     # Optimization Options
