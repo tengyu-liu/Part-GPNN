@@ -6,9 +6,9 @@ class PartObjectPair(nn.Module):
         super(PartObjectPair, self).__init__()
         self.update_type = update_type
         if self.update_type == 'mult':
-            self.weights = [[nn.Parameter(torch.Tensor(1, 1)) for _ in range(94)] for _ in range(94)]
+            self.weights = [[nn.Parameter(torch.Tensor(1, 1)).cuda() for _ in range(94)] for _ in range(94)]
         elif self.update_type == 'concat':
-            self.weights = [[nn.Parameter(torch.Tensor(1, 512)) for _ in range(94)] for _ in range(94)]
+            self.weights = [[nn.Parameter(torch.Tensor(1, 512)).cuda() for _ in range(94)] for _ in range(94)]
         self.sigmoid = nn.Sigmoid()
         
     def forward(self, input_features, part_cls, obj_cls):
