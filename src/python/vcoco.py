@@ -142,9 +142,9 @@ def weighted_loss(output, target):
 
 def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_roles, node_roles, human_nums, part_nums, obj_nums, part_human_id, part_adj_mat, mse_loss, multi_label_loss, obj_action_pairs=None, obj_classes=None):
 
-    pred_adj_mat = pred_adj_mat#.cpu()
-    pred_node_labels = pred_node_labels#.cpu()
-    pred_node_roles = pred_node_roles#.cpu()
+    pred_adj_mat = pred_adj_mat.cpu()
+    pred_node_labels = pred_node_labels.cpu()
+    pred_node_roles = pred_node_roles.cpu()
 
     det_indices = list()
     # lift predictions to human level
@@ -154,10 +154,10 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     pred_node_roles_lifted = torch.autograd.Variable(torch.zeros(node_roles.size()))
     
     if args.cuda:
-        pred_adj_mat_lifted = pred_adj_mat_lifted.cuda()
-        pred_node_labels_lifted_sum = pred_node_labels_lifted_sum.cuda()
-        pred_node_labels_lifted_max = pred_node_labels_lifted_max.cuda()
-        pred_node_roles_lifted = pred_node_roles_lifted.cuda()
+        pred_adj_mat_lifted = pred_adj_mat_lifted#.cuda()
+        pred_node_labels_lifted_sum = pred_node_labels_lifted_sum#.cuda()
+        pred_node_labels_lifted_max = pred_node_labels_lifted_max#.cuda()
+        pred_node_roles_lifted = pred_node_roles_lifted#.cuda()
 
     # pred_adj_mat_prob = torch.nn.Sigmoid()(pred_adj_mat)
 
@@ -166,22 +166,17 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
         phi = np.array(part_human_id[batch_i])
         for i_upper_node in range(human_nums[batch_i] + obj_nums[batch_i]):
             if i_upper_node < human_nums[batch_i]:
-                i_lower_indices = torch.tensor(np.argwhere(phi == i_upper_node)).cuda().squeeze()
+                i_lower_indices = torch.tensor(np.argwhere(phi == i_upper_node)).squeeze()
             else:
-                print('type', type(i_upper_node - human_nums[batch_i] + part_nums[batch_i]))
-                print('value', i_upper_node - human_nums[batch_i] + part_nums[batch_i])
-                print('tensor', torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]))
-                print('cuda', torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]).cuda())
-                print('squeeze', torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]).cuda().squeeze())
-                i_lower_indices = torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]).cuda().squeeze()
+                i_lower_indices = torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]).squeeze()
 
             v1 = torch.index_select(pred_adj_mat[batch_i], dim=0, index=i_lower_indices)
 
             for j_upper_node in range(human_nums[batch_i] + obj_nums[batch_i]):
                 if j_upper_node < human_nums[batch_i]:
-                    j_lower_indices = torch.tensor(np.argwhere(phi == j_upper_node)).cuda().squeeze()
+                    j_lower_indices = torch.tensor(np.argwhere(phi == j_upper_node)).squeeze()
                 else:
-                    j_lower_indices = torch.tensor(j_upper_node - human_nums[batch_i] + part_nums[batch_i]).cuda().squeeze()
+                    j_lower_indices = torch.tensor(j_upper_node - human_nums[batch_i] + part_nums[batch_i]).squeeze()
 
                 v2 = torch.index_select(v1, dim=1, index=j_lower_indices)
                 # pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.max(v2)
@@ -219,6 +214,12 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     np_pred_adj_mat = torch.nn.Sigmoid()(pred_adj_mat_lifted).data.cpu().numpy()
     # np_adj_mat = adj_mat.data.cpu().numpy()
     det_indices = list()
+
+    pred_adj_mat = pred_adj_mat.cuda()
+    pred_node_labels_lifted_sum = pred_node_labels_lifted_sum.cuda()
+    pred_adj_mat_lifted = pred_adj_mat_lifted.cuda()
+    pred_node_roles_lifted = pred_node_roles_lifted.cuda()
+    pred_node_labels_lifted_max = pred_node_labels_lifted_max.cuda()
 
     batch_size = pred_adj_mat.size()[0]
     for batch_i in range(batch_size):
