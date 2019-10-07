@@ -178,12 +178,7 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
                 else:
                     j_lower_indices = torch.tensor(j_upper_node - human_nums[batch_i] + part_nums[batch_i]).squeeze()
 
-                try:
-                    v2 = torch.index_select(v1, dim=1, index=j_lower_indices)
-                except:
-                    print(j_upper_node, human_nums[batch_i], obj_nums[batch_i], part_nums[batch_i], j_lower_indices)
-                    print(v1.shape, pred_adj_mat[batch_i].shape)
-                    raise
+                v2 = torch.index_select(v1, dim=1, index=j_lower_indices)
                 # pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.max(v2)
                 pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.sum(v2)
             
