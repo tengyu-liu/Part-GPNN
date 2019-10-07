@@ -189,10 +189,10 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
             # pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.max(v1r, dim=0).values
             if obj_action_pairs is not None and i_upper_node >= human_nums[batch_i]:
                 pred_node_labels_lifted_sum[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
-                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
+                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]].values
             else:
                 pred_node_labels_lifted_sum[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0)
-                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0)
+                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0).values
     
             pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.sum(v1r, dim=0)
 
