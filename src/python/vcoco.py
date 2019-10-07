@@ -149,12 +149,14 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     det_indices = list()
     # lift predictions to human level
     pred_adj_mat_lifted = torch.autograd.Variable(torch.zeros(adj_mat.size()))
-    pred_node_labels_lifted = torch.autograd.Variable(torch.zeros(node_labels.size()))
+    pred_node_labels_lifted_sum = torch.autograd.Variable(torch.zeros(node_labels.size()))
+    pred_node_labels_lifted_max = torch.autograd.Variable(torch.zeros(node_labels.size()))
     pred_node_roles_lifted = torch.autograd.Variable(torch.zeros(node_roles.size()))
     
     if args.cuda:
         pred_adj_mat_lifted = pred_adj_mat_lifted.cuda()
-        pred_node_labels_lifted = pred_node_labels_lifted.cuda()
+        pred_node_labels_lifted_sum = pred_node_labels_lifted_sum.cuda()
+        pred_node_labels_lifted_max = pred_node_labels_lifted_max.cuda()
         pred_node_roles_lifted = pred_node_roles_lifted.cuda()
 
     # pred_adj_mat_prob = torch.nn.Sigmoid()(pred_adj_mat)
@@ -186,9 +188,11 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
             # pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.max(v1l, dim=0).values
             # pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.max(v1r, dim=0).values
             if obj_action_pairs is not None and i_upper_node >= human_nums[batch_i]:
-                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
+                pred_node_labels_lifted_sum[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
+                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
             else:
-                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0)
+                pred_node_labels_lifted_sum[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0)
+                pred_node_labels_lifted_max[batch_i, i_upper_node, :] = torch.max(v1l, dim=0)
     
             pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.sum(v1r, dim=0)
 
@@ -236,7 +240,7 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     for batch_i in range(batch_size):
         node_num = human_nums[batch_i] + obj_nums[batch_i]
         part_num = part_nums[batch_i]
-        loss_1 = weighted_loss(pred_node_labels_lifted[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num))
+        loss_1 = weighted_loss(pred_node_labels_lifted_sum[batch_i, :node_num, :].view(-1, action_class_num), node_labels[batch_i, :node_num, :].view(-1, action_class_num))
         loss_2 = weighted_loss(pred_adj_mat_lifted[batch_i, :node_num, :node_num], adj_mat[batch_i, :node_num, :node_num])
         # loss_3 = weighted_loss(pred_adj_mat[batch_i, :part_num, :part_num], part_adj_mat[batch_i, :part_num, :part_num])
         loss += loss_1 + loss_2
@@ -255,7 +259,7 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
     loss_4 = ce_loss(pred_node_roles_lifted.view(-1, roles_num), roles_indices.view(-1))
     loss += loss_4
 
-    return pred_node_labels_lifted, det_indices, loss
+    return pred_node_labels_lifted_max, det_indices, loss
 
 
 def compute_mean_avg_prec(y_true, y_score):

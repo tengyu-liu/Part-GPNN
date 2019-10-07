@@ -206,9 +206,9 @@ def get_hico_data(args):
 def get_vcoco_data(args):
     root = os.path.join(args.data_root, 'data')
 
-    training_set = datasets.NoisyVCOCO(root, 'train', node_feature_appd=args.extra_feature, chance=0.2)
-    valid_set = datasets.NoisyVCOCO(root, 'val', node_feature_appd=args.extra_feature, chance=0.0)
-    testing_set = datasets.NoisyVCOCO(root, 'test', node_feature_appd=args.extra_feature, chance=0.0)
+    training_set = datasets.VCOCO(root, 'train', node_feature_appd=args.extra_feature)
+    valid_set = datasets.VCOCO(root, 'val', node_feature_appd=args.extra_feature)
+    testing_set = datasets.VCOCO(root, 'test', node_feature_appd=args.extra_feature)
 
     train_loader = torch.utils.data.DataLoader(training_set, collate_fn=datasets.utils.collate_fn_vcoco,
                                                batch_size=args.batch_size, shuffle=True,
