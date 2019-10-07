@@ -338,12 +338,16 @@ def main(args):
         'hoi_classes': action_class_num, 
         'roles_num': roles_num, 
         'resize_feature_to_message_size': False, 
-        'feature_type': args.feature_type}
+        'feature_type': args.feature_type,
+        'po_type' : args.po_type}
 
-    if args.V2:
-        model = models.GPNN_VCOCO_v2(model_args)
-    else:
+    if args.model_type == 'V1':
         model = models.GPNN_VCOCO(model_args)
+    elif args.model_type == 'V2':
+        model = models.GPNN_VCOCO_v2(model_args)
+    elif args.model_type == 'PG':
+        model = models.GPNN_VCOCO_PG(model_args)
+
     del edge_features, node_features, adj_mat
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     mse_loss = torch.nn.MSELoss(size_average=True)
@@ -432,7 +436,7 @@ def train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoc
         node_labels = utils.to_variable(node_labels, args.cuda)
         node_roles = utils.to_variable(node_roles, args.cuda)
 
-        pred_adj_mat, pred_node_labels, pred_node_roles = model(edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_num, part_num, obj_num, part_classes, args)
+        pred_adj_mat, pred_node_labels, pred_node_roles = model(edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_num, part_num, obj_num, part_classes, obj_classes, args)
         if args.NRT:
             pred_node_label_lifted, det_indices, loss = loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_roles, node_roles, human_num, part_num, obj_num, part_human_id, part_adj_mat, mse_loss, multi_label_loss, obj_action_pairs=th_obj_action_pairs, obj_classes=obj_classes)
         else:
@@ -511,7 +515,7 @@ def validate(args, val_loader, model, mse_loss, multi_label_loss, vcocoeval, log
         node_labels = utils.to_variable(node_labels, args.cuda)
         node_roles = utils.to_variable(node_roles, args.cuda)
 
-        pred_adj_mat, pred_node_labels, pred_node_roles = model(edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_num, part_num, obj_num, part_classes, args)
+        pred_adj_mat, pred_node_labels, pred_node_roles = model(edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_num, part_num, obj_num, part_classes, obj_classes, args)
         if args.NRT:
             pred_node_label_lifted, det_indices, loss = loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_roles, node_roles, human_num, part_num, obj_num, part_human_id, part_adj_mat, mse_loss, multi_label_loss, obj_action_pairs=th_obj_action_pairs, obj_classes=obj_classes)
         else:
@@ -597,8 +601,10 @@ def parse_arguments():
                         help='Number of update hidden layers (default: 1)')
     parser.add_argument('--link-layer', type=int, default=3, metavar='N',
                         help='Number of link hidden layers (default: 3)')
-    parser.add_argument('--V2', action='store_true', default=False, 
-                        help='Use V2 GPNN model')
+    parser.add_argument('--model-type', type=str, default='V1', 
+                        help='GPNN model type')
+    parser.add_argument('--po-type', type=str, default='mult', 
+                        help='Part-Object prior type')
 
 
     # Optimization Options

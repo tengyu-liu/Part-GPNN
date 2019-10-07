@@ -43,7 +43,7 @@ class GPNN_VCOCO(torch.nn.Module):
         self._load_link_fun(model_args)
 
     # TODO: change GPNN model to facilitate weakly supervised learning
-    def forward(self, edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_nums, part_nums, obj_nums, part_classes, args):
+    def forward(self, edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_nums, part_nums, obj_nums, part_classes, obj_classes, args):
         if self.model_args['resize_feature_to_message_size']:
             edge_features = self.edge_feature_resize(edge_features)
             node_features = self.node_feature_resize(node_features)

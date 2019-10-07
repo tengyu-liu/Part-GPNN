@@ -16,9 +16,9 @@ import torch.autograd
 import units
 
 
-class GPNN_VCOCO_v2(torch.nn.Module):
+class GPNN_VCOCO_PG(torch.nn.Module):
     def __init__(self, model_args):
-        super(GPNN_VCOCO_v2, self).__init__()
+        super(GPNN_VCOCO_PG, self).__init__()
 
         self.model_args = model_args.copy()
         if model_args['resize_feature_to_message_size']:
@@ -38,21 +38,24 @@ class GPNN_VCOCO_v2(torch.nn.Module):
         self.readout_fun = units.ReadoutFunction('fc', {'readout_input_size': model_args['node_feature_size'], 'output_classes': model_args['hoi_classes']})
         self.readout_fun2 = units.ReadoutFunction('fc', {'readout_input_size': model_args['node_feature_size'], 'output_classes': model_args['roles_num']})
 
+        self.part_obj_fun = units.PartObjectPair(self.model_args['po_type'])
+
+
         self.propagate_layers = model_args['propagate_layers']
 
         self._load_link_fun(model_args)
 
     # TODO: change GPNN model to facilitate weakly supervised learning
     def forward(self, edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, human_nums, part_nums, obj_nums, part_classes, obj_classes, args):
-        # if self.model_args['resize_feature_to_message_size']:
-        #     edge_features = self.edge_feature_resize(edge_features)
-        #     node_features = self.node_feature_resize(node_features)
+        if self.model_args['resize_feature_to_message_size']:
+            edge_features = self.edge_feature_resize(edge_features)
+            node_features = self.node_feature_resize(node_features)
         edge_features = edge_features.permute(0, 3, 1, 2)
         node_features = node_features.permute(0, 2, 1)
     
         pred_node_labels = torch.autograd.Variable(torch.zeros(node_labels.size()))
         pred_node_roles = torch.autograd.Variable(torch.zeros(node_roles.size()))
-        # hidden_node_states = [node_features.clone() for passing_round in range(self.propagate_layers+1)]
+        hidden_node_states = [node_features.clone() for passing_round in range(self.propagate_layers+1)]
         hidden_edge_states = [edge_features.clone() for passing_round in range(self.propagate_layers+1)]
         if args.cuda:
             pred_node_labels = pred_node_labels.cuda()
@@ -70,19 +73,36 @@ class GPNN_VCOCO_v2(torch.nn.Module):
 
             # Loop through nodes
             for i_node in range(node_features.size()[2]):
-                h_v = node_features[:, :, i_node]
-                h_w = node_features
+                h_v = hidden_node_states[passing_round][:, :, i_node]
+                h_w = hidden_node_states[passing_round]
                 e_vw = edge_features[:, :, i_node, :]
                 m_v = self.message_fun(h_v, h_w, e_vw, args)
+
+                for i_batch in range(node_features.size()[0]):
+                    if i_node < (part_nums[i_batch] + obj_nums[i_batch]):
+
+                            if i_node < part_nums[i_batch]:
+                                i_cls = part_classes[i_batch][i_node]
+                            else:
+                                i_cls = obj_classes[i_batch][i_node - part_nums[i_batch]] + 14
+
+                        for j_node in range(part_nums[i_batch] + obj_nums[i_batch]):
+
+                            if j_node < part_nums[i_batch]:
+                                j_cls = part_classes[i_batch][j_node]
+                            else:
+                                j_cls = obj_classes[i_batch][j_node - part_nums[i_batch]]
+
+                            m_v[i_batch, :, j_node] = self.part_obj_fun(m_v[i_batch, :, j_node], i_cls, j_cls)
 
                 # Sum up messages from different nodes according to weights
                 m_v = sigmoid_pred_adj_mat[:, i_node, :].unsqueeze(1).expand_as(m_v) * m_v
                 hidden_edge_states[passing_round+1][:, :, :, i_node] = m_v
+                m_v = torch.sum(m_v, 2)
+                h_v = self.update_fun(h_v[None].contiguous(), m_v[None])
 
                 # Readout at the final round of message passing
                 if passing_round == self.propagate_layers - 1:
-                    m_v = torch.sum(m_v, 2)
-                    h_v = self.update_fun(h_v[None].contiguous(), m_v[None])
                     pred_node_labels[:, i_node, :] = self.readout_fun(h_v.squeeze(0))
                     pred_node_roles[:, i_node, :] = self.readout_fun2(h_v.squeeze(0))
 
