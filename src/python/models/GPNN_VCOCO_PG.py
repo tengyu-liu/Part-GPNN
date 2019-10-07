@@ -81,10 +81,10 @@ class GPNN_VCOCO_PG(torch.nn.Module):
                 for i_batch in range(node_features.size()[0]):
                     if i_node < (part_nums[i_batch] + obj_nums[i_batch]):
 
-                            if i_node < part_nums[i_batch]:
-                                i_cls = part_classes[i_batch][i_node]
-                            else:
-                                i_cls = obj_classes[i_batch][i_node - part_nums[i_batch]] + 14
+                        if i_node < part_nums[i_batch]:
+                            i_cls = part_classes[i_batch][i_node]
+                        else:
+                            i_cls = obj_classes[i_batch][i_node - part_nums[i_batch]] + 14
 
                         for j_node in range(part_nums[i_batch] + obj_nums[i_batch]):
 
