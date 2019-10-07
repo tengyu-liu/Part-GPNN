@@ -337,7 +337,7 @@ def main(args):
         'propagate_layers': args.prop_layer, 
         'hoi_classes': action_class_num, 
         'roles_num': roles_num, 
-        'resize_feature_to_message_size': True, 
+        'resize_feature_to_message_size': False, 
         'feature_type': args.feature_type}
 
     if args.V2:
