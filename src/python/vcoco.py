@@ -576,7 +576,7 @@ def parse_arguments():
 
     paths = config.Paths()
 
-    feature_type = 'vgg16'
+    feature_type = 'resnet'
 
     # Path settings
     parser = argparse.ArgumentParser(description='VCOCO dataset')
