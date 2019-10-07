@@ -168,6 +168,7 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
             if i_upper_node < human_nums[batch_i]:
                 i_lower_indices = torch.tensor(np.argwhere(phi == i_upper_node)).cuda().squeeze()
             else:
+                print('type', type(i_upper_node - human_nums[batch_i] + part_nums[batch_i]))
                 print('value', i_upper_node - human_nums[batch_i] + part_nums[batch_i])
                 print('tensor', torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]))
                 print('cuda', torch.tensor(i_upper_node - human_nums[batch_i] + part_nums[batch_i]).cuda())
