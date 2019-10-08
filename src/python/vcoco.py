@@ -428,7 +428,7 @@ def train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoc
 
     end_time = time.time()
 
-    th_obj_action_pairs = torch.tensor(obj_action_pairs).cuda().float()
+    th_obj_action_pairs = torch.tensor(obj_action_pairs).float()#.cuda().float()
 
     for i, (edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, part_num, obj_num, obj_classes, part_classes, part_adj_mat, _) in enumerate(train_loader):
         data_time.update(time.time() - end_time)
@@ -510,7 +510,7 @@ def validate(args, val_loader, model, mse_loss, multi_label_loss, vcocoeval, log
     # switch to evaluate mode
     model.eval()
 
-    th_obj_action_pairs = torch.tensor(obj_action_pairs).cuda().float()
+    th_obj_action_pairs = torch.tensor(obj_action_pairs).float()#.cuda().float()
 
     end = time.time()
     for i, (edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, part_num, obj_num, obj_classes, part_classes, part_adj_mat, _) in enumerate(val_loader):
