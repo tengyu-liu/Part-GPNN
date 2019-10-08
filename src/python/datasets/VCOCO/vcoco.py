@@ -59,12 +59,15 @@ class VCOCO(torch.utils.data.Dataset):
         part_human_id = data['part_human_id']
         part_adj_mat = None # data['part_adj_mat']
 
+        if part_num + obj_num != len(edge_features):
+            print(img_name)
+            exit()
+
         # append bbox and class to node features
         if self.node_feature_appd:
             node_features_appd = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features_appd.npy').format(img_name))
             node_features = np.concatenate([node_features, node_features_appd], axis=-1)
 
-        print(part_num, obj_num, edge_features.shape)
         return edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, part_num, obj_num, obj_classes, part_classes, part_adj_mat, img_name
 
     def __len__(self):
