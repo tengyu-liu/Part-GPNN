@@ -40,6 +40,11 @@ class VCOCO(torch.utils.data.Dataset):
             data = pickle.load(open(os.path.join(self.root, '..', 'processed', 'resnet', '{}.p'.format(img_name)), 'rb'))
             edge_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_edge_features.npy').format(img_name))
             node_features = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features.npy').format(img_name))
+    
+            # append bbox and class to node features
+            if self.node_feature_appd:
+                node_features_appd = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features_appd.npy').format(img_name))
+                node_features = np.concatenate([node_features, node_features_appd], axis=-1)
         except IOError:
             # warnings.warn('data missing for {}'.format(img_name))
             return self.__getitem__(3)
@@ -62,11 +67,6 @@ class VCOCO(torch.utils.data.Dataset):
         if part_num + obj_num != len(edge_features):
             print(img_name)
             exit()
-
-        # append bbox and class to node features
-        if self.node_feature_appd:
-            node_features_appd = np.load(os.path.join(self.root, '..', 'processed', 'resnet', '{}_node_features_appd.npy').format(img_name))
-            node_features = np.concatenate([node_features, node_features_appd], axis=-1)
 
         return edge_features, node_features, part_human_id, adj_mat, node_labels, node_roles, obj_boxes, part_boxes, human_boxes, img_id, img_name, human_num, part_num, obj_num, obj_classes, part_classes, part_adj_mat, img_name
 
