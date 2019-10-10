@@ -96,6 +96,7 @@ class GPNN_VCOCO_PG(torch.nn.Module):
                                 m_v_.append(self.part_obj_fun(m_v[:, :, j_node], i_cls, j_cls))
                             except:
                                 print(m_v.shape, part_nums, obj_nums, human_nums)
+                                raise
                 m_v = torch.stack(m_v_, dim=-1)
 
                 # Sum up messages from different nodes according to weights
