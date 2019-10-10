@@ -340,7 +340,8 @@ def main(args):
         'roles_num': roles_num, 
         'resize_feature_to_message_size': False, 
         'feature_type': args.feature_type,
-        'po_type' : args.po_type}
+        'po_type' : args.po_type, 
+        'suppress_hh': args.suppress_hh}
 
     if args.model_type == 'V1':
         model = models.GPNN_VCOCO(model_args)
@@ -606,6 +607,8 @@ def parse_arguments():
                         help='GPNN model type')
     parser.add_argument('--po-type', type=str, default='mult', 
                         help='Part-Object prior type')
+    parser.add_argument('--suppress_hh', action='store_true', default=False, 
+                        help='Suppresses human-human edges')
 
 
     # Optimization Options

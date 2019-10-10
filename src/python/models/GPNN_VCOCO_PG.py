@@ -38,7 +38,7 @@ class GPNN_VCOCO_PG(torch.nn.Module):
         self.readout_fun = units.ReadoutFunction('fc', {'readout_input_size': model_args['node_feature_size'], 'output_classes': model_args['hoi_classes']})
         self.readout_fun2 = units.ReadoutFunction('fc', {'readout_input_size': model_args['node_feature_size'], 'output_classes': model_args['roles_num']})
 
-        self.part_obj_fun = units.PartObjectPair(self.model_args['po_type'])
+        self.part_obj_fun = units.PartObjectPair(self.model_args['po_type'], self.model_args['suppress_hh'])
 
 
         self.propagate_layers = model_args['propagate_layers']
@@ -83,17 +83,21 @@ class GPNN_VCOCO_PG(torch.nn.Module):
 
                         if i_node < part_nums[i_batch]:
                             i_cls = part_classes[i_batch][i_node]
+                            i_human = part_human_id[i_batch][i_node]
                         else:
                             i_cls = obj_classes[i_batch][i_node - part_nums[i_batch]] + 14
+                            i_human = -1
 
                         for j_node in range(part_nums[i_batch] + obj_nums[i_batch]):
 
                             if j_node < part_nums[i_batch]:
                                 j_cls = part_classes[i_batch][j_node]
+                                j_human = part_human_id[i_batch][j_node]
                             else:
                                 j_cls = obj_classes[i_batch][j_node - part_nums[i_batch]]
+                                j_human = -1
                             try:
-                                m_v_.append(self.part_obj_fun(m_v[:, :, j_node], i_cls, j_cls))
+                                m_v_.append(self.part_obj_fun(m_v[:, :, j_node], i_cls, j_cls, i_human, j_human))
                             except:
                                 print(m_v.shape, part_nums, obj_nums, human_nums)
                                 raise
