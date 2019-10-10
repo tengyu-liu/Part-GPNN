@@ -17,8 +17,11 @@ class PartObjectPair(nn.Module):
             feature = input_features * self.sigmoid(self.weights[i_cls][j_cls])
         elif self.update_type == 'concat':
             feature = torch.concat([input_features, self.weights[i_cls][j_cls]])
-        if self.suppress_hh and i_human == j_human and i_human >= 0:
-            feature *= 0
+        if self.suppress_hh:
+            if i_human == -1 and i_human == j_human:
+                    feature *= 0
+            if i_human != -1 and j_human != -1 and i_human != j_human:
+                feature *= 0
         return feature
 
 
