@@ -607,7 +607,7 @@ def parse_arguments():
                         help='GPNN model type')
     parser.add_argument('--po-type', type=str, default='mult', 
                         help='Part-Object prior type')
-    parser.add_argument('--suppress_hh', action='store_true', default=False, 
+    parser.add_argument('--suppress-hh', action='store_true', default=False, 
                         help='Suppresses human-human edges')
 
 

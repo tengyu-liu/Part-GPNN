@@ -27,10 +27,10 @@ pending
 
 ## Idea
 Adjusting `prop-layer` parameter
-* CUDA_VISIBLE_DEVICES=0 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp4 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp4 --prop-layer 1
-* CUDA_VISIBLE_DEVICES=1 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp5 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp5 --prop-layer 2
-* CUDA_VISIBLE_DEVICES=2 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp6 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp6 --prop-layer 3
-* CUDA_VISIBLE_DEVICES=3 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp7 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp7 --prop-layer 4
+* bear: CUDA_VISIBLE_DEVICES=0 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp4 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp4 --prop-layer 1
+* bear: CUDA_VISIBLE_DEVICES=1 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp5 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp5 --prop-layer 2
+* bear: CUDA_VISIBLE_DEVICES=2 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp6 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp6 --prop-layer 3
+* bear: CUDA_VISIBLE_DEVICES=3 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp7 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp7 --prop-layer 4
 
 ## Idea
 Suppress part-part edges between different humans
