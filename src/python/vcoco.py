@@ -458,8 +458,8 @@ def train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoc
 
         if not isinstance(loss, int):
             if torch.isnan(loss):
-                print(np.any(np.isnan(pred_node_label_lifted.detach().cpu().numpy())), np.any(np.isnan(det_indices.detach().cpu().numpy())), np.any(np.isnan(loss.detach().cpu().numpy())))
-                print()
+                print(np.any(np.isnan(pred_node_label_lifted.detach().cpu().numpy())), np.any(np.isnan(loss.detach().cpu().numpy())))
+                print(np.any(np.isnan(pred_adj_mat.detach().cpu().numpy())), np.any(np.isnan(pred_node_labels.detach().cpu().numpy())), np.any(np.isnan(pred_node_roles.detach().cpu().numpy())))
                 raise
             else:
                 losses.update(loss.item(), edge_features.size()[0])
