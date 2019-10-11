@@ -457,6 +457,10 @@ def train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoc
             y_true, y_score = evaluation(det_indices, pred_node_label_lifted, node_labels, y_true, y_score, obj_action_pairs=obj_action_pairs, node_classes=node_classes)
 
         if not isinstance(loss, int):
+            if torch.isnan(loss):
+                print('nan ', end='')
+                break
+
             losses.update(loss.item(), edge_features.size()[0])
             loss.backward()
             optimizer.step()
