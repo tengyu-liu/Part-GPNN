@@ -9,6 +9,8 @@ class PartObjectPair(nn.Module):
             self.weights = [[nn.Parameter(torch.Tensor(1, 1)).cuda() for _ in range(95)] for _ in range(95)]
         elif self.update_type == 'concat':
             self.weights = [[nn.Parameter(torch.Tensor(1, 512)).cuda() for _ in range(95)] for _ in range(95)]
+            self.dense = torch.nn.Linear(1512, 1000)
+            self.relu = torch.nn.ReLU()
         self.suppress_hh = suppress_hh
         self.sigmoid = nn.Sigmoid()
         
@@ -17,6 +19,7 @@ class PartObjectPair(nn.Module):
             feature = input_features * self.sigmoid(self.weights[i_cls][j_cls])
         elif self.update_type == 'concat':
             feature = torch.cat([input_features, self.weights[i_cls][j_cls]], 1)
+            feature = self.relu(self.dense(feature))
         if self.suppress_hh:
             if i_human == -1 and i_human == j_human:
                     feature *= 0
