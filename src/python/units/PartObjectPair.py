@@ -6,11 +6,11 @@ class PartObjectPair(nn.Module):
         super(PartObjectPair, self).__init__()
         self.update_type = update_type
         if self.update_type == 'mult':
-            self.weights = [[nn.Parameter(torch.Tensor(1, 1)).cuda() for _ in range(95)] for _ in range(95)]
+            self.weights = [[nn.Parameter(torch.Tensor(np.random.normal(scale=0.01, size=[1,1]))).cuda() for _ in range(95)] for _ in range(95)]
         elif self.update_type == 'concat':
-            self.weights = [[nn.Parameter(torch.Tensor(1, 512)).cuda() for _ in range(95)] for _ in range(95)]
+            self.weights = [[nn.Parameter(torch.Tensor(np.random.normal(scale=0.01, size=[1,512]))).cuda() for _ in range(95)] for _ in range(95)]
             self.dense = torch.nn.Linear(1512, 1000)
-            self.relu = torch.nn.ReLU()
+            # self.relu = torch.nn.ReLU()
         self.suppress_hh = suppress_hh
         self.sigmoid = nn.Sigmoid()
         
