@@ -459,11 +459,10 @@ def train(args, train_loader, model, mse_loss, multi_label_loss, optimizer, epoc
         if not isinstance(loss, int):
             if torch.isnan(loss):
                 print('nan ', end='')
-                break
-
-            losses.update(loss.item(), edge_features.size()[0])
-            loss.backward()
-            optimizer.step()
+            else:
+                losses.update(loss.item(), edge_features.size()[0])
+                loss.backward()
+                optimizer.step()
 
         # Measure elapsed time
         batch_time.update(time.time() - end_time)
