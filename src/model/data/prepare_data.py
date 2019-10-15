@@ -131,13 +131,13 @@ def combine_box(box1, box2):
     return np.hstack((np.minimum(box1[:2], box2[:2]), np.maximum(box1[2:], box2[2:])))
 
 
-meta_dir = ''
-img_dir = ''
-mmdetection_path = ''
+meta_dir = '/home/tengyu/Data/mscoco/v-coco/processed/None'
+img_dir = '/home/tengyu/Data/mscoco/coco'
+# mmdetection_path = ''
 densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out'
-checkpoint_dir = ''
-vcoco_root = ''
-save_data_path = ''
+checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
+vcoco_root = '/home/tengyu/Data/mscoco/v-coco/data'
+save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/feature_resnet_tengyu'
 
 feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
 feature_network.cuda()
