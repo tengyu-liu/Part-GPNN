@@ -173,15 +173,19 @@ for imageset in ['train', 'test', 'val']:
         if imageset != filename.split('_')[1]:
             continue
 
-        image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
-        image = skimage.io.imread(os.path.join(img_dir, '%s2014'%imageset, filename))
+        try:
+            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
+            image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
+            image = skimage.io.imread(os.path.join(img_dir, '%s2014'%imageset, filename))
+        except:
+            warning.warn('Data missing ' + filename)
+            continue
+
         img_w = image.shape[0]
         img_h = image.shape[1]
 
         obj_boxes_all = instance['boxes'][instance['human_num']:]
         obj_classes_all = instance['classes'][instance['human_num']:]
-
-        boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
 
         part_human_ids = []
         part_classes = []
