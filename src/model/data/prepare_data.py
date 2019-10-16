@@ -170,6 +170,9 @@ for imageset in ['train', 'test', 'val']:
 
         print('%d/%d: %s'%(i_image, len(image_ids), filename))
 
+        if os.path.exists(os.path.join(save_data_path, filename + '.data')):
+            continue
+
         if imageset != filename.split('_')[1]:
             continue
 
