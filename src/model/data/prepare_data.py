@@ -10,6 +10,7 @@ Edge label GT
 
 import os
 import pickle
+import warnings
 from collections import defaultdict
 
 import numpy as np
@@ -45,6 +46,8 @@ part_ids = {'Torso': [1, 2],
             'Right Leg': [6, 7, 9, 11, 13], 
             'Full Body': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
             }
+
+
 
 __PART_WEIGHT_L1 = 0.1 # hand
 __PART_WEIGHT_L2 = 0.3 # arm
@@ -87,7 +90,7 @@ part_graph = {'Torso': [],
             'Upper Arm Left': [],
             'Upper Arm Right': [],
             'Lower Arm Left': [],
-            'Lower Arm Right': [] 
+            'Lower Arm Right': [], 
             'Head': [],
             'Upper Body': ['Head', 'Torso', 'Left Arm', 'Right Arm'],
             'Lower Body': ['Left Leg', 'Right Leg'],
@@ -130,8 +133,26 @@ def get_node_index(bbox, det_boxes, index_list):
 def combine_box(box1, box2):
     return np.hstack((np.minimum(box1[:2], box2[:2]), np.maximum(box1[2:], box2[2:])))
 
+mean = np.array([0.485, 0.456, 0.406])
+std = np.array([0.229, 0.224, 0.225])
 
-meta_dir = '/home/tengyu/Data/mscoco/v-coco/processed/None'
+def img_to_torch(img):
+    """
+    input: H x W x C img iterables with range 0-255
+    output: C x H x W img tensor with range 0-1, normalized
+    """
+    img = np.array(img) / 255.
+    img = (img - mean) / std
+    if len(img.shape) == 3:
+        img = np.expand_dims(img.transpose([2,0,1]), axis=0)
+    elif len(img.shape) == 4:
+        img = img.transpose([0,3,1,2])
+    elif len(img.shape) == 5:
+        img = img.transpose([0,1,4,2,3])
+    img = torch.autograd.Variable(torch.Tensor(img)).cuda()
+    return img
+
+meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
 img_dir = '/home/tengyu/Data/mscoco/coco'
 # mmdetection_path = ''
 densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out'
@@ -157,12 +178,14 @@ transform = torchvision.transforms.Compose([
 
 input_h, input_w = 224, 224
 
-part_eye = np.eye(14)
+part_eye = np.eye(21)
 obj_eye = np.eye(81)
 
 for imageset in ['train', 'test', 'val']:
-    coco = vu.load_coco(os.path.join(vcoco_root))
-    vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), os.path.join(vcoco_root))
+    coco = vu.load_coco(vcoco_root)
+    vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), vcoco_root)
+    for x in vcoco_all:
+        x = vu.attach_gt_boxes(x, coco)
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
     for i_image, image_id in enumerate(image_ids):
@@ -173,22 +196,30 @@ for imageset in ['train', 'test', 'val']:
         if os.path.exists(os.path.join(save_data_path, filename + '.data')):
             continue
 
-        if imageset != filename.split('_')[1]:
-            continue
-
         try:
-            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
+            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(imageset, filename)), 'rb'), encoding='latin1')
+        except:
+            warnings.warn('DensePose missing ' + filename)
+            continue
+        try:
             image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
+        except:
+            warnings.warn('Meta missing ' + filename)
+            continue
+        try:
             image = skimage.io.imread(os.path.join(img_dir, '%s2014'%imageset, filename))
         except:
-            warning.warn('Data missing ' + filename)
+            warnings.warn('Image missing ' + filename)
             continue
 
         img_w = image.shape[0]
         img_h = image.shape[1]
 
-        obj_boxes_all = instance['boxes'][instance['human_num']:]
-        obj_classes_all = instance['classes'][instance['human_num']:]
+        if len(image.shape) == 2:
+            image = np.tile(np.expand_dims(image, axis=-1), [1, 1, 3])
+
+        obj_boxes_all = image_meta['boxes'][image_meta['human_num']:]
+        obj_classes_all = image_meta['classes'][image_meta['human_num']:]
 
         part_human_ids = []
         part_classes = []
@@ -215,11 +246,6 @@ for imageset in ['train', 'test', 'val']:
                     if part_names[part_id] == 'Full Body':
                         human_boxes.append([y0,x0,y1,x1])
 
-                    for obj_box in obj_boxes_all:
-                        edge_box = combine_box(obj_box, part_boxes_all[-1,:])
-                        edge_human_id.append(human_id)
-                        edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
-
         part_num = len(part_boxes)
         obj_num = len(obj_boxes_all)
         human_num = len(human_boxes)
@@ -233,7 +259,6 @@ for imageset in ['train', 'test', 'val']:
             if x['label'][i_image, 0] == 1:
                 try:
                     action_index = metadata.action_index[x['action_name']]
-
                     role_bbox = x['role_bbox'][i_image, :] * 1.
                     role_bbox = role_bbox.reshape((-1, 4))
                     bbox = role_bbox[0, :]
@@ -259,8 +284,8 @@ for imageset in ['train', 'test', 'val']:
                     warnings.warn('Labels missing for {}'.format(filename))
                     raise
                     pass
-
-        edge_features = np.zeros((node_num, node_num, 1202))
+        node_features = np.zeros([node_num, 1000])
+        edge_features = np.zeros((node_num, node_num, 1216))
         adj_mat = np.zeros((node_num, node_num))
         gt_strength_level = np.zeros([node_num, node_num])
         gt_action_labels = np.zeros([node_num, node_num, len(metadata.action_classes) - 1])
@@ -273,21 +298,29 @@ for imageset in ['train', 'test', 'val']:
                 box = part_boxes[i_node]
             else:
                 box = obj_boxes_all[i_node - part_num]
+            box = np.array(box).astype(int)
             img_patch = image[box[1] : box[3] + 1, box[0] : box[2] + 1, :]
             img_patch = transform(cv2.resize(img_patch, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-            node_patches.append(img_patch)
-        node_patches = torch.autograd.Variable(node_patches).cuda()
-        feat, pred = feature_network(node_patches)
-        node_features = feat.data.cpu().numpy()
 
-        node_features_appd = np.zeros([node_features.shape[0], 6 + 14 + 81])
+            img_patch = torch.autograd.Variable(img_patch).unsqueeze(0).cuda()
+            feat, pred = feature_network(img_patch)
+            node_features[i_node] = feat.data.cpu().numpy()
+        
+        part_boxes = np.array(part_boxes)
+        obj_boxes_all = np.array(obj_boxes_all)
+
+        if len(part_boxes) == 0 or len(obj_boxes_all) == 0:
+            warnings.warn('Zero detection result for {}'.format(filename))
+            continue
+
+        node_features_appd = np.zeros([node_features.shape[0], 6 + 21 + 81])
         node_features_appd[:part_num,0] = (part_boxes[:,2] - part_boxes[:,0]) / img_w # relative w
         node_features_appd[:part_num,1] = (part_boxes[:,3] - part_boxes[:,1]) / img_h # relative h
         node_features_appd[:part_num,2] = ((part_boxes[:,2] + part_boxes[:,0]) / 2) / img_w # relative cx
         node_features_appd[:part_num,3] = ((part_boxes[:,3] + part_boxes[:,1]) / 2) / img_h # relative cy
         node_features_appd[:part_num,4] = (part_boxes[:,2] - part_boxes[:,0]) * (part_boxes[:,3] - part_boxes[:,1]) / (img_w * img_h) # relative area
         node_features_appd[:part_num,5] = (part_boxes[:,2] - part_boxes[:,0]) / (part_boxes[:,3] - part_boxes[:,1]) # aspect ratio
-        node_features_appd[:part_num,6:6+14] = part_eye[part_classes]
+        node_features_appd[:part_num,6:6+21] = part_eye[part_classes]
         
         node_features_appd[part_num:,0] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) / img_w # relative w
         node_features_appd[part_num:,1] = (obj_boxes_all[:,3] - obj_boxes_all[:,1]) / img_h # relative h
@@ -295,7 +328,7 @@ for imageset in ['train', 'test', 'val']:
         node_features_appd[part_num:,3] = ((obj_boxes_all[:,3] + obj_boxes_all[:,1]) / 2) / img_h # relative cy
         node_features_appd[part_num:,4] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) * (obj_boxes_all[:,3] - obj_boxes_all[:,1]) / (img_w * img_h) # relative area
         node_features_appd[part_num:,5] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) / (obj_boxes_all[:,3] - obj_boxes_all[:,1]) # aspect ratio
-        node_features_appd[part_num:,6+14:] = obj_eye[obj_classes_all]
+        node_features_appd[part_num:,6+21:] = obj_eye[obj_classes_all]
 
         node_features_appd[np.isnan(node_features_appd)] = 0
         node_features_appd[np.isinf(node_features_appd)] = 0
@@ -306,41 +339,40 @@ for imageset in ['train', 'test', 'val']:
         edge_patch_mapping = {}
         edge_patch_feat = []
         for i_node in range(part_num):
-            edge_patches = []
             # we only consider edges connecting at least one part. inter-object edges are not considered
             i_box = part_boxes[i_node]
             for j_node in range(i_node + 1, node_num):
+                j_box = None
                 if (j_node < part_num and \
                 part_human_ids[i_node] == part_human_ids[j_node] and 
-                part_names[part_classes[j_node]] in part_graph[part_names[part_classes[i_node]]]) or \
-                j_node >= part_num:
+                part_names[part_classes[j_node]] in part_graph[part_names[part_classes[i_node]]]):
                     j_box = part_boxes[j_node]
+                if j_node >= part_num:
+                    j_box = obj_boxes_all[j_node - part_num]
+                if j_box is not None:
                     box = combine_box(i_box, j_box)
+                    box = np.array(box).astype(int)
                     img_patch = image[box[1] : box[3] + 1, box[0] : box[2] + 1, :]
                     img_patch = transform(cv2.resize(img_patch, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-                    edge_patch_mapping[(i_node, j_node)] = len(edge_patches) + sum(len(x) for x in edge_patch_feat)
-                    edge_patches.append(img_patch)
+                    img_patch = torch.autograd.Variable(torch.unsqueeze(img_patch, dim=0)).cuda()
+                    feat, pred = feature_network(img_patch)
 
-            edge_patches = torch.autograd.Variable(edge_patches)
-            feat, pred = feature_network(edge_patches)
-            edge_patch_feat.append(feat.data.cpu().numpy())
-        
-        edge_patch_feat = np.vstack(edge_patch_feat)
+                    edge_patch_mapping[(i_node, j_node)] = len(edge_patch_feat)
+                    edge_patch_feat.append(feat.data.cpu().numpy())
 
         # Organize edge features
         for i_node in range(node_num):
             for j_node in range(node_num):
                 if i_node == j_node:
-                    edge_features[i_node, j_node] = node_features[i_node]
-                    edge_features[i_node, j_node, 1000:1101] = node_features_appd[i_node]
-                    edge_features[i_node, j_node, 1101:] = node_features_appd[j_node]
+                    edge_features[i_node, j_node, :1108] = node_features[i_node, :1108]
+                    edge_features[i_node, j_node, 1108:] = node_features_appd[j_node]
                     adj_mat[i_node, j_node] = 1
                 else:
                     key = (min(i_node, j_node), max(i_node, j_node))
                     if key in edge_patch_mapping:
                         edge_features[i_node, j_node, :1000] = edge_patch_feat[edge_patch_mapping[key]]
-                        edge_features[i_node, j_node, 1000:1101] = node_features_appd[i_node]
-                        edge_features[i_node, j_node, 1101:] = node_features_appd[j_node]
+                        edge_features[i_node, j_node, 1000:1108] = node_features_appd[i_node]
+                        edge_features[i_node, j_node, 1108:] = node_features_appd[j_node]
                         adj_mat[i_node, j_node] = 1
                         # Compute GT Labels and GT signal strength on each edge
                         if i_node < part_num and j_node >= part_num:
