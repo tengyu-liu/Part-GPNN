@@ -395,7 +395,17 @@ for imageset in ['train', 'test', 'val']:
             'adj_mat'        : adj_mat, 
             'action_labels'  : gt_action_labels,
             'action_roles'   : gt_action_roles,
-            'strength_level' : gt_strength_level
+            'strength_level' : gt_strength_level,
+            'part_num'       : part_num,
+            'obj_num'        : obj_num,
+            'human_num'      : human_num,
+            'part_human_id'  : part_human_ids,
+            'part_classes'   : part_classes,
+            'obj_classes'    : obj_classes_all, 
+            'part_boxes'     : part_boxes,
+            'obj_boxes'      : obj_boxes_all,
+            'filename'       : filename,
+            'node_num'       : node_num,
         }
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         

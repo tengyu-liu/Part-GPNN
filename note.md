@@ -34,3 +34,7 @@ Adjusting `prop-layer` parameter
 
 ## Idea
 Suppress part-part edges between different humans
+
+# 10.18.2019
+## Idea: Change lifting func from `.sum` to `.mean`
+* bear: CUDA_VISIBLE_DEVICES=1 python vcoco.py --batch-size 1 --prefetch 4 --epochs 100 --extra-feature --resume tmp/checkpoints/vcoco/exp8 --data-root /mnt/hdd-12t/share/v-coco/ --log-root ../../log/vcoco/exp8 --prop-layer 2

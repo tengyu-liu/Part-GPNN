@@ -178,7 +178,7 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
 
                 v2 = torch.index_select(v1, dim=1, index=j_lower_indices)
                 # pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.max(v2)
-                pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.sum(v2)
+                pred_adj_mat_lifted[batch_i, i_upper_node, j_upper_node] = torch.mean(v2)
             
             v1l = torch.index_select(pred_node_labels[batch_i], dim=0, index=i_lower_indices)
             v1r = torch.index_select(pred_node_roles[batch_i], dim=0, index=i_lower_indices)
@@ -186,11 +186,11 @@ def loss_fn(pred_adj_mat, adj_mat, pred_node_labels, node_labels, pred_node_role
             # pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.max(v1l, dim=0).values
             # pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.max(v1r, dim=0).values
             if obj_action_pairs is not None and i_upper_node >= human_nums[batch_i]:
-                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
+                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.mean(v1l, dim=0) * obj_action_pairs[obj_classes[batch_i][i_upper_node - human_nums[batch_i]]]
             else:
-                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.sum(v1l, dim=0)
+                pred_node_labels_lifted[batch_i, i_upper_node, :] = torch.mean(v1l, dim=0)
     
-            pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.sum(v1r, dim=0)
+            pred_node_roles_lifted[batch_i, i_upper_node, :] = torch.mean(v1r, dim=0)
 
         # for i_lower_node in range(pred_adj_mat.size()[1]):
         #     if i_lower_node < part_nums[batch_i]:
