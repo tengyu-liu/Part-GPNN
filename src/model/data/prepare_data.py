@@ -154,7 +154,6 @@ def img_to_torch(img):
 
 meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
 img_dir = '/home/tengyu/Data/mscoco/coco'
-# mmdetection_path = ''
 densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out'
 checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
 vcoco_root = '/home/tengyu/Data/mscoco/v-coco/data'
@@ -406,6 +405,8 @@ for imageset in ['train', 'test', 'val']:
             'obj_boxes'      : obj_boxes_all,
             'filename'       : filename,
             'node_num'       : node_num,
+            'img_w'          : img_w, 
+            'img_h'          : img_h
         }
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         

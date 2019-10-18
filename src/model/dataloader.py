@@ -20,6 +20,7 @@ class DataThread(threading.Thread):
         self.gt_strength_level = np.zeros([len(filenames), self.node_num, self.node_num])
         self.gt_action_labels = np.zeros([len(filenames), self.node_num, self.node_num, len(action_classes) - 1])
         self.gt_action_roles = np.zeros([len(filenames), self.node_num, self.node_num, len(roles) - 1])
+        self.part_human_ids = []
         super(DataThread, self).__init__()
         print('Const: ', time.time() - t0)
     
@@ -35,6 +36,7 @@ class DataThread(threading.Thread):
             self.gt_strength_level[i_file, :node_num, :node_num] = data['strength_level']
             self.gt_action_labels[i_file, :node_num, :node_num, :] = data['action_labels']
             self.gt_action_roles[i_file, :node_num, :node_num, :] = data['action_roles']
+            self.part_human_ids.append(data['part_human_id'])
         print('Run: ', time.time() - t0)
 
 class DataLoader:
@@ -68,7 +70,7 @@ class DataLoader:
         
     def fetch(self):
         self.thread.join()
-        return self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level
+        return self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids
 
 if __name__ == "__main__":
     import time
