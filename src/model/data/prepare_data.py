@@ -189,6 +189,7 @@ for imageset in ['train', 'test', 'val']:
 
     for i_image, image_id in enumerate(image_ids):
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
+        d = filename.split('_')[1][:-4]
 
         print('%d/%d: %s'%(i_image, len(image_ids), filename))
 
@@ -196,9 +197,10 @@ for imageset in ['train', 'test', 'val']:
             continue
 
         try:
-            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(imageset, filename)), 'rb'), encoding='latin1')
+            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(d, filename)), 'rb'), encoding='latin1')
         except:
             warnings.warn('DensePose missing ' + filename)
+            print(os.path.join(densepose_path, '%s/%s.pkl'%(d, filename)))
             continue
         try:
             image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
@@ -206,7 +208,7 @@ for imageset in ['train', 'test', 'val']:
             warnings.warn('Meta missing ' + filename)
             continue
         try:
-            image = skimage.io.imread(os.path.join(img_dir, '%s2014'%imageset, filename))
+            image = skimage.io.imread(os.path.join(img_dir, '%s2014'%d, filename))
         except:
             warnings.warn('Image missing ' + filename)
             continue
