@@ -40,7 +40,7 @@ class DataThread(threading.Thread):
         print('Run: ', time.time() - t0)
 
 class DataLoader:
-    def __init__(self, imageset, batchsize, j=4, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
+    def __init__(self, imageset, batchsize, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
@@ -70,7 +70,9 @@ class DataLoader:
         
     def fetch(self):
         self.thread.join()
-        return self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids
+        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids
+        self.thread = None
+        return res
 
 if __name__ == "__main__":
     import time

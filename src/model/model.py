@@ -49,9 +49,13 @@ class Model:
     
     def build_summary(self):
         self.summ_loss_in = tf.placeholder(tf.float32, [], 'loss_summ')
-        self.summ_map_in = tf.placeholder(tf.float32, [], 'mAP_summ')
+        self.summ_map_sum_in = tf.placeholder(tf.float32, [], 'mAP_sum_summ')
+        self.summ_map_max_in = tf.placeholder(tf.float32, [], 'mAP_max_summ')
+        self.summ_map_mean_in = tf.placeholder(tf.float32, [], 'mAP_mean_summ')
         _ = tf.summary.scalar('loss', self.summ_loss_in)
-        _ = tf.summary.scalar('mAP', self.summ_map_in)
+        _ = tf.summary.scalar('mAP_sum', self.summ_map_sum_in)
+        _ = tf.summary.scalar('mAP_max', self.summ_map_max_in)
+        _ = tf.summary.scalar('mAP_mean', self.summ_map_mean_in)
         self.summ = tf.summary.merge_all()
     
     def message(self, node_features, edge_features, adjacency_matrix):
