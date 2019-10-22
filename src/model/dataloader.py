@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 
 import pickle
@@ -40,19 +41,31 @@ class DataThread(threading.Thread):
         print('Run: ', time.time() - t0)
 
 class DataLoader:
-    def __init__(self, imageset, batchsize, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
+    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
-        self.filenames = [x for x in os.listdir(self.datadir) if self.imageset in x]
         self.__next = None
+        self.node_num = node_num
+
+        filenames = [x for x in os.listdir(self.datadir) if self.imageset in x]
+        if self.node_num == -1:
+            self.filenames = filenames
+        else:
+            self.filenames = []
+
+            count = 0
+            total = len(filenames)
+            if imageset == 'train':
+                node_nums = open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[0]
+            elif imageset == 'val':
+                node_nums = open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[1]
+            for fn in sorted(filenames):
+                if node_num[count] <= self.node_num:
+                    self.filenames.append(fn)
+                count += 1
+
         self.shuffled_idx = np.arange(len(self.filenames))
-
-        self.node_num = 0
-
-        # TODO: Replace with real max node num
-        for fn in self.filenames:
-            self.node_num = max(self.node_num, pickle.load(open(os.path.join(self.datadir, fn), 'rb'))['node_features'].shape[0])
 
         self.thread = None
         pass
@@ -77,11 +90,12 @@ class DataLoader:
 if __name__ == "__main__":
     import time
 
-    dl = DataLoader('train', 32)
-    for i in range(10):
-        t0 = time.time()
-        dl.prefetch(0)
-        _, _, _, _, _, _ = dl.fetch()
-        t1 = time.time()
-        print('Total: ', t1-t0)
-    
+    dl_train = DataLoader('train', 1)
+    print(dl_train.node_num)
+    del dl_train
+    dl_val = DataLoader('val', 1)
+    print(dl_val.node_num)
+    del dl_val
+    dl_test = DataLoader('test', 1)
+    print(dl_test.node_num)
+    del dl_test

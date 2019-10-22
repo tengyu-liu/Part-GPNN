@@ -12,9 +12,9 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
-train_loader = DataLoader('train', flags.batch_size)
-val_loader = DataLoader('val', flags.batch_size)
-test_loader = DataLoader('test', flags.batch_size)
+train_loader = DataLoader('train', flags.batch_size, flags.node_num)
+val_loader = DataLoader('val', flags.batch_size, flags.node_num)
+test_loader = DataLoader('test', flags.batch_size, flags.node_num)
 train_loader.shuffle()
 train_loader.prefetch(0)
 

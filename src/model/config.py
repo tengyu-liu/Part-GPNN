@@ -6,7 +6,7 @@ tf.flags.DEFINE_integer('restore_epoch', -1, '')
 tf.flags.DEFINE_integer('epochs', 100, '')
 tf.flags.DEFINE_integer('batch_size', 1, '')
 
-tf.flags.DEFINE_integer('node_num', 100, '')
+tf.flags.DEFINE_integer('node_num', 517, '')    # 517 for global max, 433 for train max
 tf.flags.DEFINE_integer('node_feature_size', 1000, '')
 tf.flags.DEFINE_integer('edge_feature_size', 1024, '')
 tf.flags.DEFINE_integer('label_num', 30, '')
