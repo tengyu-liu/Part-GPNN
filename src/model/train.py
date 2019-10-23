@@ -64,8 +64,8 @@ for epoch in range(flags.epochs):
             model.gt_strength_level : gt_strength_level
         })
 
-        for i_item in flags.batch_size:
-            _sum, _max, _mean = compute_mAP(pred, gt_action_labels, part_human_ids)
+        for i_item in range(flags.batch_size):
+            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
@@ -73,13 +73,13 @@ for epoch in range(flags.epochs):
         losses.append(loss)
         batch_time.append(time.time() - t0)
 
-        if batch_id % flags.log_interval or batch_id == len(train_loader) - 1:
+        if batch_id % flags.log_interval == 0 or batch_id == len(train_loader) - 1:
             print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f)'%(
                 epoch, batch_id, len(train_loader), loss, np.mean(losses), 
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time, np.mean(batch_time)
+                batch_time[-1], np.mean(batch_time)
             ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
@@ -117,8 +117,8 @@ for epoch in range(flags.epochs):
             model.gt_strength_level : gt_strength_level
         })
 
-        for i_item in flags.batch_size:
-            _sum, _max, _mean = compute_mAP(pred, gt_action_labels, part_human_ids)
+        for i_item in range(flags.batch_size):
+            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
@@ -132,7 +132,7 @@ for epoch in range(flags.epochs):
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time, np.mean(batch_time)
+                batch_time[-1], np.mean(batch_time)
             ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
@@ -170,8 +170,8 @@ for batch_id in range(len(test_loader)):
         model.gt_strength_level : gt_strength_level
     })
 
-    for i_item in flags.batch_size:
-        _sum, _max, _mean = compute_mAP(pred, gt_action_labels, part_human_ids)
+    for i_item in ramge(flags.batch_size):
+        _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
         avg_prec_sum.append(_sum)
         avg_prec_max.append(_max)
         avg_prec_mean.append(_mean)
@@ -185,7 +185,7 @@ for batch_id in range(len(test_loader)):
             np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
             np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
             np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-            batch_time, np.mean(batch_time)
+            batch_time[-1], np.mean(batch_time)
         ))
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])

@@ -24,7 +24,7 @@ class Model:
         self.node_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_feature_size], 'node_features')
         # We need an edge feature as the initial value for message passing
         self.edge_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.edge_feature_size], 'edge_features') 
-        self.adj_mat = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, 1], 'adj_mat')
+        self.adj_mat = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'adj_mat')
         self.pairwise_label_gt = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
         self.gt_strength_level = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'gt_strength_level')
 
@@ -75,7 +75,7 @@ class Model:
         node_message_left = tf.tile(tf.expand_dims(node_message, axis=2), [1,1,self.node_num,1])
         node_message_right = tf.tile(tf.expand_dims(node_message, axis=1), [1,self.node_num,1,1])
         message = tf.concat([node_message_left, node_message_right, edge_message], axis=-1)
-        message = message * adjacency_matrix
+        message = message * tf.expand_dims(adjacency_matrix, axis=-1)
         return message
     
     def update(self, messages, node_features):
@@ -98,7 +98,7 @@ class Model:
 
     def readout(self, edge_features):
         hidden = tf.layers.dense(edge_features, self.edge_feature_size, activation=tf.nn.relu)
-        output = tf.layers.dense(hidden, self.label_num, activation=tf.nn.softmax)
+        output = tf.layers.dense(hidden, self.label_num, activation=tf.nn.sigmoid)
         return output
 
 if __name__ == "__main__":

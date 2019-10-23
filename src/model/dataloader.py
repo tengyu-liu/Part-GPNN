@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import threading
 
 import pickle
@@ -12,21 +13,21 @@ roles = ['none', 'obj', 'instr']
 
 class DataThread(threading.Thread):
     def __init__(self, filenames, node_num):
-        t0 = time.time()
+        # t0 = time.time()
         self.filenames = filenames
         self.node_num = node_num
         self.node_features = np.zeros([len(filenames), self.node_num, 1108])
         self.edge_features = np.zeros([len(filenames), self.node_num, self.node_num, 1216])
         self.adj_mat = np.zeros([len(filenames), self.node_num, self.node_num])
         self.gt_strength_level = np.zeros([len(filenames), self.node_num, self.node_num])
-        self.gt_action_labels = np.zeros([len(filenames), self.node_num, self.node_num, len(action_classes) - 1])
-        self.gt_action_roles = np.zeros([len(filenames), self.node_num, self.node_num, len(roles) - 1])
+        self.gt_action_labels = np.zeros([len(filenames), self.node_num, self.node_num, len(action_classes)])
+        self.gt_action_roles = np.zeros([len(filenames), self.node_num, self.node_num, len(roles)])
         self.part_human_ids = []
         super(DataThread, self).__init__()
-        print('Const: ', time.time() - t0)
+        # print('Const: ', time.time() - t0)
     
     def run(self):
-        t0 = time.time()
+        # t0 = time.time()
         for i_file, filename in enumerate(self.filenames):
             data = pickle.load(open(filename, 'rb'))
             node_num = data['node_features'].shape[0]
@@ -35,10 +36,13 @@ class DataThread(threading.Thread):
             self.edge_features[i_file, :node_num, :node_num, :] = data['edge_features']
             self.adj_mat[i_file, :node_num, :node_num] = data['adj_mat']
             self.gt_strength_level[i_file, :node_num, :node_num] = data['strength_level']
-            self.gt_action_labels[i_file, :node_num, :node_num, :] = data['action_labels']
-            self.gt_action_roles[i_file, :node_num, :node_num, :] = data['action_roles']
+            self.gt_action_labels[i_file, :node_num, :node_num, 1:] = data['action_labels']
+            self.gt_action_roles[i_file, :node_num, :node_num, 1:] = data['action_roles']
+            self.gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
+            self.gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
+
             self.part_human_ids.append(data['part_human_id'])
-        print('Run: ', time.time() - t0)
+        # print('Run: ', time.time() - t0)
 
 class DataLoader:
     def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
@@ -53,15 +57,19 @@ class DataLoader:
             self.filenames = filenames
         else:
             self.filenames = []
+            
+            import json
 
             count = 0
             total = len(filenames)
             if imageset == 'train':
-                node_nums = open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[0]
+                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[0])
             elif imageset == 'val':
-                node_nums = open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[1]
+                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[1])
+            elif imageset == 'test':
+                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[2])
             for fn in sorted(filenames):
-                if node_num[count] <= self.node_num:
+                if node_nums[count] <= self.node_num:
                     self.filenames.append(fn)
                 count += 1
 
