@@ -2,3 +2,5 @@
 *.pth
 .vscode
 *.data
+logs
+models

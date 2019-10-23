@@ -43,7 +43,7 @@ class Model:
         self.edge_label_pred = self.readout(message)
 
     def build_train(self):
-        self.loss = tf.losses.softmax_cross_entropy(self.pairwise_label_gt, self.edge_label_pred, self.gt_strength_level)
+        self.loss = tf.reduce_mean(tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.pairwise_label_gt, logits=self.edge_label_pred) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2]))
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
         self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
     
@@ -98,7 +98,7 @@ class Model:
 
     def readout(self, edge_features):
         hidden = tf.layers.dense(edge_features, self.edge_feature_size, activation=tf.nn.relu)
-        output = tf.layers.dense(hidden, self.label_num, activation=tf.nn.sigmoid)
+        output = tf.layers.dense(hidden, self.label_num, activation=None)
         return output
 
 if __name__ == "__main__":
