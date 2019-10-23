@@ -12,7 +12,7 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
-random.manual_seed(0)
+random.seed(0)
 np.random.seed(0)
 tf.random.set_random_seed(0)
 
