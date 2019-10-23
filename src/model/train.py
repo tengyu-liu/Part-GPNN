@@ -12,6 +12,10 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
+random.manual_seed(0)
+np.random.seed(0)
+tf.random.set_random_seed(0)
+
 train_loader = DataLoader('train', flags.batch_size, flags.node_num)
 val_loader = DataLoader('val', flags.batch_size, flags.node_num)
 test_loader = DataLoader('test', flags.batch_size, flags.node_num)
