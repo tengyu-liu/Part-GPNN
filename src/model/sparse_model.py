@@ -10,6 +10,7 @@ class Model:
         self.build_summary()
 
     def load_config(self, config):
+        self.batch_size = config.batch_size
         self.node_num = config.node_num
         self.node_feature_size = config.node_feature_size
         self.edge_feature_size = config.edge_feature_size
@@ -21,18 +22,18 @@ class Model:
         pass
 
     def build_input(self):
-        self.node_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_feature_size], 'node_features')
+        self.node_features = tf.sparse.placeholder(tf.float32, [self.batch_size, self.node_num, self.node_feature_size], 'node_features')
         # We need an edge feature as the initial value for message passing
-        self.edge_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.edge_feature_size], 'edge_features') 
-        self.adj_mat = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'adj_mat')
-        self.pairwise_label_gt = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
-        self.gt_strength_level = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'gt_strength_level')
+        self.edge_features = tf.sparse.placeholder(tf.float32, [self.batch_size, self.node_num, self.node_num, self.edge_feature_size], 'edge_features') 
+        self.adj_mat = tf.sparse.placeholder(tf.float32, [self.batch_size, self.node_num, self.node_num], 'adj_mat')
+        self.pairwise_label_gt = tf.sparse.placeholder(tf.float32, [self.batch_size, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
+        self.gt_strength_level = tf.sparse.placeholder(tf.float32, [self.batch_size, self.node_num, self.node_num], 'gt_strength_level')
 
     def build_model(self):
 
         self.step = tf.Variable(0)
-
         self.update_module = tf.keras.layers.GRUCell(self.node_feature_size)
+        self.zero = tf.Constant(0)        
         
         for message_passing_iteration in range(self.message_passing_iterations):
             if message_passing_iteration == 0:
@@ -96,7 +97,7 @@ class Model:
         node_features = tf.reshape(node_features, [-1, self.node_feature_size])                                         # BN x Fn
         _, node_features = self.update_module(messages, [node_features], training=True)
         node_features = tf.reshape(node_features, [-1, self.node_num, self.node_feature_size])
-        return node_features    
+        return node_features
 
     def readout(self, edge_features):
         hidden = tf.layers.dense(edge_features, self.edge_feature_size, activation=tf.nn.relu)
