@@ -90,7 +90,7 @@ class DataLoader:
         self.__next = None
         self.node_num = node_num
 
-        filenames = [x for x in os.listdir(self.datadir) if self.imageset in x]
+        filenames = [os.path.join(data_dir, x) for x in os.listdir(self.datadir) if self.imageset in x]
         if self.node_num == -1:
             self.filenames = filenames
         else:
