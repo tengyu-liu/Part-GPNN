@@ -81,8 +81,8 @@ class Model:
         """
         node_message = tf.layers.dense(node_features, self.edge_feature_size / 4, activation=tf.nn.relu)
         edge_message = tf.layers.dense(edge_features, self.edge_feature_size / 2, activation=tf.nn.relu)
-        node_message_left = tf.tile(tf.expand_dims(node_message, axis=2), [1,1,self.node_num,1])
-        node_message_right = tf.tile(tf.expand_dims(node_message, axis=1), [1,self.node_num,1,1])
+        node_message_left = tf.tile(tf.expand_dims(node_message, axis=2), [1,1,self.batch_node_num,1])
+        node_message_right = tf.tile(tf.expand_dims(node_message, axis=1), [1,self.batch_node_num,1,1])
         message = tf.concat([node_message_left, node_message_right, edge_message], axis=-1)
         message = message * tf.expand_dims(adjacency_matrix, axis=-1)
         return message
