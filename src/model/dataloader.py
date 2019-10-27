@@ -32,7 +32,6 @@ class DataThread(threading.Thread):
     def run(self):
         # t0 = time.time()
         self.batch_node_num = -1
-        total_node_num = 0
         node_num_cap = 400
 
         while len(self.filenames) > 0:
@@ -41,7 +40,7 @@ class DataThread(threading.Thread):
             node_num = data['node_features'].shape[0]
             if node_num > self.node_num:
                 continue
-            if total_node_num + node_num > node_num_cap:
+            if max(self.batch_node_num, node_num) * len(self.node_features + 1) > node_num_cap:
                 self.filenames.insert(0, filename)
                 break
 
@@ -53,7 +52,6 @@ class DataThread(threading.Thread):
             self.gt_action_roles.append(data['action_roles'])# [i_file, :node_num, :node_num, 1:] = data['action_roles']
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, node_num)
-            total_node_num += node_num
 
             # self.gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
             # self.gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
