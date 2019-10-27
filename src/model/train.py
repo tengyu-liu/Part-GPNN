@@ -47,7 +47,7 @@ if flags.restore_epoch >= 0:
 
 for epoch in range(flags.epochs):
     # Train
-    avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
+    avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
     for batch_id in range(len(train_loader)):
         t0 = time.time()
         node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = train_loader.fetch()
@@ -63,6 +63,7 @@ for epoch in range(flags.epochs):
             else:
                 train_loader.prefetch(batch_id + 1)
         
+        tf_t0 = time.time()
         step, pred, loss, _ = sess.run(fetches=[
             model.step, 
             model.edge_label_pred, 
@@ -75,6 +76,7 @@ for epoch in range(flags.epochs):
             model.gt_strength_level : gt_strength_level,
             model.batch_node_num : batch_node_num
         })
+        tf_t1 = time.time()
 
         for i_item in range(flags.batch_size):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
@@ -84,14 +86,15 @@ for epoch in range(flags.epochs):
 
         losses.append(loss)
         batch_time.append(time.time() - t0)
+        data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         if batch_id % flags.log_interval == 0 or batch_id == len(train_loader) - 1:
-            print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f)'%(
+            print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
                 epoch, batch_id, len(train_loader), loss, np.mean(losses), 
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], np.mean(batch_time)
+                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time))
             ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
