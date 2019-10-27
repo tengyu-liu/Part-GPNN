@@ -23,6 +23,7 @@ class DataThread(threading.Thread):
         self.gt_action_labels = np.zeros([len(filenames), self.node_num, self.node_num, len(action_classes)])
         self.gt_action_roles = np.zeros([len(filenames), self.node_num, self.node_num, len(roles)])
         self.part_human_ids = []
+        self.batch_node_num = 0
         super(DataThread, self).__init__()
         # print('Const: ', time.time() - t0)
     
@@ -42,6 +43,8 @@ class DataThread(threading.Thread):
             self.gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
 
             self.part_human_ids.append(data['part_human_id'])
+
+            self.batch_node_num = max(self.batch_node_num, node_num)
         # print('Run: ', time.time() - t0)
 
 class DataLoader:
@@ -91,7 +94,7 @@ class DataLoader:
         
     def fetch(self):
         self.thread.join()
-        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids
+        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids, self.batch_node_num
         self.thread = None
         return res
 

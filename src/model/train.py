@@ -50,7 +50,7 @@ for epoch in range(flags.epochs):
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
     for batch_id in range(len(train_loader)):
         t0 = time.time()
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids = train_loader.fetch()
+        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = train_loader.fetch()
         if flags.debug:
             if batch_id == len(train_loader) - 1:
                 train_loader.shuffle()
@@ -72,7 +72,8 @@ for epoch in range(flags.epochs):
             model.edge_features : edge_features, 
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
-            model.gt_strength_level : gt_strength_level
+            model.gt_strength_level : gt_strength_level,
+            model.batch_node_num : batch_node_num
         })
 
         for i_item in range(flags.batch_size):
@@ -108,7 +109,7 @@ for epoch in range(flags.epochs):
         # Validate
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
         for batch_id in range(len(val_loader)):
-            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids = val_loader.fetch()
+            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = val_loader.fetch()
             if batch_id == len(val_loader) - 1:
                 if epoch == flags.epochs - 1:
                     test_loader.prefetch(0)
@@ -126,7 +127,8 @@ for epoch in range(flags.epochs):
                 model.edge_features : edge_features, 
                 model.adj_mat       : adj_mat, 
                 model.pairwise_label_gt : gt_action_labels, 
-                model.gt_strength_level : gt_strength_level
+                model.gt_strength_level : gt_strength_level,
+                model.batch_node_num : batch_node_num
             })
 
             for i_item in range(flags.batch_size):
@@ -166,7 +168,7 @@ if not flags.debug:
     # Test
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
     for batch_id in range(len(test_loader)):
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids = test_loader.fetch()
+        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = test_loader.fetch()
         if batch_id == len(test_loader) - 1:
             pass
         else:
@@ -180,7 +182,8 @@ if not flags.debug:
             model.edge_features : edge_features, 
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
-            model.gt_strength_level : gt_strength_level
+            model.gt_strength_level : gt_strength_level,
+            model.batch_node_num : batch_node_num
         })
 
         for i_item in ramge(flags.batch_size):
