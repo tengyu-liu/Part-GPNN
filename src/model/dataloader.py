@@ -82,7 +82,7 @@ class DataLoader:
         pass
 
     def __len__(self):
-        return len(self.filenames)
+        return len(self.filenames) // self.batchsize
 
     def shuffle(self):
         self.shuffled_idx = np.random.permutation(len(self.filenames))
