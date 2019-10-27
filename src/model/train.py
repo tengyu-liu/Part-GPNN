@@ -45,11 +45,6 @@ saver = tf.train.Saver(max_to_keep=0)
 if flags.restore_epoch >= 0:
     saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.name, flags.restore_epoch)))
 
-# FIXME: profile
-from tensorflow.python.client import timeline
-options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-run_metadata = tf.RunMetadata()
-
 for epoch in range(flags.epochs):
     # Train
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
@@ -79,13 +74,8 @@ for epoch in range(flags.epochs):
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
-            # model.batch_node_num : batch_node_num
-            }, options=options, run_metadata=run_metadata)
-        fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-        chrome_trace = fetched_timeline.generate_chrome_trace_format()
-        with open('timeline.json', 'w') as f:
-            f.write(chrome_trace)
-        exit()
+            model.batch_node_num : batch_node_num
+        })
         tf_t1 = time.time()
 
         for i_item in range(flags.batch_size):
@@ -120,7 +110,8 @@ for epoch in range(flags.epochs):
 
     if not flags.debug:
         # Validate
-        avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
+        t0 = time.time()
+        avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
         for batch_id in range(len(val_loader)):
             node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = val_loader.fetch()
             if batch_id == len(val_loader) - 1:
@@ -132,6 +123,7 @@ for epoch in range(flags.epochs):
             else:
                 val_loader.prefetch(batch_id + 1)
             
+            tf_t0 = time.time()
             step, pred, loss = sess.run(fetches=[
                 model.step, 
                 model.edge_label_pred, 
@@ -143,6 +135,7 @@ for epoch in range(flags.epochs):
                 model.gt_strength_level : gt_strength_level,
                 model.batch_node_num : batch_node_num
             })
+            tf_t1 = time.time()
 
             for i_item in range(flags.batch_size):
                 _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
@@ -152,14 +145,15 @@ for epoch in range(flags.epochs):
 
             losses.append(loss)
             batch_time.append(time.time() - t0)
+            data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
             if batch_id % flags.log_interval or batch_id == len(val_loader) - 1:
-                print('[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f)'%(
-                    epoch, batch_id, len(val_loader), loss, np.mean(losses), 
+                print('[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
+                    epoch, batch_id, len(train_loader), loss, np.mean(losses), 
                     np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                     np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                     np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                    batch_time[-1], np.mean(batch_time)
+                    batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
                 ))
 
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
@@ -179,7 +173,8 @@ for epoch in range(flags.epochs):
 
 if not flags.debug:
     # Test
-    avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time = [], [], [], [], []
+    t0 = time.time()
+    avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
     for batch_id in range(len(test_loader)):
         node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = test_loader.fetch()
         if batch_id == len(test_loader) - 1:
@@ -187,6 +182,7 @@ if not flags.debug:
         else:
             val_loader.prefetch(batch_id + 1)
         
+        tf_t0 = time.time()
         step, pred, loss = sess.run(fetches=[
             model.step, 
             model.edge_label_pred, 
@@ -198,6 +194,7 @@ if not flags.debug:
             model.gt_strength_level : gt_strength_level,
             model.batch_node_num : batch_node_num
         })
+        tf_t1 = time.time()
 
         for i_item in ramge(flags.batch_size):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
@@ -207,14 +204,15 @@ if not flags.debug:
 
         losses.append(loss)
         batch_time.append(time.time() - t0)
+        data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         if batch_id % flags.log_interval or batch_id == len(test_loader) - 1:
-            print('[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f)'%(
-                batch_id, len(test_loader), loss, np.mean(losses), 
+            print('[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
+                batch_id, len(train_loader), loss, np.mean(losses), 
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], np.mean(batch_time)
+                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
             ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
