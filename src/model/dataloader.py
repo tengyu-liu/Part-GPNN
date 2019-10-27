@@ -14,9 +14,10 @@ action_classes = ['none', 'hold', 'stand', 'sit', 'ride', 'walk', 'look', 'hit',
 roles = ['none', 'obj', 'instr']
 
 class DataThread(threading.Thread):
-    def __init__(self, filenames):
+    def __init__(self, filenames, node_num):
         # t0 = time.time()
         self.filenames = filenames
+        self.node_num = node_num
         self.node_features = [] # np.zeros([len(filenames), self.node_num, 1108])
         self.edge_features = [] # np.zeros([len(filenames), self.node_num, self.node_num, 1216])
         self.adj_mat = [] # np.zeros([len(filenames), self.node_num, self.node_num])
@@ -38,6 +39,8 @@ class DataThread(threading.Thread):
             filename = self.filenames.pop(0)
             data = pickle.load(open(filename, 'rb'))
             node_num = data['node_features'].shape[0]
+            if node_num > self.node_num:
+                continue
             if total_node_num_square + node_num * node_num > node_num_square_cap:
                 self.filenames.insert(0, filename)
                 break
@@ -90,26 +93,7 @@ class DataLoader:
         self.__next = None
         self.node_num = node_num
 
-        filenames = [os.path.join(data_dir, x) for x in os.listdir(self.datadir) if self.imageset in x]
-        if self.node_num == -1:
-            self.filenames = filenames
-        else:
-            self.filenames = []
-            
-            import json
-
-            count = 0
-            total = len(filenames)
-            if imageset == 'train':
-                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[0])
-            elif imageset == 'val':
-                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[1])
-            elif imageset == 'test':
-                node_nums = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'data', 'node_nums.txt')).readlines()[2])
-            for fn in sorted(filenames):
-                if node_nums[count] <= self.node_num:
-                    self.filenames.append(fn)
-                count += 1
+        self.filenames = [os.path.join(self.data_dir, x) for x in os.listdir(self.datadir) if self.imageset in x]
 
         self.filenames_backup = copy.deepcopy(self.filenames)
         self.thread = None
@@ -123,7 +107,7 @@ class DataLoader:
         random.shuffle(self.filenames)
     
     def prefetch(self):
-        self.thread = DataThread(self.filenames)
+        self.thread = DataThread(self.filenames, self.node_num)
         self.thread.start()
         
     def fetch(self):
