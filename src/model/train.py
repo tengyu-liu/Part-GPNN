@@ -94,7 +94,7 @@ for epoch in range(flags.epochs):
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time))
+                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
             ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
