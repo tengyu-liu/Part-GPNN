@@ -102,7 +102,7 @@ class Model:
         messages = tf.reshape(tf.reduce_sum(messages, axis=2), [-1, self.edge_feature_size])                            # BN x Fm
         node_features = tf.reshape(node_features, [-1, self.node_feature_size])                                         # BN x Fn
         _, node_features = self.update_module(messages, [node_features], training=True)
-        node_features = tf.reshape(node_features, [-1, self.node_num, self.node_feature_size])
+        node_features = tf.reshape(node_features, [-1, self.batch_node_num, self.node_feature_size])
         return node_features    
 
     def readout(self, edge_features):
