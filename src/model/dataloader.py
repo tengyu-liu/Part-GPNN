@@ -40,7 +40,7 @@ class DataThread(threading.Thread):
             node_num = data['node_features'].shape[0]
             if node_num > self.node_num:
                 continue
-            if max(self.batch_node_num, node_num) * len(self.node_features + 1) > node_num_cap:
+            if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
                 self.filenames.insert(0, filename)
                 break
 
