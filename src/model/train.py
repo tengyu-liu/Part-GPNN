@@ -45,6 +45,7 @@ saver = tf.train.Saver(max_to_keep=0)
 if flags.restore_epoch >= 0:
     saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.name, flags.restore_epoch)))
 
+from tensorflow.python.client import timeline
 options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 run_metadata = tf.RunMetadata()
 
