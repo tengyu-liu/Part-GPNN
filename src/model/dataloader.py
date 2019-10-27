@@ -93,7 +93,7 @@ class DataLoader:
         self.__next = None
         self.node_num = node_num
 
-        self.filenames = [os.path.join(self.data_dir, x) for x in os.listdir(self.datadir) if self.imageset in x]
+        self.filenames = [os.path.join(self.datadir, x) for x in os.listdir(self.datadir) if self.imageset in x]
 
         self.filenames_backup = copy.deepcopy(self.filenames)
         self.thread = None
