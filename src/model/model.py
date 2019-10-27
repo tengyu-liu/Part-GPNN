@@ -21,7 +21,7 @@ class Model:
         pass
 
     def build_input(self):
-        self.batch_node_num = tf.placeholder(tf.int32, [], 'batch_node_num')
+        self.batch_node_num = self.node_num # tf.placeholder(tf.int32, [], 'batch_node_num')
         self.node_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_feature_size], 'node_features')
         # We need an edge feature as the initial value for message passing
         self.edge_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.edge_feature_size], 'edge_features') 
@@ -29,11 +29,11 @@ class Model:
         self.pairwise_label_gt = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
         self.gt_strength_level = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'gt_strength_level')
 
-        self._node_features = self.node_features#[:,:self.batch_node_num, :]
-        self._edge_features = self.edge_features#[:,:self.batch_node_num, :self.batch_node_num, :]
-        self._adj_mat = self.adj_mat#[:,:self.batch_node_num, :self.batch_node_num]
-        self._pairwise_label_gt = self.pairwise_label_gt#[:,:self.batch_node_num, :self.batch_node_num,:]
-        self._gt_strength_level = self.gt_strength_level#[:,:self.batch_node_num, :self.batch_node_num]
+        self._node_features = self.node_features[:,:self.batch_node_num, :]
+        self._edge_features = self.edge_features[:,:self.batch_node_num, :self.batch_node_num, :]
+        self._adj_mat = self.adj_mat[:,:self.batch_node_num, :self.batch_node_num]
+        self._pairwise_label_gt = self.pairwise_label_gt[:,:self.batch_node_num, :self.batch_node_num,:]
+        self._gt_strength_level = self.gt_strength_level[:,:self.batch_node_num, :self.batch_node_num]
 
     def build_model(self):
 
