@@ -79,7 +79,7 @@ for epoch in range(flags.epochs):
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
-            model.batch_node_num : batch_node_num
+            # model.batch_node_num : batch_node_num
             }, options=options, run_metadata=run_metadata)
         fetched_timeline = timeline.Timeline(run_metadata.step_stats)
         chrome_trace = fetched_timeline.generate_chrome_trace_format()
