@@ -29,13 +29,11 @@ class Model:
         self.pairwise_label_gt = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
         self.gt_strength_level = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'gt_strength_level')
 
-        p = tf.print('Batch node num:', self.batch_node_num)
-        with tf.control_dependencies([p]):
-            self._node_features = self.node_features[:,:self.batch_node_num, :]
-            self._edge_features = self.edge_features[:,:self.batch_node_num, self.batch_node_num, :]
-            self._adj_mat = self.adj_mat[:,:self.batch_node_num, self.batch_node_num]
-            self._pairwise_label_gt = self.pairwise_label_gt[:,:self.batch_node_num, self.batch_node_num,:]
-            self._gt_strength_level = self.gt_strength_level[:,:self.batch_node_num, self.batch_node_num]
+        self._node_features = self.node_features[:,:self.batch_node_num, :]
+        self._edge_features = self.edge_features[:,:self.batch_node_num, :self.batch_node_num, :]
+        self._adj_mat = self.adj_mat[:,:self.batch_node_num, :self.batch_node_num]
+        self._pairwise_label_gt = self.pairwise_label_gt[:,:self.batch_node_num, :self.batch_node_num,:]
+        self._gt_strength_level = self.gt_strength_level[:,:self.batch_node_num, :self.batch_node_num]
 
     def build_model(self):
 
@@ -81,13 +79,10 @@ class Model:
         Returns:
         message: B x N x N x F_m 
         """
-        print('NF: ', node_features, 'EF: ', edge_features)
         node_message = tf.layers.dense(node_features, self.edge_feature_size / 4, activation=tf.nn.relu)
         edge_message = tf.layers.dense(edge_features, self.edge_feature_size / 2, activation=tf.nn.relu)
-        print('NM: ', node_message, 'EM: ', edge_features)
         node_message_left = tf.tile(tf.expand_dims(node_message, axis=2), [1,1,self.node_num,1])
         node_message_right = tf.tile(tf.expand_dims(node_message, axis=1), [1,self.node_num,1,1])
-        print('NML: ', node_message_left, 'NMR: ', node_message_right, 'EM: ', edge_features)
         message = tf.concat([node_message_left, node_message_right, edge_message], axis=-1)
         message = message * tf.expand_dims(adjacency_matrix, axis=-1)
         return message
