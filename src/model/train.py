@@ -77,7 +77,7 @@ for epoch in range(flags.epochs):
         })
 
         for i_item in range(flags.batch_size):
-            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
+            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
@@ -132,7 +132,7 @@ for epoch in range(flags.epochs):
             })
 
             for i_item in range(flags.batch_size):
-                _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
+                _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
                 avg_prec_sum.append(_sum)
                 avg_prec_max.append(_max)
                 avg_prec_mean.append(_mean)
@@ -187,7 +187,7 @@ if not flags.debug:
         })
 
         for i_item in ramge(flags.batch_size):
-            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item])
+            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)

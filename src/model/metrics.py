@@ -1,10 +1,12 @@
 import numpy as np
 import sklearn.metrics
 
-def compute_mAP(pred, gt, part_human_ids):
+def compute_mAP(pred, gt, part_human_ids, node_num):
     # pred: N x N x M
     # gt  : N x N x M
     # phi : P
+    gt = gt[:node_num, :node_num, :]
+
     human_ids = set(part_human_ids)
     human_num = len(human_ids)
 
