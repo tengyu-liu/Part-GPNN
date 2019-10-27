@@ -49,10 +49,14 @@ for epoch in range(flags.epochs):
     train_loader.shuffle()
     train_loader.prefetch()
     item = 0
-    while len(train_loader.filenames) > 0:
+    while True:
         t0 = time.time()
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = train_loader.fetch()
-        train_loader.prefetch()
+
+        res = train_loader.fetch()
+        if res is None:
+            break
+        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
+        
         item += len(node_features)
         
         tf_t0 = time.time()
@@ -106,8 +110,10 @@ for epoch in range(flags.epochs):
         item = 0
         while len(val_loader.filenames) > 0:
             t0 = time.time()
-            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = val_loader.fetch()
-            val_loader.prefetch()
+            res = val_loader.fetch()
+            if res is None:
+                break
+            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
             item += len(node_features)
             
             tf_t0 = time.time()
@@ -124,7 +130,7 @@ for epoch in range(flags.epochs):
             })
             tf_t1 = time.time()
 
-            for i_item in range(flags.batch_size):
+            for i_item in range(len(node_features)):
                 _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
                 avg_prec_sum.append(_sum)
                 avg_prec_max.append(_max)
@@ -164,8 +170,10 @@ if not flags.debug:
     test_loader.prefetch()
     item = 0
     while len(test_loader.filenames) > 0:
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = test_loader.fetch()
-        test_loader.prefetch()
+        res = test_loader.fetch()
+        if res is None:
+            break
+        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
         item += len(node_features)
         
         tf_t0 = time.time()
@@ -182,7 +190,7 @@ if not flags.debug:
         })
         tf_t1 = time.time()
 
-        for i_item in ramge(flags.batch_size):
+        for i_item in range(len(node_features)):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)

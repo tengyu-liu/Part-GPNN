@@ -26,6 +26,12 @@ class DataThread(threading.Thread):
         self.gt_action_roles = [] # np.zeros([len(filenames), self.node_num, self.node_num, len(roles)])
         self.part_human_ids = []
         self.batch_node_num = 0
+
+        self.empty_count = threading.Semaphore(value=20)
+        self.fill_count = threading.Semaphore(value=0)
+
+        self.data_queue = []
+
         super(DataThread, self).__init__()
         # print('Const: ', time.time() - t0)
     
@@ -41,8 +47,45 @@ class DataThread(threading.Thread):
             if node_num > self.node_num:
                 continue
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
-                self.filenames.insert(0, filename)
-                break
+
+                node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
+                edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
+                adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
+                gt_strength_level = np.zeros([len(self.gt_strength_level), self.batch_node_num, self.batch_node_num])
+                gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes)])
+                gt_action_roles = np.zeros([len(self.gt_action_roles), self.batch_node_num, self.batch_node_num, len(roles)])
+
+                for i_file in range(len(self.node_features)):
+                    node_num = len(self.node_features[i_file])
+                    node_features[i_file, :node_num, :] = self.node_features[i_file]
+                    edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
+                    adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
+                    gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
+                    gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file]
+                    gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
+                    gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
+                    gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
+                
+                self.empty_count.acquire()
+                self.data_queue.append((
+                    node_features, 
+                    edge_features, 
+                    adj_mat, 
+                    gt_action_labels, 
+                    gt_action_roles, 
+                    gt_strength_level, 
+                    copy.deepcopy(self.part_human_ids), 
+                    self.batch_node_num))
+                self.fill_count.release()
+
+                self.node_features = []
+                self.edge_features = []
+                self.adj_mat = []
+                self.gt_action_labels = []
+                self.gt_action_roles = []
+                self.gt_strength_level = []
+                self.part_human_ids = []
+                self.batch_node_num = -1
 
             self.node_features.append(data['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(data['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
@@ -53,35 +96,9 @@ class DataThread(threading.Thread):
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, node_num)
 
-            # self.gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
-            # self.gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
-
-        node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
-        edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
-        adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
-        gt_strength_level = np.zeros([len(self.gt_strength_level), self.batch_node_num, self.batch_node_num])
-        gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes)])
-        gt_action_roles = np.zeros([len(self.gt_action_roles), self.batch_node_num, self.batch_node_num, len(roles)])
-
-        for i_file in range(len(self.node_features)):
-            node_num = len(self.node_features[i_file])
-            node_features[i_file, :node_num, :] = self.node_features[i_file]
-            edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
-            adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
-            gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
-            gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file]
-            gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
-            gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
-            gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
-        
-        self.node_features = node_features
-        self.edge_features = edge_features
-        self.adj_mat = adj_mat
-        self.gt_strength_level = gt_strength_level
-        self.gt_action_labels = gt_action_labels
-        self.gt_action_roles = gt_action_roles
-        
-        # print('Run: ', time.time() - t0)
+        self.empty_count.acquire()
+        self.data_queue.append(None)
+        self.fill_count.release()
 
 class DataLoader:
     def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
@@ -95,10 +112,11 @@ class DataLoader:
 
         self.filenames_backup = copy.deepcopy(self.filenames)
         self.thread = None
+
         pass
 
     def __len__(self):
-        return len(self.filenames)
+        return len(self.filenames_backup)
 
     def shuffle(self):
         self.filenames = copy.deepcopy(self.filenames_backup)
@@ -109,10 +127,9 @@ class DataLoader:
         self.thread.start()
         
     def fetch(self):
-        self.thread.join()
-        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids, self.thread.batch_node_num
-        self.filenames = self.thread.filenames
-        self.thread = None
+        self.thread.fill_count.acquire()
+        res = self.thread.data_queue.pop(0)
+        self.thread.empty_count.release()
         return res
 
 if __name__ == "__main__":
