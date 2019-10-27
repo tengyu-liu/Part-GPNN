@@ -48,20 +48,14 @@ if flags.restore_epoch >= 0:
 for epoch in range(flags.epochs):
     # Train
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
-    for batch_id in range(len(train_loader)):
+    train_loader.shuffle()
+    train_loader.prefetch()
+    item = 0
+    while len(train_loader.filenames) > 0:
         t0 = time.time()
         node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = train_loader.fetch()
-        if flags.debug:
-            if batch_id == len(train_loader) - 1:
-                train_loader.shuffle()
-                train_loader.prefetch(0)
-            else:
-                train_loader.prefetch(batch_id + 1)
-        else:
-            if batch_id == len(train_loader) - 1:
-                val_loader.prefetch(0)
-            else:
-                train_loader.prefetch(batch_id + 1)
+        train_loader.prefetch()
+        item += len(node_features)
         
         tf_t0 = time.time()
         step, pred, loss, _ = sess.run(fetches=[
@@ -78,7 +72,7 @@ for epoch in range(flags.epochs):
         })
         tf_t1 = time.time()
 
-        for i_item in range(flags.batch_size):
+        for i_item in range(len(node_features)):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
             avg_prec_sum.append(_sum)
             avg_prec_max.append(_max)
@@ -88,14 +82,13 @@ for epoch in range(flags.epochs):
         batch_time.append(time.time() - t0)
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-        if batch_id % flags.log_interval == 0 or batch_id == len(train_loader) - 1:
-            print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
-                epoch, batch_id, len(train_loader), loss, np.mean(losses), 
-                np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-                np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-                np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
-            ))
+        print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
+            epoch, item, len(train_loader), loss, np.mean(losses), 
+            np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
+            np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
+            np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+            batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
+        ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -110,18 +103,14 @@ for epoch in range(flags.epochs):
 
     if not flags.debug:
         # Validate
-        t0 = time.time()
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
-        for batch_id in range(len(val_loader)):
+        val_loader.prefetch()
+        item = 0
+        while len(val_loader.filenames) > 0:
+            t0 = time.time()
             node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = val_loader.fetch()
-            if batch_id == len(val_loader) - 1:
-                if epoch == flags.epochs - 1:
-                    test_loader.prefetch(0)
-                else:
-                    train_loader.shuffle()
-                    train_loader.prefetch(0)
-            else:
-                val_loader.prefetch(batch_id + 1)
+            val_loader.prefetch()
+            item += len(node_features)
             
             tf_t0 = time.time()
             step, pred, loss = sess.run(fetches=[
@@ -147,14 +136,13 @@ for epoch in range(flags.epochs):
             batch_time.append(time.time() - t0)
             data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-            if batch_id % flags.log_interval or batch_id == len(val_loader) - 1:
-                print('[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
-                    epoch, batch_id, len(train_loader), loss, np.mean(losses), 
-                    np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-                    np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-                    np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                    batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
-                ))
+            print('[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
+                epoch, item, len(val_loader), loss, np.mean(losses), 
+                np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
+                np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
+                np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
+            ))
 
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -175,12 +163,12 @@ if not flags.debug:
     # Test
     t0 = time.time()
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
-    for batch_id in range(len(test_loader)):
+    test_loader.prefetch()
+    item = 0
+    while len(test_loader.filenames) > 0:
         node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = test_loader.fetch()
-        if batch_id == len(test_loader) - 1:
-            pass
-        else:
-            val_loader.prefetch(batch_id + 1)
+        test_loader.prefetch()
+        item += len(node_features)
         
         tf_t0 = time.time()
         step, pred, loss = sess.run(fetches=[
@@ -206,14 +194,13 @@ if not flags.debug:
         batch_time.append(time.time() - t0)
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-        if batch_id % flags.log_interval or batch_id == len(test_loader) - 1:
-            print('[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
-                batch_id, len(train_loader), loss, np.mean(losses), 
-                np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-                np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-                np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
-            ))
+        print('[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) Time: %.4f(%.4f) Data: %.4f(%.4f)'%(
+            item, len(test_loader), loss, np.mean(losses), 
+            np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
+            np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
+            np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+            batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
+        ))
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
     print('Experiment [%s] Result: ')

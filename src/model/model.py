@@ -10,7 +10,6 @@ class Model:
         self.build_summary()
 
     def load_config(self, config):
-        self.node_num = config.node_num
         self.node_feature_size = config.node_feature_size
         self.edge_feature_size = config.edge_feature_size
         self.label_num = config.label_num
@@ -22,18 +21,12 @@ class Model:
 
     def build_input(self):
         self.batch_node_num = tf.placeholder(tf.int32, [], 'batch_node_num')
-        self.node_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_feature_size], 'node_features')
+        self.node_features = tf.placeholder(tf.float32, [None, None, self.node_feature_size], 'node_features')
         # We need an edge feature as the initial value for message passing
-        self.edge_features = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.edge_feature_size], 'edge_features') 
-        self.adj_mat = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'adj_mat')
-        self.pairwise_label_gt = tf.placeholder(tf.float32, [None, self.node_num, self.node_num, self.label_num], 'pairwise_label_gt')
-        self.gt_strength_level = tf.placeholder(tf.float32, [None, self.node_num, self.node_num], 'gt_strength_level')
-
-        self._node_features = self.node_features[:,:self.batch_node_num, :]
-        self._edge_features = self.edge_features[:,:self.batch_node_num, :self.batch_node_num, :]
-        self._adj_mat = self.adj_mat[:,:self.batch_node_num, :self.batch_node_num]
-        self._pairwise_label_gt = self.pairwise_label_gt[:,:self.batch_node_num, :self.batch_node_num,:]
-        self._gt_strength_level = self.gt_strength_level[:,:self.batch_node_num, :self.batch_node_num]
+        self.edge_features = tf.placeholder(tf.float32, [None, None, None, self.edge_feature_size], 'edge_features') 
+        self.adj_mat = tf.placeholder(tf.float32, [None, None, None], 'adj_mat')
+        self.pairwise_label_gt = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_gt')
+        self.gt_strength_level = tf.placeholder(tf.float32, [None, None, None], 'gt_strength_level')
 
     def build_model(self):
 
@@ -43,16 +36,19 @@ class Model:
         
         for message_passing_iteration in range(self.message_passing_iterations):
             if message_passing_iteration == 0:
-                message = self.message(self._node_features, self._edge_features, self._adj_mat)
-                hidden_node_feature = self.update(message, self._node_features)
+                message = self.message(self.node_features, self.edge_features, self.adj_mat)
+                hidden_node_feature = self.update(message, self.node_features)
             else:
-                message = self.message(hidden_node_feature, message, self._adj_mat)
+                message = self.message(hidden_node_feature, message, self.adj_mat)
                 hidden_node_feature = self.update(message, hidden_node_feature)
 
         self.edge_label_pred = self.readout(message)
 
     def build_train(self):
-        self.loss = tf.reduce_mean(tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self._pairwise_label_gt, logits=self.edge_label_pred) * tf.expand_dims(self._gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self._gt_strength_level, axis=[1,2]))
+        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.pairwise_label_gt, logits=self.edge_label_pred) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
+        print(loss.shape)
+        self.loss = tf.reduce_mean(loss)
+        print(self.loss.shape)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
         self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
     
