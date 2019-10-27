@@ -81,6 +81,11 @@ for epoch in range(flags.epochs):
         }, options=options, run_metadata=run_metadata)
         tf_t1 = time.time()
 
+        fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+        chrome_trace = fetched_timeline.generate_chrome_trace_format()
+        with open('timeline.json', 'w') as f:
+            f.write(chrome_trace)
+
         for i_item in range(flags.batch_size):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
             avg_prec_sum.append(_sum)
