@@ -81,11 +81,13 @@ class Model:
         Returns:
         message: B x N x N x F_m 
         """
+        print('NF: ', node_features, 'EF: ', edge_features)
         node_message = tf.layers.dense(node_features, self.edge_feature_size / 4, activation=tf.nn.relu)
         edge_message = tf.layers.dense(edge_features, self.edge_feature_size / 2, activation=tf.nn.relu)
+        print('NM: ', node_message, 'EM: ', edge_features)
         node_message_left = tf.tile(tf.expand_dims(node_message, axis=2), [1,1,self.node_num,1])
         node_message_right = tf.tile(tf.expand_dims(node_message, axis=1), [1,self.node_num,1,1])
-        print(node_message_left, node_message_right, edge_message)
+        print('NML: ', node_message_left, 'NMR: ', node_message_right, 'EM: ', edge_features)
         message = tf.concat([node_message_left, node_message_right, edge_message], axis=-1)
         message = message * tf.expand_dims(adjacency_matrix, axis=-1)
         return message
