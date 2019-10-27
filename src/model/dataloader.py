@@ -70,9 +70,9 @@ class DataThread(threading.Thread):
             node_features[i_file, :node_num, :] = self.node_features[i_file]
             edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
             adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
-            gt_strength_level[i_file, :node_num, :node_num] = self.strength_level[i_file]
-            gt_action_labels[i_file, :node_num, :node_num, 1:] = self.action_labels[i_file]
-            gt_action_roles[i_file, :node_num, :node_num, 1:] = self.action_roles[i_file]
+            gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
+            gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file]
+            gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
             gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
             gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file, :node_num, :node_num, 1:]) == 0).astype(float)
         
