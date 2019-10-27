@@ -85,7 +85,7 @@ for epoch in range(flags.epochs):
         chrome_trace = fetched_timeline.generate_chrome_trace_format()
         with open('timeline.json', 'w') as f:
             f.write(chrome_trace)
-
+        exit()
         tf_t1 = time.time()
 
         for i_item in range(flags.batch_size):
