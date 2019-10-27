@@ -45,10 +45,6 @@ saver = tf.train.Saver(max_to_keep=0)
 if flags.restore_epoch >= 0:
     saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.name, flags.restore_epoch)))
 
-from tensorflow.python.client import timeline
-options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-run_metadata = tf.RunMetadata()
-
 for epoch in range(flags.epochs):
     # Train
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
@@ -79,13 +75,8 @@ for epoch in range(flags.epochs):
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
             model.batch_node_num : batch_node_num
-        }, options=options, run_metadata=run_metadata)
+        })
         tf_t1 = time.time()
-
-        fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-        chrome_trace = fetched_timeline.generate_chrome_trace_format()
-        with open('timeline.json', 'w') as f:
-            f.write(chrome_trace)
 
         for i_item in range(flags.batch_size):
             _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
@@ -105,7 +96,6 @@ for epoch in range(flags.epochs):
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
                 batch_time[-1], np.mean(batch_time), data_time[-1], np.mean(data_time)
             ))
-        exit()
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
