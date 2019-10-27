@@ -94,7 +94,7 @@ class DataLoader:
         
     def fetch(self):
         self.thread.join()
-        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids, self.batch_node_num
+        res = self.thread.node_features, self.thread.edge_features, self.thread.adj_mat, self.thread.gt_action_labels, self.thread.gt_action_roles, self.thread.gt_strength_level, self.thread.part_human_ids, self.thread.batch_node_num
         self.thread = None
         return res
 
