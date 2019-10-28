@@ -47,7 +47,7 @@ class DataThread(threading.Thread):
             if node_num > self.node_num:
                 continue
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
-
+                print(self.batch_node_num)
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
                 adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
@@ -57,7 +57,6 @@ class DataThread(threading.Thread):
 
                 for i_file in range(len(self.node_features)):
                     node_num = len(self.node_features[i_file])
-                    print(node_features.shape, self.node_features[i_file].shape, node_num, self.batch_node_num)
                     node_features[i_file, :node_num, :] = self.node_features[i_file]
                     edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
                     adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
