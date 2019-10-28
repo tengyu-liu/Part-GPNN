@@ -76,15 +76,27 @@ class DataThread(threading.Thread):
                     gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
                 
                 self.empty_count.acquire()
-                self.data_queue.append((
-                    node_features, 
-                    edge_features, 
-                    adj_mat, 
-                    gt_action_labels, 
-                    gt_action_roles, 
-                    gt_strength_level, 
-                    copy.deepcopy(self.part_human_ids), 
-                    self.batch_node_num, copy.deepcopy(self.data_fn)))
+                if self.with_name:
+                    self.data_queue.append((
+                        node_features, 
+                        edge_features, 
+                        adj_mat, 
+                        gt_action_labels, 
+                        gt_action_roles, 
+                        gt_strength_level, 
+                        copy.deepcopy(self.part_human_ids), 
+                        self.batch_node_num, copy.deepcopy(self.data_fn)))
+                else:
+                    self.data_queue.append((
+                        node_features, 
+                        edge_features, 
+                        adj_mat, 
+                        gt_action_labels, 
+                        gt_action_roles, 
+                        gt_strength_level, 
+                        copy.deepcopy(self.part_human_ids), 
+                        self.batch_node_num))
+
                 self.fill_count.release()
 
                 self.node_features = []
