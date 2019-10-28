@@ -96,7 +96,6 @@ class DataThread(threading.Thread):
                         gt_strength_level, 
                         copy.deepcopy(self.part_human_ids), 
                         self.batch_node_num))
-
                 self.fill_count.release()
 
                 self.node_features = []
