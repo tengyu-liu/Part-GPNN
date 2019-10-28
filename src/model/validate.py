@@ -51,12 +51,13 @@ while True:
         model.step, 
         model.edge_label_pred, 
         model.loss], feed_dict={
-        model.node_features : node_features,
-        model.edge_features : edge_features, 
-        model.adj_mat       : adj_mat, 
+        model.node_features     : node_features,
+        model.edge_features     : edge_features, 
+        model.adj_mat           : adj_mat, 
         model.pairwise_label_gt : gt_action_labels, 
         model.gt_strength_level : gt_strength_level,
-        model.batch_node_num : batch_node_num
+        model.batch_node_num    : batch_node_num,
+        model.training          : False
     })
     tf_t1 = time.time()
     total_tf_time = (tf_t1 - tf_t0)
