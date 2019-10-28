@@ -44,7 +44,6 @@ class DataThread(threading.Thread):
             filename = self.filenames.pop(0)
             data = pickle.load(open(filename, 'rb'))
             node_num = data['node_features'].shape[0]
-            print("============ Node Num ============", node_num)
             if node_num > self.node_num:
                 continue
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
@@ -58,6 +57,7 @@ class DataThread(threading.Thread):
 
                 for i_file in range(len(self.node_features)):
                     node_num = len(self.node_features[i_file])
+                    print(node_features.shape, self.node_features.shape, node_num, self.batch_node_num)
                     node_features[i_file, :node_num, :] = self.node_features[i_file]
                     edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
                     adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
