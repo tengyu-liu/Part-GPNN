@@ -29,7 +29,7 @@ sess.run(tf.global_variables_initializer())
 model_dir = os.path.join(os.path.dirname(__file__), 'models', flags.name)
 saver = tf.train.Saver(max_to_keep=0)
 if flags.restore_epoch >= 0:
-    saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.name, flags.restore_epoch)))
+    saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.restore_epoch)))
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
 val_loader.prefetch()
