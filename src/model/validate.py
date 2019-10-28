@@ -14,7 +14,8 @@ from model import Model
 
 os.makedirs(os.path.join(os.path.dirname(__file__), 'pred'), exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name), exist_ok=True)
-pred_dir = os.path.join(os.path.dirname(__file__), 'pred', flags.name)
+os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch), exist_ok=True)
+pred_dir = os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch)
 
 val_loader = DataLoader('val', flags.batch_size, flags.node_num, with_name=True)
 
@@ -82,3 +83,6 @@ while True:
         np.save(os.path.join(pred_dir, '%s.pred.npy'%fn[i].split('/')[-1]), pred[i])
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
+f = open('validate.txt', 'a')
+f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, flags.restore_epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
+f.close()
