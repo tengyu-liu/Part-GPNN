@@ -14,7 +14,7 @@ action_classes = ['none', 'hold', 'stand', 'sit', 'ride', 'walk', 'look', 'hit',
 roles = ['none', 'obj', 'instr']
 
 class DataThread(threading.Thread):
-    def __init__(self, filenames, node_num):
+    def __init__(self, filenames, node_num, with_name=False):
         # t0 = time.time()
         self.filenames = filenames
         self.node_num = node_num
@@ -31,6 +31,10 @@ class DataThread(threading.Thread):
         self.fill_count = threading.Semaphore(value=0)
 
         self.data_queue = []
+
+        self.with_name = with_name
+
+        self.data_fn = []
 
         super(DataThread, self).__init__()
         # print('Const: ', time.time() - t0)
@@ -74,7 +78,7 @@ class DataThread(threading.Thread):
                     gt_action_roles, 
                     gt_strength_level, 
                     copy.deepcopy(self.part_human_ids), 
-                    self.batch_node_num))
+                    self.batch_node_num, copy.deepcopy(self.data_fn)))
                 self.fill_count.release()
 
                 self.node_features = []
@@ -85,6 +89,7 @@ class DataThread(threading.Thread):
                 self.gt_strength_level = []
                 self.part_human_ids = []
                 self.batch_node_num = -1
+                self.data_fn = []
 
             self.node_features.append(data['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(data['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
@@ -94,13 +99,14 @@ class DataThread(threading.Thread):
             self.gt_action_roles.append(data['action_roles'])# [i_file, :node_num, :node_num, 1:] = data['action_roles']
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, data['node_features'].shape[0])
+            self.data_fn.append(filename)
 
         self.empty_count.acquire()
         self.data_queue.append(None)
         self.fill_count.release()
 
 class DataLoader:
-    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu')):
+    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), with_name=False):
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
@@ -111,6 +117,7 @@ class DataLoader:
 
         self.filenames_backup = copy.deepcopy(self.filenames)
         self.thread = None
+        self.with_name = with_name
 
         pass
 
@@ -124,7 +131,7 @@ class DataLoader:
     def prefetch(self):
         if self.thread is not None:
             self.thread.join()
-        self.thread = DataThread(self.filenames, self.node_num)
+        self.thread = DataThread(self.filenames, self.node_num, self.with_name)
         self.thread.start()
         
     def fetch(self):
