@@ -44,6 +44,7 @@ class DataThread(threading.Thread):
             filename = self.filenames.pop(0)
             data = pickle.load(open(filename, 'rb'))
             node_num = data['node_features'].shape[0]
+            print("============ Node Num ============", node_num)
             if node_num > self.node_num:
                 continue
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
@@ -123,6 +124,8 @@ class DataLoader:
         random.shuffle(self.filenames)
     
     def prefetch(self):
+        if self.thread is not None:
+            self.thread.join()
         self.thread = DataThread(self.filenames, self.node_num)
         self.thread.start()
         
