@@ -111,6 +111,7 @@ for epoch in range(flags.epochs):
     if not flags.debug:
         # Validate
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
+        val_loader.no_shuffle()
         val_loader.prefetch()
         item = 0
         total_data_time = 0
@@ -176,6 +177,7 @@ for epoch in range(flags.epochs):
 if not flags.debug:
     # Test
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
+    test_loader.no_shuffle()
     test_loader.prefetch()
     item = 0
     total_data_time = 0

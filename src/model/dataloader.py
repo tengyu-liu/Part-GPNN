@@ -145,6 +145,9 @@ class DataLoader:
     def shuffle(self):
         self.filenames = copy.deepcopy(self.filenames_backup)
         random.shuffle(self.filenames)
+
+    def no_shuffle(self):
+        self.filenames = copy.deepcopy(self.filenames_backup)
     
     def prefetch(self):
         if self.thread is not None:

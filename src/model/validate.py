@@ -72,7 +72,7 @@ while True:
     batch_time.append(time.time() - t0)
     data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-    print('[Validation] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+    print('[Test] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
         item, len(test_loader), loss, np.mean(losses), 
         np.mean(avg_prec_sum[-len(node_features):]), np.mean(avg_prec_sum), 
         np.mean(avg_prec_max[-len(node_features):]), np.mean(avg_prec_max), 
