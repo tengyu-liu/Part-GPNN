@@ -79,7 +79,6 @@ while True:
     ))
 
     for i in range(len(fn)):
-        print(os.path.join(pred_dir, '%s.pred.npy'%fn[i].split('/')[-1]))
         np.save(os.path.join(pred_dir, '%s.pred.npy'%fn[i].split('/')[-1]), pred[i])
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
