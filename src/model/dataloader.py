@@ -8,6 +8,8 @@ import random
 import pickle
 import numpy as np
 
+import vsrl_utils as vu
+
 action_classes = ['none', 'hold', 'stand', 'sit', 'ride', 'walk', 'look', 'hit', 'eat', 'jump', 'lay', 'talk_on_phone', 'carry',
                   'throw', 'catch', 'cut', 'run', 'work_on_computer', 'ski', 'surf', 'skateboard', 'smile', 'drink',
                   'kick', 'point', 'read', 'snowboard']
@@ -114,15 +116,16 @@ class DataLoader:
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
-        self.__next = None
+        self.with_name = with_name
         self.node_num = node_num
 
-        self.filenames = [os.path.join(self.datadir, x) for x in os.listdir(self.datadir) if self.imageset in x]
+        self.thread = None
+
+        self.coco = vu.load_coco('/mnt/hdd-12t/share/v-coco/data')
+        vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/mnt/hdd-12t/share/v-coco/data')
+        self.filenames = [os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]
 
         self.filenames_backup = copy.deepcopy(self.filenames)
-        self.thread = None
-        self.with_name = with_name
-
         pass
 
     def __len__(self):
