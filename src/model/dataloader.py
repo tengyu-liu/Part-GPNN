@@ -46,7 +46,11 @@ class DataThread(threading.Thread):
 
         while len(self.filenames) > 0:
             filename = self.filenames.pop(0)
-            data = pickle.load(open(filename, 'rb'))
+            try:
+                data = pickle.load(open(filename, 'rb'))
+            except:
+                print(filename)
+                raise
             node_num = data['node_features'].shape[0]
             if node_num > self.node_num:
                 continue

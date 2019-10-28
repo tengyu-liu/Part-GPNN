@@ -13,6 +13,7 @@ from metrics import compute_mAP
 from model import Model
 
 os.makedirs(os.path.join(os.path.dirname(__file__), 'pred'), exist_ok=True)
+os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name), exist_ok=True)
 pred_dir = os.path.join(os.path.dirname(__file__), 'pred', flags.name)
 
 val_loader = DataLoader('val', flags.batch_size, flags.node_num, with_name=True)
