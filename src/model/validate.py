@@ -12,12 +12,12 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
-os.makedirs(os.path.join(os.path.dirname(__file__), 'pred'), exist_ok=True)
-os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name), exist_ok=True)
-os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch), exist_ok=True)
-pred_dir = os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch)
+# os.makedirs(os.path.join(os.path.dirname(__file__), 'pred'), exist_ok=True)
+# os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name), exist_ok=True)
+# os.makedirs(os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch), exist_ok=True)
+# pred_dir = os.path.join(os.path.dirname(__file__), 'pred', flags.name, '%d'%flags.restore_epoch)
 
-val_loader = DataLoader('val', flags.batch_size, flags.node_num, with_name=True)
+test_loader = DataLoader('test', flags.batch_size, flags.node_num, with_name=True)
 
 model = Model(flags)
 
@@ -33,13 +33,13 @@ if flags.restore_epoch >= 0:
     saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.restore_epoch)))
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
-val_loader.prefetch()
+test_loader.prefetch()
 item = 0
 total_data_time = 0
 total_tf_time = 0
 while True:
     t0 = time.time()
-    res = val_loader.fetch()
+    res = test_loader.fetch()
     if res is None:
         break
     node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num, fn = res
@@ -73,15 +73,15 @@ while True:
     data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
     print('[Validation] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
-        item, len(val_loader), loss, np.mean(losses), 
+        item, len(test_loader), loss, np.mean(losses), 
         np.mean(avg_prec_sum[-len(node_features):]), np.mean(avg_prec_sum), 
         np.mean(avg_prec_max[-len(node_features):]), np.mean(avg_prec_max), 
         np.mean(avg_prec_mean[-len(node_features):]), np.mean(avg_prec_mean), 
         batch_time[-1], total_data_time / item, total_tf_time / item
     ))
 
-    for i in range(len(fn)):
-        np.save(os.path.join(pred_dir, '%s.pred.npy'%fn[i].split('/')[-1]), pred[i])
+    # for i in range(len(fn)):
+    #     np.save(os.path.join(pred_dir, '%s.pred.npy'%fn[i].split('/')[-1]), pred[i])
 
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 f = open('validate.txt', 'a')
