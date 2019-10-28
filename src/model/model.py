@@ -17,9 +17,11 @@ class Model:
         self.lr = config.lr
         self.beta1 = config.beta1
         self.beta2 = config.beta2
+        self.dropout = config.dropout
         pass
 
     def build_input(self):
+        self.training = tf.placeholder(tf.bool, [], 'training')
         self.batch_node_num = tf.placeholder(tf.int32, [], 'batch_node_num')
         self.node_features = tf.placeholder(tf.float32, [None, None, self.node_feature_size], 'node_features')
         # We need an edge feature as the initial value for message passing
@@ -32,7 +34,7 @@ class Model:
 
         self.step = tf.Variable(0)
 
-        self.update_module = tf.keras.layers.GRUCell(self.node_feature_size)
+        self.update_module = tf.keras.layers.GRUCell(self.node_feature_size, dropout=self.dropout)
         
         for message_passing_iteration in range(self.message_passing_iterations):
             if message_passing_iteration == 0:
@@ -97,7 +99,7 @@ class Model:
         """
         messages = tf.reshape(tf.reduce_sum(messages, axis=2), [-1, self.edge_feature_size])                            # BN x Fm
         node_features = tf.reshape(node_features, [-1, self.node_feature_size])                                         # BN x Fn
-        _, node_features = self.update_module(messages, [node_features], training=True)
+        _, node_features = self.update_module(messages, [node_features], training=self.training)
         node_features = tf.reshape(node_features, [-1, self.batch_node_num, self.node_feature_size])
         return node_features    
 

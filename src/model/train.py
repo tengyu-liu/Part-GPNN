@@ -73,7 +73,8 @@ for epoch in range(flags.epochs):
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
-            model.batch_node_num : batch_node_num
+            model.batch_node_num : batch_node_num,
+            model.training: True
         })
         tf_t1 = time.time()
         total_tf_time += (tf_t1 - tf_t0)
@@ -133,7 +134,8 @@ for epoch in range(flags.epochs):
                 model.adj_mat       : adj_mat, 
                 model.pairwise_label_gt : gt_action_labels, 
                 model.gt_strength_level : gt_strength_level,
-                model.batch_node_num : batch_node_num
+                model.batch_node_num : batch_node_num,
+                model.training: False
             })
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
@@ -197,7 +199,8 @@ if not flags.debug:
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
-            model.batch_node_num : batch_node_num
+            model.batch_node_num : batch_node_num,
+            model.training: False
         })
         tf_t1 = time.time()
         total_tf_time = (tf_t1 - tf_t0)
