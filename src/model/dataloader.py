@@ -44,10 +44,10 @@ class DataThread(threading.Thread):
             filename = self.filenames.pop(0)
             data = pickle.load(open(filename, 'rb'))
             node_num = data['node_features'].shape[0]
+            print(node_num)
             if node_num > self.node_num:
                 continue
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
-                print(self.batch_node_num)
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
                 adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
@@ -95,6 +95,7 @@ class DataThread(threading.Thread):
             self.gt_action_roles.append(data['action_roles'])# [i_file, :node_num, :node_num, 1:] = data['action_roles']
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, node_num)
+            print(node_num, self.batch_node_num)
 
         self.empty_count.acquire()
         self.data_queue.append(None)
