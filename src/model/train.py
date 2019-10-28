@@ -89,13 +89,13 @@ for epoch in range(flags.epochs):
         batch_time.append(time.time() - t0)
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-        print('[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+        print('\r[Train %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
             epoch, item, len(train_loader), loss, np.mean(losses), 
             np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
             np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
             np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
             batch_time[-1], total_data_time / item, total_tf_time / item
-        ))
+        ), end='', flush=True)
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -107,6 +107,10 @@ for epoch in range(flags.epochs):
     })
  
     train_writer.add_summary(summ, global_step=epoch)
+
+    print('\r======== [Train %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
+        epoch, np.mean(losses), np.mean(avg_prec_sum), np.mean(avg_prec_max), np.mean(avg_prec_mean)
+    ))
 
     if not flags.debug:
         # Validate
@@ -151,13 +155,13 @@ for epoch in range(flags.epochs):
             batch_time.append(time.time() - t0)
             data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-            print('[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+            print('\r[Val %d] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
                 epoch, item, len(val_loader), loss, np.mean(losses), 
                 np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
                 np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
                 np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
                 batch_time[-1], total_data_time / item, total_tf_time / item
-            ))
+            ), end='', flush=True)
 
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -172,7 +176,10 @@ for epoch in range(flags.epochs):
         # Save model
         saver.save(sess, os.path.join(model_dir, '%04d.ckpt'%epoch))
 
-        print('[%s] Epoch %d V.Loss: %f V.mAP: %f, %f, %f'%(datetime.datetime.now(), epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean))
+        print('\r======== [Validation %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
+            epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
+        ))
+
 
 if not flags.debug:
     # Test
@@ -217,15 +224,15 @@ if not flags.debug:
         batch_time.append(time.time() - t0)
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-        print('[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+        print('\r[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
             item, len(test_loader), loss, np.mean(losses), 
             np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
             np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
             np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
             batch_time[-1], total_data_time / item, total_tf_time / item
-        ))
+        ), end='')
 
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
-    print('Experiment [%s] Result: ')
+    print('\n======== Experiment [%s] Result ========')
     print('\t Best eval mAP: %f'%best_eval_mAP)
     print('\t Final test mAP: %f'%max(avg_prec_sum, avg_prec_max, avg_prec_mean))
