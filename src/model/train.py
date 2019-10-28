@@ -114,7 +114,7 @@ for epoch in range(flags.epochs):
         item = 0
         total_data_time = 0
         total_tf_time = 0
-        while len(val_loader.filenames) > 0:
+        while True:
             t0 = time.time()
             res = val_loader.fetch()
             if res is None:
@@ -178,7 +178,7 @@ if not flags.debug:
     item = 0
     total_data_time = 0
     total_tf_time = 0
-    while len(test_loader.filenames) > 0:
+    while True:
         t0 = time.time()
         res = test_loader.fetch()
         if res is None:
