@@ -25,6 +25,11 @@ sess = tf.Session(config=config)
 
 sess.run(tf.global_variables_initializer())
 
+model_dir = os.path.join(os.path.dirname(__file__), 'models', flags.name)
+saver = tf.train.Saver(max_to_keep=0)
+if flags.restore_epoch >= 0:
+    saver.restore(sess, os.path.join(model_dir, '%04d.ckpt'%(flags.name, flags.restore_epoch)))
+
 avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
 val_loader.prefetch()
 item = 0
@@ -66,9 +71,9 @@ while True:
 
     print('[Validation] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
         item, len(val_loader), loss, np.mean(losses), 
-        np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-        np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-        np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+        np.mean(avg_prec_sum[-len(node_features):]), np.mean(avg_prec_sum), 
+        np.mean(avg_prec_max[-len(node_features):]), np.mean(avg_prec_max), 
+        np.mean(avg_prec_mean[-len(node_features):]), np.mean(avg_prec_mean), 
         batch_time[-1], total_data_time / item, total_tf_time / item
     ))
 
