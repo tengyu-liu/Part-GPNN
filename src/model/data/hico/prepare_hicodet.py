@@ -18,7 +18,7 @@ import numpy as np
 import scipy.io as sio
 import skimage.io
 import cv2
-
+import metadata
 
 part_ids = {'Torso': [1, 2],
             'Right Hand': [3],
@@ -164,14 +164,78 @@ obj_eye = np.eye(81)
 for imageset in ['train', 'test']:
 
     hake_annotation = json.JSONDecoder().decode(open(os.path.join(os.path.dirname(__file__), 'annotation', 'hico-%sing-set-image-level.json')).read())
-    hico_annotation = sio.loadmat(os.path.join(hico_anno_dir, 'anno.mat'))
     hico_bbox_annotation = sio.loadmat(os.path.join(hico_anno_dir, 'anno_bbox.mat'))
+    mmdetection_result = pickle.load(open(os.path.join(mmdetection_path, 'outputs', 'hico-det.%s.pkl'%imageset), 'rb'))
 
-    for filename in annotation:
+    for img_i in range(hico_bbox_annotation.shape[1]):
+        filename = hico_bbox_annotation[0,img_i][0][0]
 
-        
+        # check if human detection exists
+        if not os.path.exists(os.path.join(densepose_path, imageset, filename + '.pkl')):
+            warnings.warn('human detection missing for ' + filename)
+            continue
+
+        obj_boxes_all = np.empty((0,4))
+        obj_classes_all = list()
+        part_boxes_all = np.empty((0,4))
+        part_classes_all = list()
+        part_human_id = list()
+        edge_boxes_all = np.empty((0,4))
+        edge_human_id = list()
+
+        # object detection
+        for c in range(2, len(metadata.coco_classes)):
+            for detection in mmdetection_result[filename][c-1]:
+                if detection[4] > 0.7:
+                    y0,x0,y1,x1 = detection[0], detection[1], detection[2], detection[3]
+                    obj_boxes_all = np.vstack((obj_boxes_all, np.array(detection[:4])[np.newaxis, ...]))
+                    obj_classes_all.append(c-1)
+        if len(obj_classes_all) == 0:
+            warnings.warn('object detection missing for ' + filename)
+
+        # human detection
+        densepose_boxes, densepose_bodies = pickle.load(open(os.path.join(densepose_path, imageset, filename + '.pkl'), 'rb'))
+        for human_id in range(len(densepose_boxes[1])):
+            if densepose_boxes[1][human_id][4] < 0.7:
+                continue
+            for part_id, part_name in enumerate(part_names):
+                x, y = np.where(np.isin(densepose_bodies[1][human_id], part_ids[part_name]))
+                x = x + densepose_boxes[1][human_id][1]
+                y = y + densepose_boxes[1][human_id][0]
+                if len(x) > 0:
+                    x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
+                    part_boxes_all = np.vstack([part_boxes_all, np.array([[y0,x0,y1,x1]])])
+                    part_classes_all.append(part_id)
+                    part_human_id.append(human_id)
+                    # Add edges
+                    for obj_box in obj_boxes_all:
+                        edge_box = combine_box(obj_box, part_boxes_all[-1,:])
+                        edge_human_id.append(human_id)
+                        edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
+
+
+
+        bbox_annotation = hico_bbox_annotation[0,img_i]
+
+        for hoi_i in range(len(hico_bbox_annotation[0,img_i][2][0])):
+            invis = hico_bbox_annotation[0,img_i][2][0][hoi_i][4][0,0]
+            if invis == 1: continue
+            action = metadata.hoi_to_action[hico_bbox_annotation[0,img_i][2][0][hoi_i][0][0,0]-1]
+            bbox_h = hico_bbox_annotation[0,img_i][2][0][hoi_i][1]
+            bbox_o = hico_bbox_annotation[0,img_i][2][0][hoi_i][2]
+            h_idx = hico_bbox_annotation[0,img_i][2][0][hoi_i][3][0,0]
+            o_idx = hico_bbox_annotation[0,img_i][2][0][hoi_i][3][0,1]
+            x0_h,y0_h,x1_h,y1_h = int(bbox_h['x1'][0,0][0,0]), int(bbox_h['y1'][0,0][0,0]), int(bbox_h['x2'][0,0][0,0]), int(bbox_h['y2'][0,0][0,0])
+            x0_o,y0_o,x1_o,y1_o = int(bbox_o['x1'][0,0][0,0]), int(bbox_o['y1'][0,0][0,0]), int(bbox_o['x2'][0,0][0,0]), int(bbox_o['y2'][0,0][0,0])
+            # x0,y0,x1,y1 = min(x0_h, x0_o), min(y0_h, y0_o), max(x1_h, x1_o), max(y1_h, y1_o)
+
+
+
+
 
         data = {
+            'node_features'  : node_features,
+            'edge_features'  : edge_features,
             'adj_mat'        : adj_mat, 
             'action_labels'  : gt_action_labels, 
             'strength_level' : gt_strength_level, 

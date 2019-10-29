@@ -145,7 +145,7 @@ def extract_features(paths, imageset):
 
         # plt.imshow(original_img)
 
-        # Read human detections
+        # Read object and human detections
         for c in range(2, len(classes)):
             for detection in det_res[img_fn][c-1]:
                 if detection[4] > 0.7:
