@@ -13,6 +13,7 @@ import copy
 
 import numpy as np
 import scipy.misc
+import imageio
 import torch
 import torchvision
 import cv2
@@ -177,7 +178,7 @@ class HICO(torch.utils.data.Dataset):
         image_path = os.path.join(self.hico_path, 'images', '{}2015'.format(dir), image_i)
         assert os.path.exists(image_path)
 
-        original_img = scipy.misc.imread(image_path, mode='RGB')
+        original_img = imageio.imread(image_path, mode='RGB')
         obj1 = original_img[h_bbx[1]:h_bbx[3]+1, h_bbx[0]:h_bbx[2]+1, :]
         obj2 = original_img[o_bbx[1]:o_bbx[3] + 1, o_bbx[0]:o_bbx[2] + 1, :]
 
