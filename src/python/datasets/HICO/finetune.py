@@ -77,7 +77,6 @@ def main(args):
         normalize,
     ])
     train_dataset = roi_feature_model.HICO(args.data, input_imsize, transform, 'train')
-    #val_dataset = roi_feature_model.HICO(args.data, input_imsize, transform, 'val')
     test_dataset = roi_feature_model.HICO(args.data, input_imsize, transform, 'test')
 
     train_loader = torch.utils.data.DataLoader(train_dataset,
