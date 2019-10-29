@@ -179,8 +179,12 @@ class HICO(torch.utils.data.Dataset):
         assert os.path.exists(image_path)
 
         original_img = imageio.imread(image_path)
-        obj1 = original_img[h_bbx[1]:h_bbx[3]+1, h_bbx[0]:h_bbx[2]+1, :]
-        obj2 = original_img[o_bbx[1]:o_bbx[3] + 1, o_bbx[0]:o_bbx[2] + 1, :]
+        try:
+            obj1 = original_img[h_bbx[1]:h_bbx[3]+1, h_bbx[0]:h_bbx[2]+1, :]
+            obj2 = original_img[o_bbx[1]:o_bbx[3] + 1, o_bbx[0]:o_bbx[2] + 1, :]
+        except:
+            print(bbxs)
+            raise
 
         # plt.subplot(121)
         # plt.imshow(obj1)
