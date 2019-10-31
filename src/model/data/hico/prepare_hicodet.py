@@ -23,6 +23,9 @@ import feature_model
 import metadata
 import skimage.io
 
+import torch
+import torchvision
+
 part_ids = {'Torso': [1, 2],
             'Right Hand': [3],
             'Left Hand': [4],
