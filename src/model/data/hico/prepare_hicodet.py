@@ -150,12 +150,12 @@ def img_to_torch(img):
     img = torch.autograd.Variable(torch.Tensor(img)).cuda()
     return img
 
-if False:
+if True:
     meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
     img_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/images'
     densepose_path = '/mnt/hdd-12t/tengyu/DensePose/infer_out/hico-det/'
-    checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model'
-    save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/hico/feature'
+    checkpoint_dir = '/mnt/hdd-12t/tengyu/github/Part-GPNN/data/hico/model'
+    save_data_path = '/mnt/hdd-12t/tengyu/github/Part-GPNN/data/hico/feature'
     mmdetection_path = '/mnt/hdd-12t/tengyu/PartGPNN/gpnn/data/hico/mmdetection'
     hico_anno_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/annotation'
 else:
