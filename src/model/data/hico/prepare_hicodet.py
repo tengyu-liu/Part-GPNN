@@ -160,7 +160,7 @@ if True:
     checkpoint_dir = '/mnt/hdd-12t/tengyu/github/Part-GPNN/data/hico/model'
     save_data_path = '/mnt/hdd-12t/tengyu/github/Part-GPNN/data/hico/feature'
     mmdetection_path = '/mnt/hdd-12t/tengyu/PartGPNN/gpnn/data/hico/mmdetection'
-    hico_anno_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/annotation'
+    hico_anno_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det'
 else:
     img_dir = '/home/tengyu/Data/hico/hico_20160224_det/images'
     densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out/hico-det/'
