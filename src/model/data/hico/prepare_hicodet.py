@@ -288,7 +288,7 @@ for imageset in ['test', 'train']:
         edge_features = np.zeros([node_num, node_num, 1216])
         adj_mat = np.zeros([node_num, node_num])
         gt_strength_level = np.zeros([node_num, node_num])
-        gt_action_label = np.zeros([node_num, node_num, len(metadata.hoi_to_action)])
+        gt_action_labels = np.zeros([node_num, node_num, len(metadata.hoi_to_action)])
 
         # for i_node in range(node_num):
         #     if i_node < part_num:
