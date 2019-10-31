@@ -232,7 +232,8 @@ class Resnet152(torch.nn.Module):
         #         break
         #     self.learn_modules.add_module(str(i), m)
         self.learn_modules = torchvision.models.resnet152(pretrained=True)
-        self.fc = torch.nn.Linear(1000, num_classes)
+        self.fc_ = torch.nn.Linear(1000, 200)
+        self.fc = torch.nn.Linear(200, num_classes)
         # self.fc = torch.nn.Sequential(
         #     torch.nn.ReLU(True),
         #     # torch.nn.Dropout(),
@@ -243,7 +244,8 @@ class Resnet152(torch.nn.Module):
     def forward(self, x):
         x = self.learn_modules(x)
         x = x.view(x.size(0), -1)
-        output = self.fc(x)
+        output = self.fc_(x)
+        output = self.fc(output)
         return x, output
 
     def _initialize_weights(self):
