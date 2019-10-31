@@ -151,7 +151,7 @@ def img_to_torch(img):
     return img
 
 if True:
-    meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
+    # meta_dir = '/mnt/hdd-12t/tengyu/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
     img_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/images'
     densepose_path = '/mnt/hdd-12t/tengyu/DensePose/infer_out/hico-det/'
     checkpoint_dir = '/mnt/hdd-12t/tengyu/github/Part-GPNN/data/hico/model'
@@ -159,7 +159,7 @@ if True:
     mmdetection_path = '/mnt/hdd-12t/tengyu/PartGPNN/gpnn/data/hico/mmdetection'
     hico_anno_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/annotation'
 else:
-    meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
+    # meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
     img_dir = '/home/tengyu/Data/hico/hico_20160224_det/images'
     densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out/hico-det/'
     checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model'
