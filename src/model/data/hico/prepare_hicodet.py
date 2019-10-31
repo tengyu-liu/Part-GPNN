@@ -285,7 +285,7 @@ for imageset in ['test', 'train']:
         human_num = len(human_boxes)
         node_num = part_num + obj_num
         node_features = np.zeros([node_num, 1000])
-        edge_features = np.zeros([node_num, node_num, 1000])
+        edge_features = np.zeros([node_num, node_num, 1216])
         adj_mat = np.zeros([node_num, node_num])
         gt_strength_level = np.zeros([node_num, node_num])
         gt_action_label = np.zeros([node_num, node_num, len(metadata.hoi_to_action)])
