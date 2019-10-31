@@ -12,9 +12,9 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
-random.seed(0)
-np.random.seed(0)
-tf.random.set_random_seed(0)
+# random.seed(0)
+# np.random.seed(0)
+# tf.random.set_random_seed(0)
 
 train_loader = DataLoader('train', flags.batch_size, flags.node_num)
 val_loader = DataLoader('val', flags.batch_size, flags.node_num)
@@ -181,58 +181,62 @@ for epoch in range(flags.epochs):
         ))
 
 
-if not flags.debug:
-    # Test
-    avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
-    test_loader.no_shuffle()
-    test_loader.prefetch()
-    item = 0
-    total_data_time = 0
-    total_tf_time = 0
-    while True:
-        t0 = time.time()
-        res = test_loader.fetch()
-        if res is None:
-            break
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
-        total_data_time += (time.time() - t0)
-        item += len(node_features)
+    if epoch % 5 == 4:
+        # Test
+        avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
+        test_loader.no_shuffle()
+        test_loader.prefetch()
+        item = 0
+        total_data_time = 0
+        total_tf_time = 0
+        while True:
+            t0 = time.time()
+            res = test_loader.fetch()
+            if res is None:
+                break
+            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
+            total_data_time += (time.time() - t0)
+            item += len(node_features)
+            
+            tf_t0 = time.time()
+            step, pred, loss = sess.run(fetches=[
+                model.step, 
+                model.edge_label_pred, 
+                model.loss], feed_dict={
+                model.node_features : node_features,
+                model.edge_features : edge_features, 
+                model.adj_mat       : adj_mat, 
+                model.pairwise_label_gt : gt_action_labels, 
+                model.gt_strength_level : gt_strength_level,
+                model.batch_node_num : batch_node_num,
+                model.training: False
+            })
+            tf_t1 = time.time()
+            total_tf_time = (tf_t1 - tf_t0)
+
+            for i_item in range(len(node_features)):
+                _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
+                avg_prec_sum.append(_sum)
+                avg_prec_max.append(_max)
+                avg_prec_mean.append(_mean)
+
+            losses.append(loss)
+            batch_time.append(time.time() - t0)
+            data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
+
+            print('\r[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+                item, len(test_loader), loss, np.mean(losses), 
+                np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
+                np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
+                np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+                batch_time[-1], total_data_time / item, total_tf_time / item
+            ), end='')
+
+        avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
+        print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
+            epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
+        ))
         
-        tf_t0 = time.time()
-        step, pred, loss = sess.run(fetches=[
-            model.step, 
-            model.edge_label_pred, 
-            model.loss], feed_dict={
-            model.node_features : node_features,
-            model.edge_features : edge_features, 
-            model.adj_mat       : adj_mat, 
-            model.pairwise_label_gt : gt_action_labels, 
-            model.gt_strength_level : gt_strength_level,
-            model.batch_node_num : batch_node_num,
-            model.training: False
-        })
-        tf_t1 = time.time()
-        total_tf_time = (tf_t1 - tf_t0)
-
-        for i_item in range(len(node_features)):
-            _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
-            avg_prec_sum.append(_sum)
-            avg_prec_max.append(_max)
-            avg_prec_mean.append(_mean)
-
-        losses.append(loss)
-        batch_time.append(time.time() - t0)
-        data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
-
-        print('\r[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
-            item, len(test_loader), loss, np.mean(losses), 
-            np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-            np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-            np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-            batch_time[-1], total_data_time / item, total_tf_time / item
-        ), end='')
-
-    avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
-    print('\n======== Experiment [%s] Result ========')
-    print('\t Best eval mAP: %f'%best_eval_mAP)
-    print('\t Final test mAP: %f'%max(avg_prec_sum, avg_prec_max, avg_prec_mean))
+        f = open('validate.txt', 'a')
+        f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, flags.restore_epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
+        f.close()
