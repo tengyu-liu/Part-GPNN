@@ -12,9 +12,9 @@ from dataloader import DataLoader
 from metrics import compute_mAP
 from model import Model
 
-# random.seed(0)
-# np.random.seed(0)
-# tf.random.set_random_seed(0)
+random.seed(0)
+np.random.seed(0)
+tf.random.set_random_seed(0)
 
 train_loader = DataLoader('train', flags.batch_size, flags.node_num)
 val_loader = DataLoader('val', flags.batch_size, flags.node_num)
@@ -236,7 +236,7 @@ for epoch in range(flags.epochs):
         print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
             epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
         ))
-        
+
         f = open('validate.txt', 'a')
         f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, flags.restore_epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
         f.close()
