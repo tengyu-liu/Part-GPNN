@@ -154,18 +154,34 @@ if False:
     meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
     img_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/images'
     densepose_path = '/mnt/hdd-12t/tengyu/DensePose/infer_out/hico-det/'
-    checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model_resnet/finetune_resnet'
-    save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/hico/feature_resnet'
+    checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model'
+    save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/hico/feature'
     mmdetection_path = '/mnt/hdd-12t/tengyu/PartGPNN/gpnn/data/hico/mmdetection'
     hico_anno_dir = '/mnt/hdd-12t/share/HICO/hico_20160224_det/annotation'
 else:
     meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
     img_dir = '/home/tengyu/Data/hico/hico_20160224_det/images'
     densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out/hico-det/'
-    checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model_resnet/finetune_resnet'
-    save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/hico/feature_resnet'
+    checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/hico/model'
+    save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/hico/feature'
     mmdetection_path = '/home/tengyu/Documents/mmdetection/outputs'
     hico_anno_dir = '/home/tengyu/Data/hico/hico_20160224_det'
+
+feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
+feature_network.cuda()
+best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
+checkpoint = torch.load(best_model_file)
+for k in list(checkpoint['state_dict'].keys()):
+    if k[:7] == 'module.':
+        checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
+        del checkpoint['state_dict'][k]
+feature_network.load_state_dict(checkpoint['state_dict'])
+
+transform = torchvision.transforms.Compose([
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                        std=[0.229, 0.224, 0.225]),
+])
 
 input_h, input_w = 224, 224
 
@@ -422,7 +438,8 @@ for imageset in ['test', 'train']:
             'obj_boxes'      : obj_boxes_all, 
             'filename'       : filename, 
             'img_w'          : img_w, 
-            'img_h'          : img_h
+            'img_h'          : img_h,
+            'part_list'      : hake_annotation[filename]["parts_list"]
         }
         
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
