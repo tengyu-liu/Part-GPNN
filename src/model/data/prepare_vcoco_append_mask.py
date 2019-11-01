@@ -10,7 +10,11 @@ total = len(os.listdir(base_dir))
 count = 0
 
 for fn in os.listdir(base_dir):
-    data = pickle.load(open(os.path.join(base_dir, fn), 'rb'))
+    try:
+        data = pickle.load(open(os.path.join(base_dir, fn), 'rb'))
+    except:
+        print(fn)
+        continue
 
     pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 27])
     for i_obj in range(data['part_num'], data['node_num']):
