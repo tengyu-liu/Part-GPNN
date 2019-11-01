@@ -125,7 +125,7 @@ class DataThread(threading.Thread):
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, data['node_features'].shape[0])
             self.data_fn.append(filename)
-            pairwise_action_mask = np.zeros(data['action_labels'].shape)
+            pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 27])
             if self.negative_suppression:
                 for i_obj in range(data['part_num'], data['node_num']):
                     pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
