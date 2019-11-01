@@ -4,7 +4,7 @@ import numpy as np
 
 base_dir = os.path.join(os.path.dirname(__file__), '../../../data/feature_resnet_tengyu')
 
-obj_action_pair = pickle.load(open(os.path.join(base_dir, '../obj_action_pairs.pkl'), 'rb'))
+obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'obj_action_pairs.pkl'), 'rb'))
 
 total = len(os.listdir(base_dir))
 count = 0
