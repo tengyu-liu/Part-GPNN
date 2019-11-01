@@ -84,8 +84,12 @@ class DataThread(threading.Thread):
 
                     if self.negative_suppression:
                         for i_obj in range(data['part_num'], node_num):
-                            pairwise_action_mask[i_file, :, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
-                            pairwise_action_mask[i_file, i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+                            try:
+                                pairwise_action_mask[i_file, :, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+                                pairwise_action_mask[i_file, i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+                            except:
+                                print(pairwise_action_mask.shape, i_file, i_obj, obj_action_pair.shape, data['obj_classes'][i_obj-data['part_num']], i_obj, data['part_num'])
+                                raise
 
                 self.empty_count.acquire()
                 if self.with_name:
