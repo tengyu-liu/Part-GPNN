@@ -29,6 +29,7 @@ class Model:
         self.adj_mat = tf.placeholder(tf.float32, [None, None, None], 'adj_mat')
         self.pairwise_label_gt = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_gt')
         self.gt_strength_level = tf.placeholder(tf.float32, [None, None, None], 'gt_strength_level')
+        self.pairwise_label_mask = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_mask')
 
     def build_model(self):
 
@@ -45,7 +46,7 @@ class Model:
                 message = self.message(hidden_node_feature, message, self.adj_mat)
                 hidden_node_feature = self.update(message, hidden_node_feature)
 
-        self.edge_label_pred = self.readout(message)
+        self.edge_label_pred = self.readout(message) * self.pairwise_label_mask
 
     def build_train(self):
         loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.pairwise_label_gt, logits=self.edge_label_pred) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])

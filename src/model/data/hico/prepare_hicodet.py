@@ -237,6 +237,7 @@ for imageset in ['test', 'train']:
                     obj_classes_all.append(c-1)
         if len(obj_classes_all) == 0:
             warnings.warn('object detection missing for ' + filename)
+            continue
 
         # human detection
         densepose_boxes, densepose_bodies = pickle.load(open(os.path.join(densepose_path, imageset, filename + '.pkl'), 'rb'), encoding='latin-1')

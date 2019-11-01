@@ -16,6 +16,8 @@ random.seed(0)
 np.random.seed(0)
 tf.random.set_random_seed(0)
 
+obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
+
 train_loader = DataLoader('train', flags.batch_size, flags.node_num)
 val_loader = DataLoader('val', flags.batch_size, flags.node_num)
 test_loader = DataLoader('test', flags.batch_size, flags.node_num)
@@ -62,6 +64,17 @@ for epoch in range(flags.epochs):
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
+        pairwise_label_mask = np.zeros(gt_action_labels.shape)
+        if flags.negative_suppression:
+            for i in range(len(node_features)):
+                for j in range(batch_node_num):
+                    obj_class = np.argmax(node_features[i,j,1027:])
+                    pairwise_label_mask[i,:,j,:] = obj_action_pair[[obj_class]] 
+                    pairwise_label_mask[i,j,:,:] = obj_action_pair[[obj_class]]
+                    pass
+        else:
+            pairwise_label_mask += 1
+        
         tf_t0 = time.time()
         step, pred, loss, _ = sess.run(fetches=[
             model.step, 
@@ -74,6 +87,7 @@ for epoch in range(flags.epochs):
             model.pairwise_label_gt : gt_action_labels, 
             model.gt_strength_level : gt_strength_level,
             model.batch_node_num : batch_node_num,
+            model.pairwise_label_mask : pairwise_label_mask, 
             model.training: True
         })
         tf_t1 = time.time()
@@ -129,6 +143,17 @@ for epoch in range(flags.epochs):
             total_data_time += (time.time() - t0)
             item += len(node_features)
             
+            pairwise_label_mask = np.zeros(gt_action_labels.shape)
+            if flags.negative_suppression:
+                for i in range(len(node_features)):
+                    for j in range(batch_node_num):
+                        obj_class = np.argmax(node_features[i,j,1027:])
+                        pairwise_label_mask[i,:,j,:] = obj_action_pair[[obj_class]] 
+                        pairwise_label_mask[i,j,:,:] = obj_action_pair[[obj_class]]
+                        pass
+            else:
+                pairwise_label_mask += 1
+        
             tf_t0 = time.time()
             step, pred, loss = sess.run(fetches=[
                 model.step, 
@@ -140,6 +165,7 @@ for epoch in range(flags.epochs):
                 model.pairwise_label_gt : gt_action_labels, 
                 model.gt_strength_level : gt_strength_level,
                 model.batch_node_num : batch_node_num,
+                model.pairwise_label_mask : pairwise_label_mask,
                 model.training: False
             })
             tf_t1 = time.time()
@@ -197,6 +223,17 @@ for epoch in range(flags.epochs):
             node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, batch_node_num = res
             total_data_time += (time.time() - t0)
             item += len(node_features)
+
+            pairwise_label_mask = np.zeros(gt_action_labels.shape)
+            if flags.negative_suppression:
+                for i in range(len(node_features)):
+                    for j in range(batch_node_num):
+                        obj_class = np.argmax(node_features[i,j,1027:])
+                        pairwise_label_mask[i,:,j,:] = obj_action_pair[[obj_class]] 
+                        pairwise_label_mask[i,j,:,:] = obj_action_pair[[obj_class]]
+                        pass
+            else:
+                pairwise_label_mask += 1
             
             tf_t0 = time.time()
             step, pred, loss = sess.run(fetches=[
@@ -209,6 +246,7 @@ for epoch in range(flags.epochs):
                 model.pairwise_label_gt : gt_action_labels, 
                 model.gt_strength_level : gt_strength_level,
                 model.batch_node_num : batch_node_num,
+                model.pairwise_label_mask : pairwise_label_mask,
                 model.training: False
             })
             tf_t1 = time.time()
