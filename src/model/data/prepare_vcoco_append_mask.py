@@ -11,16 +11,12 @@ for fn in os.listdir(base_dir):
     data = pickle.load(open(os.path.join(base_dir, fn), 'rb'))
 
     pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 27])
-    if self.negative_suppression:
-        for i_obj in range(data['part_num'], data['node_num']):
-            pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
-            pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
-    else:
-        pairwise_action_mask += 1
+    for i_obj in range(data['part_num'], data['node_num']):
+        pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+        pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
 
     data['pairwise_action_mask'] = pairwise_action_mask
     pickle.dump(open(os.path.join(base_dir, fn), 'wb'), data)
 
     count += 1
     print('\r%d/%d'%(count, total), end='', flush=True)
-    
