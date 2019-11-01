@@ -18,7 +18,7 @@ for fn in os.listdir(base_dir):
         pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
 
     data['pairwise_action_mask'] = pairwise_action_mask
-    pickle.dump(open(os.path.join(base_dir, fn), 'wb'), data)
+    pickle.dump(data, open(os.path.join(base_dir, fn), 'wb'))
 
     count += 1
     print('\r%d/%d'%(count, total), end='', flush=True)
