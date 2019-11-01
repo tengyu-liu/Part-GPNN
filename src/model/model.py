@@ -46,10 +46,11 @@ class Model:
                 message = self.message(hidden_node_feature, message, self.adj_mat)
                 hidden_node_feature = self.update(message, hidden_node_feature)
 
-        self.edge_label_pred = self.readout(message) * self.pairwise_label_mask
+        self.edge_label = self.readout(message)
+        self.edge_label_pred = tf.sigmoid(self.edge_label) * self.pairwise_label_mask
 
     def build_train(self):
-        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.pairwise_label_gt, logits=self.edge_label_pred) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
+        loss = tf.reduce_sum(tf.losses.sigmoid_cross_entropy(multi_class_labels=self.pairwise_label_gt, logits=self.edge_label, weights=self.pairwise_label_mask) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
         print(loss.shape)
         self.loss = tf.reduce_mean(loss)
         print(self.loss.shape)
