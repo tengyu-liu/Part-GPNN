@@ -16,16 +16,20 @@ action_classes = ['none', 'hold', 'stand', 'sit', 'ride', 'walk', 'look', 'hit',
 roles = ['none', 'obj', 'instr']
 
 class DataThread(threading.Thread):
-    def __init__(self, filenames, node_num, with_name=False):
+    def __init__(self, filenames, node_num, with_name=False, negative_suppression=False):
         # t0 = time.time()
         self.filenames = filenames
         self.node_num = node_num
+        self.with_name = with_name
+        self.negative_suppression = negative_suppression
+
         self.node_features = [] # np.zeros([len(filenames), self.node_num, 1108])
         self.edge_features = [] # np.zeros([len(filenames), self.node_num, self.node_num, 1216])
         self.adj_mat = [] # np.zeros([len(filenames), self.node_num, self.node_num])
         self.gt_strength_level = [] # np.zeros([len(filenames), self.node_num, self.node_num])
         self.gt_action_labels = [] # np.zeros([len(filenames), self.node_num, self.node_num, len(action_classes)])
         self.gt_action_roles = [] # np.zeros([len(filenames), self.node_num, self.node_num, len(roles)])
+        self.pairwise_action_mask = []
         self.part_human_ids = []
         self.batch_node_num = 0
 
@@ -33,8 +37,6 @@ class DataThread(threading.Thread):
         self.fill_count = threading.Semaphore(value=0)
 
         self.data_queue = []
-
-        self.with_name = with_name
 
         self.data_fn = []
 
@@ -45,6 +47,7 @@ class DataThread(threading.Thread):
         # t0 = time.time()
         self.batch_node_num = -1
         node_num_cap = 400
+        obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
         while len(self.filenames) > 0:
             filename = self.filenames.pop(0)
@@ -63,6 +66,10 @@ class DataThread(threading.Thread):
                 gt_strength_level = np.zeros([len(self.gt_strength_level), self.batch_node_num, self.batch_node_num])
                 gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes)])
                 gt_action_roles = np.zeros([len(self.gt_action_roles), self.batch_node_num, self.batch_node_num, len(roles)])
+                if self.negative_suppression:
+                    pairwise_action_mask = np.zeros(gt_action_labels.shape)
+                else:
+                    pairwise_action_mask = np.ones(gt_action_labels.shape)
 
                 for i_file in range(len(self.node_features)):
                     node_num = len(self.node_features[i_file])
@@ -74,7 +81,12 @@ class DataThread(threading.Thread):
                     gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
                     gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
                     gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
-                
+
+                    if self.negative_suppression:
+                        for i_obj in range(data['part_num'], node_num):
+                            pairwise_action_mask[i_file, :, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+                            pairwise_action_mask[i_file, i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+
                 self.empty_count.acquire()
                 if self.with_name:
                     self.data_queue.append((
@@ -85,6 +97,7 @@ class DataThread(threading.Thread):
                         gt_action_roles, 
                         gt_strength_level, 
                         copy.deepcopy(self.part_human_ids), 
+                        pairwise_action_mask, 
                         self.batch_node_num, copy.deepcopy(self.data_fn)))
                 else:
                     self.data_queue.append((
@@ -95,6 +108,7 @@ class DataThread(threading.Thread):
                         gt_action_roles, 
                         gt_strength_level, 
                         copy.deepcopy(self.part_human_ids), 
+                        pairwise_action_mask, 
                         self.batch_node_num))
                 self.fill_count.release()
 
@@ -123,7 +137,7 @@ class DataThread(threading.Thread):
         self.fill_count.release()
 
 class DataLoader:
-    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), with_name=False):
+    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), with_name=False, negative_suppression=False):
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
@@ -152,7 +166,7 @@ class DataLoader:
     def prefetch(self):
         if self.thread is not None:
             self.thread.join()
-        self.thread = DataThread(self.filenames, self.node_num, self.with_name)
+        self.thread = DataThread(self.filenames, self.node_num, self.with_name, negative_suppression=self.negative_suppression)
         self.thread.start()
         
     def fetch(self):
