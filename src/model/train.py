@@ -1,8 +1,9 @@
+import datetime
 import os
+import pickle
 import random
 import sys
 import time
-import datetime
 
 import numpy as np
 import tensorflow as tf
