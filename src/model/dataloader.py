@@ -89,6 +89,14 @@ class DataThread(threading.Thread):
                                 pairwise_action_mask[i_file, i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
                             except:
                                 print(obj_action_pair.shape, data['obj_classes'].shape, i_obj, data['part_num'], node_num)
+                                print('\n======')
+                                for k in data.keys():
+                                    if type(data[k]) == type(gt_action_labels):
+                                        print(k, data[k].shape)
+                                    elif type(data[k]) == list:
+                                        print(k, len(data[k]))
+                                    else:
+                                        print(k, data[k])
                                 raise
 
                 self.empty_count.acquire()
