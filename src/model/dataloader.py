@@ -143,6 +143,7 @@ class DataLoader:
         self.datadir = datadir
         self.with_name = with_name
         self.node_num = node_num
+        self.negative_suppression = negative_suppression
 
         self.thread = None
 
