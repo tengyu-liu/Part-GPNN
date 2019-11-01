@@ -66,10 +66,7 @@ class DataThread(threading.Thread):
                 gt_strength_level = np.zeros([len(self.gt_strength_level), self.batch_node_num, self.batch_node_num])
                 gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes)])
                 gt_action_roles = np.zeros([len(self.gt_action_roles), self.batch_node_num, self.batch_node_num, len(roles)])
-                if self.negative_suppression:
-                    pairwise_action_mask = np.zeros(gt_action_labels.shape)
-                else:
-                    pairwise_action_mask = np.ones(gt_action_labels.shape)
+                pairwise_action_mask = np.zeros(gt_action_labels.shape)
 
                 for i_file in range(len(self.node_features)):
                     node_num = len(self.node_features[i_file])
@@ -81,23 +78,7 @@ class DataThread(threading.Thread):
                     gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
                     gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
                     gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
-
-                    if self.negative_suppression:
-                        for i_obj in range(data['part_num'], node_num):
-                            try:
-                                pairwise_action_mask[i_file, :, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
-                                pairwise_action_mask[i_file, i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
-                            except:
-                                print(obj_action_pair.shape, data['obj_classes'].shape, i_obj, data['part_num'], node_num)
-                                print('\n======')
-                                for k in data.keys():
-                                    if type(data[k]) == type(gt_action_labels):
-                                        print(k, data[k].shape)
-                                    elif type(data[k]) == list:
-                                        print(k, len(data[k]))
-                                    else:
-                                        print(k, data[k])
-                                raise
+                    pairwise_action_mask[i_file, :node_num, :node_num, :] = self.pairwise_action_mask[i_file]
 
                 self.empty_count.acquire()
                 if self.with_name:
@@ -133,6 +114,7 @@ class DataThread(threading.Thread):
                 self.part_human_ids = []
                 self.batch_node_num = -1
                 self.data_fn = []
+                self.pairwise_action_mask = []
 
             self.node_features.append(data['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(data['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
@@ -143,6 +125,15 @@ class DataThread(threading.Thread):
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, data['node_features'].shape[0])
             self.data_fn.append(filename)
+            pairwise_action_mask = np.zeros(data['action_labels'].shape)
+            if self.negative_suppression:
+                for i_obj in range(data['part_num'], data['node_num']):
+                    pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+                    pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+            else:
+                pairwise_action_mask += 1
+            self.pairwise_action_mask.append(pairwise_action_mask)
+
 
         self.empty_count.acquire()
         self.data_queue.append(None)
