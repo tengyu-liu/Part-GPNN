@@ -31,7 +31,7 @@ class IOThread(threading.Thread):
     def run(self):
         while not self.fq.empty():
             filename = self.fq.get()
-            self.iq.put(pickle.load(open(filename, 'rb')))
+            self.iq.put((pickle.load(open(filename, 'rb')), filename))
             self.fq.task_done()
         self.iq.put(None)
 
@@ -68,7 +68,7 @@ class BatchThread(threading.Thread):
         self.part_classes = []
 
         while True:
-            item = self.item_queue.get()
+            item, filename = self.item_queue.get()
             if item['node_num'] + cur_node_num > self.node_num or item is None:
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
