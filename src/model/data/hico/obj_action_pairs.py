@@ -21,8 +21,8 @@ def process(fn, q):
         i_obj = i_node - item['part_num']
         obj_cls = item['obj_classes'][i_obj]
         obj_action_pair[obj_cls] += np.sum(item['action_labels'][:, i_node, :117], axis=0)
+    q.put(obj_action_pair)
     print(fn)
-    return q.put(obj_action_pair)
 
 from multiprocessing as mp
 from queue import Queue
