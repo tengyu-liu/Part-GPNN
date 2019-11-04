@@ -105,7 +105,6 @@ class BatchThread(threading.Thread):
 
                 if item is None: 
                     self.batch_queue.put(None)
-                    self.item_queue.all_tasks_done()
                     return # End of epoch
 
                 self.node_features = []
