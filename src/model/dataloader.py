@@ -60,6 +60,8 @@ class DataThread(threading.Thread):
             node_num = data['node_features'].shape[0]
             if node_num > self.node_num:
                 continue
+            
+            print('continues passed')
             if max(self.batch_node_num, node_num) * (len(self.node_features) + 1) > node_num_cap:
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
@@ -81,7 +83,9 @@ class DataThread(threading.Thread):
                     gt_action_roles[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_roles[i_file][:, :, 1:]) == 0).astype(float)
                     pairwise_action_mask[i_file, :node_num, :node_num, :] = self.pairwise_action_mask[i_file]
 
+                print('acquiring empty count')
                 self.empty_count.acquire()
+                print('empty count acquired')
                 if self.with_name:
                     self.data_queue.append((
                         node_features, 
@@ -104,7 +108,9 @@ class DataThread(threading.Thread):
                         copy.deepcopy(self.part_human_ids), 
                         pairwise_action_mask, 
                         self.batch_node_num))
+                print('releasing fill count')
                 self.fill_count.release()
+                print('fill count released')
 
                 self.node_features = []
                 self.edge_features = []
@@ -117,6 +123,7 @@ class DataThread(threading.Thread):
                 self.data_fn = []
                 self.pairwise_action_mask = []
 
+            print('enqueue passed')
             self.node_features.append(data['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(data['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
             self.adj_mat.append(data['adj_mat'])# [i_file, :node_num, :node_num] = data['adj_mat']
