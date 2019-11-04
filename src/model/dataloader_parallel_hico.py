@@ -167,6 +167,7 @@ if __name__ == "__main__":
 
     n_jobs = 16
     dl = DataLoader('train', 400, True, n_jobs=n_jobs)
+    dl.shuffle()
     dl.prefetch()
     item_count = 0
     total_time = 0
