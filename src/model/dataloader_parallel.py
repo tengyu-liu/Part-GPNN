@@ -148,7 +148,7 @@ class DataLoader:
     def prefetch(self):
         if self.thread is not None:
             self.thread.join()
-        self.thread = DataThread(self.filenames, self.node_num, negative_suppression=self.negative_suppression, n_jobs=self.n_jobs)
+        self.thread = BatchThread(self.filenames, self.node_num, negative_suppression=self.negative_suppression, n_jobs=self.n_jobs)
         self.thread.start()
         
     def fetch(self):
