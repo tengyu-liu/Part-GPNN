@@ -19,9 +19,8 @@ def process(fn, q):
     print(fn)
 
 import multiprocessing as mp
-from queue import Queue
 
-queue = Queue()
+queue = mp.Queue()
 
 p = mp.Pool(32)
 p.map(process, [(x, queue) for x in os.listdir(basedir)])
