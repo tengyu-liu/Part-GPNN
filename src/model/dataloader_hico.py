@@ -71,7 +71,7 @@ class DataThread(threading.Thread):
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
                 adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
                 gt_strength_level = np.zeros([len(self.gt_strength_level), self.batch_node_num, self.batch_node_num])
-                gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes)])
+                gt_action_labels = np.zeros([len(self.gt_action_labels), self.batch_node_num, self.batch_node_num, len(action_classes) + 1])
                 pairwise_action_mask = np.zeros(gt_action_labels.shape)
 
                 for i_file in range(len(self.node_features)):
@@ -80,7 +80,8 @@ class DataThread(threading.Thread):
                     edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
                     adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
                     gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
-                    gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file]
+                    assert np.sum(self.gt_action_labels[i_file][...,len(action_classes):]) == 0
+                    gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file][...,:len(action_classes)]
                     gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
                     pairwise_action_mask[i_file, :node_num, :node_num, :] = self.pairwise_action_mask[i_file]
 
