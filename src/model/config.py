@@ -2,6 +2,7 @@ import tensorflow as tf
 
 tf.flags.DEFINE_string('name', 'exp', '')
 tf.flags.DEFINE_integer('restore_epoch', -1, '')
+tf.flags.DEFINE_integer('n_jobs', 16, '')
 
 tf.flags.DEFINE_integer('epochs', 100, '')
 tf.flags.DEFINE_integer('batch_size', 1, '')

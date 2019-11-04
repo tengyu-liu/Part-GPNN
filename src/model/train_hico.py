@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import flags
-from dataloader_hico import DataLoader
+from dataloader_parallel_hico import DataLoader
 from metrics import compute_mAP
 from model import Model
 
@@ -19,8 +19,8 @@ tf.random.set_random_seed(0)
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
-train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression)
-test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression)
+train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs)
+test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs)
 
 model = Model(flags)
 
@@ -131,7 +131,6 @@ for epoch in range(flags.epochs):
         # Test
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
         part_avg_prec_sum, part_avg_prec_max, part_avg_prec_mean = [], [], []
-        test_loader.no_shuffle()
         test_loader.prefetch()
         item = 0
         total_data_time = 0
@@ -206,7 +205,7 @@ for epoch in range(flags.epochs):
 
         f = open('test.txt', 'a')
         f.write('%s/%d: %f, %f, %f, %f, %f, %f, %f\n'%(
-            flags.name, flags.restore_epoch, 
+            flags.name, epoch, 
             avg_prec_sum, avg_prec_max, avg_prec_mean, 
             part_avg_prec_sum, part_avg_prec_max, part_avg_prec_mean, losses))
         f.close()
