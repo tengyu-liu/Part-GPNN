@@ -33,7 +33,7 @@ from queue import Queue
 queue = Queue()
 
 ts = []
-for i range(32):
+for i in range(32):
     t = threading.Thread(target=process, args=(filenames[i], queue))
     t.start()
     ts.append(t)
