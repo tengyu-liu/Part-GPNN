@@ -190,7 +190,7 @@ if __name__ == "__main__":
     dl.prefetch()
     item_count = 0
     total_time = 0
-    for i in range(100):
+    for i in range(10):
         t0 = time.time()
         res = dl.fetch()
         t1 = time.time()
