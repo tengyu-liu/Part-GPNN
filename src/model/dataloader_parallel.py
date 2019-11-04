@@ -26,7 +26,7 @@ class IOThread(threading.Thread):
             filename = self.fq.get()
             self.iq.put((pickle.load(open(filename, 'rb')), filename))
             self.fq.task_done()
-        self.iq.put(None)
+        self.iq.put(None, None)
 
 class BatchThread(threading.Thread):
     def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16):
@@ -38,6 +38,7 @@ class BatchThread(threading.Thread):
             self.filename_queue.put(fn)
         self.node_num = node_num
         self.negative_suppression = negative_suppression
+        self.n_jobs = n_jobs
 
         for i in range(n_jobs):
             t = IOThread(self.filename_queue, self.item_queue)
@@ -59,9 +60,15 @@ class BatchThread(threading.Thread):
         self.data_fn = []
         self.pairwise_action_mask = []
 
+        empty_count = 0
+
         while True:
             item, filename = self.item_queue.get()
-            if item['node_num'] + cur_node_num > self.node_num or item is None:
+            if item is None:
+                empty_count += 1
+                if empty_count < self.n_jobs:
+                    continue
+            if item['node_num'] + cur_node_num > self.node_num or empty_count == self.n_jobs:
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
                 adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
