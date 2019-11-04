@@ -16,7 +16,7 @@ for fn in os.listdir(basedir):
     for i_node in range(item['part_num'], item['node_num']):
         i_obj = i_node - item['part_num']
         obj_cls = item['obj_classes'][i_obj]
-        obj_action_pair[obj_cls] += np.reduce_sum(item['action_labels'][:, i_node, :117], axis=0)
+        obj_action_pair[obj_cls] += np.sum(item['action_labels'][:, i_node, :117], axis=0)
 
     count += 1
     print('\r%d/%d %s'%(count, total, fn), end='', flush=True)
