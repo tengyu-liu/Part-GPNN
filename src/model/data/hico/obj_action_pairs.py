@@ -31,6 +31,8 @@ import threading
 from queue import Queue
 
 queue = Queue()
+all_filenames = os.listdir(basedir)
+filenames = [all_filenames[i::32] for i in range(32)]
 
 ts = []
 for i in range(32):
