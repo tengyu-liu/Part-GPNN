@@ -181,12 +181,18 @@ class DataLoader:
 if __name__ == "__main__":
     import time
 
-    dl_train = DataLoader('train', 1)
-    print(dl_train.node_num)
-    del dl_train
-    dl_val = DataLoader('val', 1)
-    print(dl_val.node_num)
-    del dl_val
-    dl_test = DataLoader('test', 1)
-    print(dl_test.node_num)
-    del dl_test
+if __name__ == "__main__":
+    import time
+
+    dl = DataLoader('train', 1, 400)
+    dl.shuffle()
+    dl.prefetch()
+    item_count = 0
+    total_time = 0
+    for i in range(100):
+        t0 = time.time()
+        res = dl.fetch()
+        t1 = time.time()
+        item_count += res[0].shape[0]
+        total_time += t1 - t0
+    print('VCOCO Single IO Thread', total_time / item_count)

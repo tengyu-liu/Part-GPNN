@@ -38,6 +38,7 @@ class DataThread(threading.Thread):
         self.pairwise_action_mask = []
         self.part_human_ids = []
         self.part_list = []
+        self.part_classes = []
         self.batch_node_num = 0
 
         self.empty_count = threading.Semaphore(value=20)
@@ -94,6 +95,7 @@ class DataThread(threading.Thread):
                         copy.deepcopy(self.part_human_ids), 
                         pairwise_action_mask, 
                         copy.deepcopy(self.part_list),
+                        copy.deepcopy(self.part_classes),
                         self.batch_node_num, copy.deepcopy(self.data_fn)))
                 else:
                     self.data_queue.append((
@@ -105,6 +107,7 @@ class DataThread(threading.Thread):
                         copy.deepcopy(self.part_human_ids), 
                         pairwise_action_mask, 
                         copy.deepcopy(self.part_list),
+                        copy.deepcopy(self.part_classes),
                         self.batch_node_num))
                 self.fill_count.release()
 
@@ -118,6 +121,7 @@ class DataThread(threading.Thread):
                 self.data_fn = []
                 self.pairwise_action_mask = []
                 self.part_list = []
+                self.part_classes = []
 
             self.node_features.append(data['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(data['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
@@ -127,6 +131,7 @@ class DataThread(threading.Thread):
             self.part_human_ids.append(data['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, data['node_features'].shape[0])
             self.part_list.append(data['part_list'])
+            self.part_classes.append(data['part_classes'])
             self.data_fn.append(filename)
             if 'pairwise_action_mask' in data.keys():
                 pairwise_action_mask = data['pairwise_action_mask']
@@ -146,7 +151,7 @@ class DataThread(threading.Thread):
         self.fill_count.release()
 
 class DataLoader:
-    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), with_name=False, negative_suppression=False):
+    def __init__(self, imageset, batchsize, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/hico/feature'), with_name=False, negative_suppression=False):
         self.imageset = imageset
         self.batchsize = batchsize
         self.datadir = datadir
@@ -186,12 +191,15 @@ class DataLoader:
 if __name__ == "__main__":
     import time
 
-    dl_train = DataLoader('train', 1)
-    print(dl_train.node_num)
-    del dl_train
-    dl_val = DataLoader('val', 1)
-    print(dl_val.node_num)
-    del dl_val
-    dl_test = DataLoader('test', 1)
-    print(dl_test.node_num)
-    del dl_test
+    dl = DataLoader('train', 1, 400)
+    dl.shuffle()
+    dl.prefetch()
+    item_count = 0
+    total_time = 0
+    for i in range(100):
+        t0 = time.time()
+        res = dl.fetch()
+        t1 = time.time()
+        item_count += res[0].shape[0]
+        total_time += t1 - t0
+    print('HICO-Det Single IO Thread'%n_jobs, total_time / item_count)
