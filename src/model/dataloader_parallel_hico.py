@@ -50,7 +50,7 @@ class BatchThread(threading.Thread):
             t = IOThread(self.filename_queue, self.item_queue)
             t.start()
 
-        super(DataThread, self).__init__()
+        super(BatchThread, self).__init__()
     
     def run(self):
         cur_node_num = 0
