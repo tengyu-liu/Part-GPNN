@@ -75,7 +75,7 @@ class BatchThread(threading.Thread):
                 empty_count += 1
                 if empty_count < self.n_jobs:
                     continue
-            if item['node_num'] + cur_node_num > self.node_num or empty_count == self.n_jobs:
+            if max(self.batch_node_num, item['node_num']) * (len(self.node_features) + 1) > self.node_num or empty_count == self.n_jobs:
                 node_features = np.zeros([len(self.node_features), self.batch_node_num, 1108])
                 edge_features = np.zeros([len(self.edge_features), self.batch_node_num, self.batch_node_num, 1216])
                 adj_mat = np.zeros([len(self.adj_mat), self.batch_node_num, self.batch_node_num])
