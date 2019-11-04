@@ -26,7 +26,7 @@ class IOThread(threading.Thread):
             filename = self.fq.get()
             self.iq.put((pickle.load(open(filename, 'rb')), filename))
             self.fq.task_done()
-        self.iq.put(None, None)
+        self.iq.put((None, None))
 
 class BatchThread(threading.Thread):
     def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16):
@@ -34,7 +34,7 @@ class BatchThread(threading.Thread):
         self.batch_queue = Queue()
         self.item_queue = Queue()
         self.filename_queue = Queue()
-        for fn in filenames:
+        for fn in filenames[:50]:
             self.filename_queue.put(fn)
         self.node_num = node_num
         self.negative_suppression = negative_suppression
