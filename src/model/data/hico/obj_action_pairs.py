@@ -18,7 +18,7 @@ def process(fn, q):
     q.put(obj_action_pair)
     print(fn)
 
-from multiprocessing as mp
+import multiprocessing as mp
 from queue import Queue
 
 queue = Queue()
