@@ -198,3 +198,4 @@ if __name__ == "__main__":
         total_time += t1 - t0
         print('\rVCOCO Single IO Thread', total_time, item_count, total_time / item_count, end='', flush=True)
     print('\rVCOCO Single IO Thread', total_time, item_count, total_time / item_count)
+    print('Finished')

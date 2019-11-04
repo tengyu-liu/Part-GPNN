@@ -179,3 +179,4 @@ if __name__ == "__main__":
         total_time += t1 - t0
     print('\rHICO-Det %d IO Thread'%n_jobs, total_time / item_count, end='', flush=True)
     print('\rHICO-Det %d IO Thread'%n_jobs, total_time / item_count)
+    print('Finished')
