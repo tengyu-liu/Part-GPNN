@@ -80,7 +80,8 @@ class DataThread(threading.Thread):
                     edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
                     adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
                     gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
-                    gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file][...,:len(action_classes)]
+                    gt_action_labels[i_file, :node_num, :node_num, 1:58] = self.gt_action_labels[i_file][...,:57]
+                    gt_action_labels[i_file, :node_num, :node_num, 58:] = self.gt_action_labels[i_file][...,58:len(action_classes)]
                     gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
                     pairwise_action_mask[i_file, :node_num, :node_num, :] = self.pairwise_action_mask[i_file]
 

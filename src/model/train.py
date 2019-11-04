@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import flags
-from dataloader import DataLoader
+from dataloader_parallel import DataLoader
 from metrics import compute_mAP
 from model import Model
 
@@ -19,9 +19,9 @@ tf.random.set_random_seed(0)
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
-train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression)
-val_loader = DataLoader('val', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression)
-test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression)
+train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression)
+val_loader = DataLoader('val', flags.node_num, negative_suppression=flags.negative_suppression)
+test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression)
 
 model = Model(flags)
 
@@ -244,5 +244,5 @@ for epoch in range(flags.epochs):
         ))
 
         f = open('validate.txt', 'a')
-        f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, flags.restore_epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
+        f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
         f.close()

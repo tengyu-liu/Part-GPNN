@@ -4,7 +4,7 @@ import numpy as np
 
 base_dir = os.path.join(os.path.dirname(__file__), '../../../../data/hico/feature')
 
-obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), '../obj_action_pairs.pkl'), 'rb'))
+obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'obj_action_pairs.pkl'), 'rb'))
 
 total = len(os.listdir(base_dir))
 count = 0
@@ -16,7 +16,7 @@ for fn in os.listdir(base_dir):
         print(fn)
         continue
 
-    pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 27])
+    pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 117])
     for i_obj in range(data['part_num'], data['node_num']):
         pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
         pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
