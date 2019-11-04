@@ -126,9 +126,9 @@ class BatchThread(threading.Thread):
             self.part_human_ids.append(item['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, item['node_features'].shape[0])
             self.data_fn.append(filename)
-            self.pairwise_action_mask.append(data['pairwise_action_mask'])
-            self.part_list.append(data['part_list'])
-            self.part_classes.append(data['part_classes'])
+            self.pairwise_action_mask.append(item['pairwise_action_mask'])
+            self.part_list.append(item['part_list'])
+            self.part_classes.append(item['part_classes'])
 
 
 class DataLoader:
