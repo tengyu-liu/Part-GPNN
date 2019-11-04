@@ -51,6 +51,7 @@ class DataThread(threading.Thread):
 
         while len(self.filenames) > 0:
             filename = self.filenames.pop(0)
+            print('filename', filename)
             try:
                 data = pickle.load(open(filename, 'rb'))
             except:
@@ -133,6 +134,7 @@ class DataThread(threading.Thread):
             else:
                 pairwise_action_mask += 1
             self.pairwise_action_mask.append(pairwise_action_mask)
+            print('finished')
 
 
         self.empty_count.acquire()
