@@ -169,4 +169,5 @@ if __name__ == "__main__":
         t1 = time.time()
         item_count += res[0].shape[0]
         total_time += t1 - t0
-    print('VCOCO %d IO Thread'%n_jobs, total_time / item_count)
+        print('\rVCOCO %d IO Thread'%n_jobs, total_time / item_count, end='', flush=True)
+    print('\rVCOCO %d IO Thread'%n_jobs, total_time / item_count)

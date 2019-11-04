@@ -54,6 +54,7 @@ class DataThread(threading.Thread):
             try:
                 data = pickle.load(open(filename, 'rb'))
             except:
+                raise
                 continue
             node_num = data['node_features'].shape[0]
             if node_num > self.node_num:
@@ -195,4 +196,5 @@ if __name__ == "__main__":
         t1 = time.time()
         item_count += res[0].shape[0]
         total_time += t1 - t0
-    print('VCOCO Single IO Thread', total_time / item_count)
+        print('\rVCOCO Single IO Thread', total_time / item_count, end='', flush=True)
+    print('\rVCOCO Single IO Thread', total_time / item_count)
