@@ -4,12 +4,6 @@ import numpy as np
 
 basedir = os.path.join(os.path.dirname(__file__), '../../../../data/hico/feature')
 
-
-total = len(os.listdir(basedir))
-count = 0
-
-for fn in os.listdir(basedir):
-
 def process(fn, q):
     basedir = os.path.join(os.path.dirname(__file__), '../../../../data/hico/feature')
     item = pickle.load(open(os.path.join(basedir, fn), 'rb'))
