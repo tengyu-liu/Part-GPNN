@@ -34,7 +34,7 @@ class BatchThread(threading.Thread):
         self.batch_queue = Queue()
         self.item_queue = Queue()
         self.filename_queue = Queue()
-        for fn in filenames[:50]:
+        for fn in filenames:
             self.filename_queue.put(fn)
         self.node_num = node_num
         self.negative_suppression = negative_suppression
