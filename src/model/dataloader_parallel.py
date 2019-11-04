@@ -29,7 +29,7 @@ class IOThread(threading.Thread):
         self.iq.put(None)
 
 class BatchThread(threading.Thread):
-    def __init__(self, filenames, node_num, negative_suppression=False, n_job=16):
+    def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16):
 
         self.batch_queue = Queue()
         self.item_queue = Queue()
@@ -39,7 +39,7 @@ class BatchThread(threading.Thread):
         self.node_num = node_num
         self.negative_suppression = negative_suppression
 
-        for i in range(n_job):
+        for i in range(n_jobs):
             t = IOThread(self.filename_queue, self.item_queue)
             t.start()
 
