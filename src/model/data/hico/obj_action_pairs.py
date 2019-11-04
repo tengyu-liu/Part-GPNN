@@ -4,26 +4,42 @@ import numpy as np
 
 basedir = os.path.join(os.path.dirname(__file__), '../../../../data/hico/feature')
 
-def process(fn, q):
+def process(fns, q):
     basedir = os.path.join(os.path.dirname(__file__), '../../../../data/hico/feature')
-    item = pickle.load(open(os.path.join(basedir, fn), 'rb'))
+    
+    total = len(fns)
+    count = 0
+
     obj_action_pair = np.zeros([81, 117])
 
-    assert np.sum(item['action_labels'][...,117:]) == 0
+    for fn in fns:
+        item = pickle.load(open(os.path.join(basedir, fn), 'rb'))
 
-    for i_node in range(item['part_num'], item['node_num']):
-        i_obj = i_node - item['part_num']
-        obj_cls = item['obj_classes'][i_obj]
-        obj_action_pair[obj_cls] += np.sum(item['action_labels'][:, i_node, :117], axis=0)
+        assert np.sum(item['action_labels'][...,117:]) == 0
+
+        for i_node in range(item['part_num'], item['node_num']):
+            i_obj = i_node - item['part_num']
+            obj_cls = item['obj_classes'][i_obj]
+            obj_action_pair[obj_cls] += np.sum(item['action_labels'][:, i_node, :117], axis=0)
+
+        count += 1
+        print('\r', count, total, fn, end='', flush=True)
+
     q.put(obj_action_pair)
-    print(fn)
 
-import multiprocessing as mp
+import threading
+from queue import Queue
 
-queue = mp.Queue()
+queue = Queue()
 
-p = mp.Pool(32)
-p.map(process, [(x, queue) for x in os.listdir(basedir)])
+ts = []
+for i range(32):
+    t = threading.Thread(target=process, args=(filenames[i], queue))
+    t.start()
+    ts.append(t)
+
+for i in range(32):
+    ts[i].join()
 
 obj_action_pair = np.zeros([81, 117])
 
