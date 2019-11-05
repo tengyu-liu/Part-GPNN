@@ -24,7 +24,10 @@ class IOThread(threading.Thread):
     def run(self):
         while not self.fq.empty():
             filename = self.fq.get()
-            self.iq.put((pickle.load(open(filename, 'rb')), filename))
+            try:
+                self.iq.put((pickle.load(open(filename, 'rb')), filename))
+            except:
+                pass
             self.fq.task_done()
         self.iq.put((None, None))
 
