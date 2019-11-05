@@ -21,6 +21,7 @@ tf.flags.DEFINE_float('beta2', 0.999, '')
 
 tf.flags.DEFINE_float('dropout', 0.5, 'Float between 0 and 1. Fraction of the units to drop for the linear transformation of the inputs.')
 tf.flags.DEFINE_bool('negative_suppression', False, '')
+tf.flags.DEFINE_bool('inverse_weight', False, '')
 
 tf.flags.DEFINE_integer('log_interval', 10, '')
 
