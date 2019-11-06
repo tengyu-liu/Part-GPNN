@@ -19,8 +19,8 @@ tf.random.set_random_seed(0)
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
-train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs, inverse_weight=inverse_weight)
-test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs, inverse_weight=inverse_weight)
+train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
 
 model = Model(flags)
 
@@ -97,7 +97,8 @@ for epoch in range(flags.epochs):
 
 
         losses.append(loss)
-        batch_time.append(time.time() - t0)
+        batch_time.append(time.time() - t0)inverse_weight
+inverse_weight
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         print('\r[Train %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
