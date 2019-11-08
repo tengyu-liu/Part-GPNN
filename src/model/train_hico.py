@@ -90,7 +90,7 @@ for epoch in range(flags.epochs):
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
 
-            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_classes, part_list)
+            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
             part_avg_prec_sum.append(_sum)
             part_avg_prec_max.append(_max)
             part_avg_prec_mean.append(_mean)
@@ -168,7 +168,7 @@ inverse_weight
                 avg_prec_max.append(_max)
                 avg_prec_mean.append(_mean)
 
-                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_classes, part_list)
+                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
                 part_avg_prec_sum.append(_sum)
                 part_avg_prec_max.append(_max)
                 part_avg_prec_mean.append(_mean)
