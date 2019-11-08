@@ -16,6 +16,9 @@ for fn in os.listdir(base_dir):
         print(fn)
         continue
 
+    if 'pairwise_action_mask' in data:
+        continue
+
     pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 117])
     for i_obj in range(data['part_num'], data['node_num']):
         pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]

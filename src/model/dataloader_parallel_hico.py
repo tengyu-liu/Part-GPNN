@@ -157,7 +157,7 @@ class DataLoader:
 
         self.thread = None
 
-        self.filenames = [os.path.join(self.datadir, filename) for filename in os.listdir(datadir) if imageset in filename]
+        self.filenames = [os.path.join(self.datadir, filename) for filename in os.listdir(self.datadir) if imageset in filename]
 
         pass
 
