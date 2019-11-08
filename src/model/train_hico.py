@@ -97,8 +97,8 @@ for epoch in range(flags.epochs):
 
 
         losses.append(loss)
-        batch_time.append(time.time() - t0)inverse_weight
-inverse_weight
+        batch_time.append(time.time() - t0)
+
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         print('\r[Train %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
