@@ -25,6 +25,9 @@ tf.flags.DEFINE_string('part_weight', 'central', '')
 
 tf.flags.DEFINE_integer('log_interval', 10, '')
 
+tf.flags.DEFINE_string('dataset', 'vcoco', '')
+
 flags = tf.flags.FLAGS
 
 assert flags.part_weight in ['central', 'edge', 'uniform']
+assert flags.dataset in ['vcoco', 'hico']

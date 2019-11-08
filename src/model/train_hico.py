@@ -95,7 +95,6 @@ for epoch in range(flags.epochs):
             part_avg_prec_max.append(_max)
             part_avg_prec_mean.append(_mean)
 
-
         losses.append(loss)
         batch_time.append(time.time() - t0)
 
@@ -116,7 +115,7 @@ for epoch in range(flags.epochs):
         model.summ_loss_in: loss, 
         model.summ_map_sum_in : avg_prec_sum,
         model.summ_map_max_in : avg_prec_max,
-        model.summ_map_mean_in : avg_prec_mean
+        model.summ_map_mean_in : avg_prec_mean,
         model.summ_part_map_sum_in : part_avg_prec_sum,
         model.summ_part_map_max_in : part_avg_prec_max,
         model.summ_part_map_mean_in : part_avg_prec_mean
@@ -192,7 +191,7 @@ for epoch in range(flags.epochs):
             model.summ_loss_in: loss, 
             model.summ_map_sum_in : avg_prec_sum,
             model.summ_map_max_in : avg_prec_max,
-            model.summ_map_mean_in : avg_prec_mean
+            model.summ_map_mean_in : avg_prec_mean,
             model.summ_part_map_sum_in : part_avg_prec_sum,
             model.summ_part_map_max_in : part_avg_prec_max,
             model.summ_part_map_mean_in : part_avg_prec_mean

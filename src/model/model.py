@@ -18,6 +18,7 @@ class Model:
         self.beta1 = config.beta1
         self.beta2 = config.beta2
         self.dropout = config.dropout
+        self.dataset = config.dataset
         pass
 
     def build_input(self):
@@ -66,6 +67,15 @@ class Model:
         _ = tf.summary.scalar('mAP_sum', self.summ_map_sum_in)
         _ = tf.summary.scalar('mAP_max', self.summ_map_max_in)
         _ = tf.summary.scalar('mAP_mean', self.summ_map_mean_in)
+
+        if self.dataset == 'hico':
+            self.summ_part_map_sum_in = tf.placeholder(tf.float32, [], 'part_mAP_sum_summ')
+            self.summ_part_map_max_in = tf.placeholder(tf.float32, [], 'part_mAP_max_summ')
+            self.summ_part_map_mean_in = tf.placeholder(tf.float32, [], 'part_mAP_mean_summ')
+            _ = tf.summary.scalar('part_mAP_sum', self.summ_part_map_sum_in)
+            _ = tf.summary.scalar('part_mAP_max', self.summ_part_map_max_in)
+            _ = tf.summary.scalar('part_mAP_mean', self.summ_mpart_ap_mean_in)
+
         self.summ = tf.summary.merge_all()
     
     def message(self, node_features, edge_features, adjacency_matrix):
