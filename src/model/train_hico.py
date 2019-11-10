@@ -62,7 +62,7 @@ for epoch in range(flags.epochs):
         res = train_loader.fetch()
         if res is None:
             break
-        node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num = res
+        node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num, filenames = res
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
@@ -140,7 +140,7 @@ for epoch in range(flags.epochs):
             res = test_loader.fetch()
             if res is None:
                 break
-            node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num = res
+            node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num, filenames = res
             total_data_time += (time.time() - t0)
             item += len(node_features)
 
