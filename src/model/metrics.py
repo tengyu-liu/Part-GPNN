@@ -24,9 +24,9 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
         lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))[0][0], part_num:, : ]
         print(np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0).shape)
         print(np.sum(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0).shape)
-        lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0) + np.sum(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0)
-        lifted_pred_max[i_lifted] = np.maximum(np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0), np.max(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0))
-        lifted_pred_mean[i_lifted] = (np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0) + np.mean(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0)) / 2
+        lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
+        lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
+        lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
 
     # Step 2. Compute mAP
     y_true = lifted_gt.reshape([-1, pred.shape[-1]])
@@ -95,9 +95,9 @@ def compute_part_mAP(pred, gt, part_classes):
     pred_mean = np.zeros(gt.shape)
 
     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
-        pred_sum[i_part] = np.sum(pred[ np.in1d(part_classes, i_part_list) , part_num:, :]) + np.sum(pred[ part_num:, np.in1d(part_classes, i_part_list), :])
-        pred_max[i_part] = max(np.max(pred[ np.in1d(part_classes, i_part_list) , part_num:, :]), np.max(pred[ part_num:, np.in1d(part_classes, i_part_list), :]))
-        pred_mean[i_part] = (np.mean(pred[ np.in1d(part_classes, i_part_list) , part_num:, :]) + np.mean(pred[ part_num:, np.in1d(part_classes, i_part_list), :])) / 2
+        pred_sum[i_part] = np.sum(pred[ np.in1d(part_classes, i_part_list) , part_num:, :])
+        pred_max[i_part] = np.max(pred[ np.in1d(part_classes, i_part_list) , part_num:, :])
+        pred_mean[i_part] = np.mean(pred[ np.in1d(part_classes, i_part_list) , part_num:, :])
     
     avg_prec_sum = sklearn.metrics.average_precision_score([gt], [pred_sum], average='micro')
     avg_prec_max = sklearn.metrics.average_precision_score([gt], [pred_max], average='micro')
