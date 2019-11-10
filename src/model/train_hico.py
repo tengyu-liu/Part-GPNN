@@ -101,10 +101,9 @@ for epoch in range(flags.epochs):
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         print('\r[Train %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
-            epoch, item, len(train_loader), loss, np.mean(losses), 
-            np.mean(avg_prec_sum), np.mean(part_avg_prec_sum), 
-            np.mean(avg_prec_max), np.mean(part_avg_prec_max), 
-            np.mean(avg_prec_mean), np.mean(part_avg_prec_mean), 
+            epoch, item, len(train_loader), np.mean(losses), 
+            np.mean(avg_prec_sum), np.mean(avg_prec_max), np.mean(avg_prec_mean),
+            np.mean(part_avg_prec_sum), np.mean(part_avg_prec_max), np.mean(part_avg_prec_mean), 
             batch_time[-1] / item, total_data_time / item, total_tf_time / item
         ), end='', flush=True)
 
@@ -177,10 +176,9 @@ for epoch in range(flags.epochs):
             data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
             print('\r[Test %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
-                epoch, item, len(test_loader), loss, np.mean(losses), 
-                np.mean(avg_prec_sum), np.mean(part_avg_prec_sum), 
-                np.mean(avg_prec_max), np.mean(part_avg_prec_max), 
-                np.mean(avg_prec_mean), np.mean(part_avg_prec_mean), 
+                epoch, item, len(test_loader), np.mean(losses), 
+                np.mean(avg_prec_sum), np.mean(avg_prec_max), np.mean(avg_prec_mean),
+                np.mean(part_avg_prec_sum), np.mean(part_avg_prec_max), np.mean(part_avg_prec_mean), 
                 batch_time[-1] / item, total_data_time / item, total_tf_time / item
             ), end='', flush=True)
 
