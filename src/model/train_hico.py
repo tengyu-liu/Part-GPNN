@@ -66,9 +66,6 @@ for epoch in range(flags.epochs):
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
-        print(pairwise_label_mask)
-        print(np.linalg.norm(pairwise_label_mask))
-
         tf_t0 = time.time()
         step, pred, loss, _ = sess.run(fetches=[
             model.step, 
@@ -94,7 +91,7 @@ for epoch in range(flags.epochs):
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
 
-            if sum(part_list) == 0:
+            if np.sum(part_list) == 0:
                 continue
 
             _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
@@ -173,6 +170,9 @@ for epoch in range(flags.epochs):
                 avg_prec_sum.append(_sum)
                 avg_prec_max.append(_max)
                 avg_prec_mean.append(_mean)
+
+                if np.sum(part_list) == 0:
+                    continue
 
                 _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
                 part_avg_prec_sum.append(_sum)

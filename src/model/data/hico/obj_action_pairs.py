@@ -49,7 +49,7 @@ while not queue.empty():
     obj_action_pair += queue.get()
     queue.task_done()
 
-obj_action_pair = np.min(obj_action_pair, 1)
+obj_action_pair = np.minimum(obj_action_pair, 1)
 
 pickle.dump(obj_action_pair, open('obj_action_pairs.pkl', 'wb'))
 print(obj_action_pair)
