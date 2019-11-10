@@ -95,7 +95,7 @@ def compute_part_mAP(pred, gt, part_classes):
     pred = pred[:part_num, part_num:, :]
 
     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
-        idx = np.sum(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0)
+        idx = np.in1d(part_classes, i_part_list)
         pred_sum[i_part] = np.sum(pred[ idx , ...])
         pred_max[i_part] = np.max(pred[ idx , ...])
         pred_mean[i_part] = np.mean(pred[ idx , ...])
