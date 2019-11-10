@@ -158,6 +158,9 @@ for epoch in range(flags.epochs):
                 model.training: False
             })
 
+            print(pred)
+            print(np.linalg.norm(pred))
+
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
 
@@ -169,7 +172,7 @@ for epoch in range(flags.epochs):
 
                 if sum(part_list) == 0:
                     continue
-                
+
                 _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
                 part_avg_prec_sum.append(_sum)
                 part_avg_prec_max.append(_max)
