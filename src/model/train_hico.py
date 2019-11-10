@@ -19,8 +19,8 @@ tf.random.set_random_seed(0)
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
-train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs)
-test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=n_jobs)
+train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
 
 model = Model(flags)
 
@@ -90,14 +90,14 @@ for epoch in range(flags.epochs):
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
 
-            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_classes, part_list)
+            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
             part_avg_prec_sum.append(_sum)
             part_avg_prec_max.append(_max)
             part_avg_prec_mean.append(_mean)
 
-
         losses.append(loss)
         batch_time.append(time.time() - t0)
+
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         print('\r[Train %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
@@ -115,7 +115,7 @@ for epoch in range(flags.epochs):
         model.summ_loss_in: loss, 
         model.summ_map_sum_in : avg_prec_sum,
         model.summ_map_max_in : avg_prec_max,
-        model.summ_map_mean_in : avg_prec_mean
+        model.summ_map_mean_in : avg_prec_mean,
         model.summ_part_map_sum_in : part_avg_prec_sum,
         model.summ_part_map_max_in : part_avg_prec_max,
         model.summ_part_map_mean_in : part_avg_prec_mean
@@ -167,7 +167,7 @@ for epoch in range(flags.epochs):
                 avg_prec_max.append(_max)
                 avg_prec_mean.append(_mean)
 
-                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_classes, part_list)
+                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
                 part_avg_prec_sum.append(_sum)
                 part_avg_prec_max.append(_max)
                 part_avg_prec_mean.append(_mean)
@@ -191,7 +191,7 @@ for epoch in range(flags.epochs):
             model.summ_loss_in: loss, 
             model.summ_map_sum_in : avg_prec_sum,
             model.summ_map_max_in : avg_prec_max,
-            model.summ_map_mean_in : avg_prec_mean
+            model.summ_map_mean_in : avg_prec_mean,
             model.summ_part_map_sum_in : part_avg_prec_sum,
             model.summ_part_map_max_in : part_avg_prec_max,
             model.summ_part_map_mean_in : part_avg_prec_mean

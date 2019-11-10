@@ -32,7 +32,7 @@ class IOThread(threading.Thread):
         self.iq.put((None, None))
 
 class BatchThread(threading.Thread):
-    def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16):
+    def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16, part_weight='central'):
 
         self.batch_queue = Queue()
         self.item_queue = Queue()
@@ -41,6 +41,7 @@ class BatchThread(threading.Thread):
             self.filename_queue.put(fn)
         self.node_num = node_num
         self.negative_suppression = negative_suppression
+        self.part_weight = part_weight
         self.n_jobs = n_jobs
 
         for i in range(n_jobs):
@@ -50,8 +51,6 @@ class BatchThread(threading.Thread):
         super(BatchThread, self).__init__()
     
     def run(self):
-        cur_node_num = 0
-
         self.node_features = []
         self.edge_features = []
         self.adj_mat = []
@@ -86,7 +85,14 @@ class BatchThread(threading.Thread):
                     node_features[i_file, :node_num, :] = self.node_features[i_file]
                     edge_features[i_file, :node_num, :node_num, :] = self.edge_features[i_file]
                     adj_mat[i_file, :node_num, :node_num] = self.adj_mat[i_file]
-                    gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
+                    if self.part_weight == 'central':
+                        gt_strength_level[i_file, :node_num, :node_num] = self.gt_strength_level[i_file]
+                    elif self.part_weight == 'edge':
+                        gt_strength_level[i_file, :node_num, :node_num] = 1.1 - self.gt_strength_level[i_file]
+                    elif self.part_weight == 'uniform':
+                        gt_strength_level[i_file, :node_num, :node_num] = 1.0
+                    else:
+                        raise NotImplemented
                     gt_action_labels[i_file, :node_num, :node_num, 1:] = self.gt_action_labels[i_file]
                     gt_action_roles[i_file, :node_num, :node_num, 1:] = self.gt_action_roles[i_file]
                     gt_action_labels[i_file, :node_num, :node_num, 0] = (np.sum(self.gt_action_labels[i_file][:, :, 1:]) == 0).astype(float)
@@ -134,11 +140,12 @@ class BatchThread(threading.Thread):
 
 
 class DataLoader:
-    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), negative_suppression=False, n_jobs=16):
+    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), negative_suppression=False, n_jobs=16, part_weight='central'):
         self.imageset = imageset
         self.datadir = datadir
         self.node_num = node_num
         self.negative_suppression = negative_suppression
+        self.part_weight = part_weight
         self.n_jobs = n_jobs
 
         self.thread = None
@@ -158,7 +165,7 @@ class DataLoader:
     def prefetch(self):
         if self.thread is not None:
             self.thread.join()
-        self.thread = BatchThread(self.filenames, self.node_num, negative_suppression=self.negative_suppression, n_jobs=self.n_jobs)
+        self.thread = BatchThread(self.filenames, self.node_num, negative_suppression=self.negative_suppression, n_jobs=self.n_jobs, part_weight=self.part_weight)
         self.thread.start()
         
     def fetch(self):
