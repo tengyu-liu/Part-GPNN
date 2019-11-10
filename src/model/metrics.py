@@ -100,10 +100,10 @@ def compute_part_mAP(pred, gt, part_classes):
             pred_sum[i_part] = float('-inf')
             pred_max[i_part] = float('-inf')
             pred_mean[i_part] = float('-inf')
-            
-        pred_sum[i_part] = np.sum(pred[ idx , ...])
-        pred_max[i_part] = np.max(pred[ idx , ...])
-        pred_mean[i_part] = np.mean(pred[ idx , ...])
+        else:
+            pred_sum[i_part] = np.sum(pred[ idx , ...])
+            pred_max[i_part] = np.max(pred[ idx , ...])
+            pred_mean[i_part] = np.mean(pred[ idx , ...])
     
     avg_prec_sum = sklearn.metrics.average_precision_score([gt], [pred_sum], average='micro')
     avg_prec_max = sklearn.metrics.average_precision_score([gt], [pred_max], average='micro')
