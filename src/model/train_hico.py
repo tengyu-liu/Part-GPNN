@@ -10,7 +10,7 @@ import tensorflow as tf
 
 from config import flags
 from dataloader_parallel_hico import DataLoader
-from metrics import compute_mAP
+from metrics import compute_mAP, compute_part_mAP
 from model import Model
 
 random.seed(0)
