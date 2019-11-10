@@ -66,6 +66,9 @@ for epoch in range(flags.epochs):
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
+        print(pairwise_label_mask)
+        print(np.linalg.norm(pairwise_label_mask))
+
         tf_t0 = time.time()
         step, pred, loss, _ = sess.run(fetches=[
             model.step, 
@@ -81,9 +84,6 @@ for epoch in range(flags.epochs):
             model.pairwise_label_mask : pairwise_label_mask, 
             model.training: True
         })
-
-        print(pred)
-        print(np.linalg.norm(pred))
 
         tf_t1 = time.time()
         total_tf_time += (tf_t1 - tf_t0)
