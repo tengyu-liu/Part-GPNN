@@ -92,13 +92,13 @@ def compute_part_mAP(pred, gt, part_classes):
     pred_max = np.zeros([len(gt)])
     pred_mean = np.zeros([len(gt)])
 
-    print(pred.shape, part_classes.shape, part_num)
+    pred = pred[:part_num, part_num:, :]
 
     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
         idx = np.sum(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0)
-        pred_sum[i_part] = np.sum(pred[ idx , part_num:, :])
-        pred_max[i_part] = np.max(pred[ idx , part_num:, :])
-        pred_mean[i_part] = np.mean(pred[ idx , part_num:, :])
+        pred_sum[i_part] = np.sum(pred[ idx , ...])
+        pred_max[i_part] = np.max(pred[ idx , ...])
+        pred_mean[i_part] = np.mean(pred[ idx , ...])
     
     avg_prec_sum = sklearn.metrics.average_precision_score([gt], [pred_sum], average='micro')
     avg_prec_max = sklearn.metrics.average_precision_score([gt], [pred_max], average='micro')
