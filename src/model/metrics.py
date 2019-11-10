@@ -96,7 +96,11 @@ def compute_part_mAP(pred, gt, part_classes):
 
     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
         idx = np.in1d(part_classes, i_part_list)
-        print(part_classes, i_part_list, idx)
+        if idx.sum() == 0:
+            pred_sum[i_part] = float('-inf')
+            pred_max[i_part] = float('-inf')
+            pred_mean[i_part] = float('-inf')
+            
         pred_sum[i_part] = np.sum(pred[ idx , ...])
         pred_max[i_part] = np.max(pred[ idx , ...])
         pred_mean[i_part] = np.mean(pred[ idx , ...])
