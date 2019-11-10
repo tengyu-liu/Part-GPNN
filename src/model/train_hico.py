@@ -157,6 +157,7 @@ for epoch in range(flags.epochs):
                 model.pairwise_label_mask : pairwise_label_mask,
                 model.training: False
             })
+
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
 

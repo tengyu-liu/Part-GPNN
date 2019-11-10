@@ -101,6 +101,8 @@ def compute_part_mAP(pred, gt, part_classes):
             pred_max[i_part] = np.max(pred[ idx , ...])
             pred_mean[i_part] = np.mean(pred[ idx , ...])
     
+    print(gt, pred_sum)
+    
     avg_prec_sum = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_sum]), average='micro')
     avg_prec_max = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_max]), average='micro')
     avg_prec_mean = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_mean]), average='micro')
