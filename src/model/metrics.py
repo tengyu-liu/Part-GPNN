@@ -22,8 +22,6 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     # Step 1. Get lifted prediction
     for i_lifted, i_human in enumerate(human_ids):
         lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))[0][0], part_num:, : ]
-        print(np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0).shape)
-        print(np.sum(pred[ part_num:, np.where(np.equal(part_human_ids, i_human))[0], :], axis=0).shape)
         lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
@@ -90,9 +88,9 @@ def compute_part_mAP(pred, gt, part_classes):
 
     part_num = len(part_classes)
     
-    pred_sum = np.zeros(gt.shape)
-    pred_max = np.zeros(gt.shape)
-    pred_mean = np.zeros(gt.shape)
+    pred_sum = np.zeros([len(gt)])
+    pred_max = np.zeros([len(gt)])
+    pred_mean = np.zeros([len(gt)])
 
     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
         pred_sum[i_part] = np.sum(pred[ np.in1d(part_classes, i_part_list) , part_num:, :])
