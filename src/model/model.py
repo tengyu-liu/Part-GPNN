@@ -74,7 +74,7 @@ class Model:
             self.summ_part_map_mean_in = tf.placeholder(tf.float32, [], 'part_mAP_mean_summ')
             _ = tf.summary.scalar('part_mAP_sum', self.summ_part_map_sum_in)
             _ = tf.summary.scalar('part_mAP_max', self.summ_part_map_max_in)
-            _ = tf.summary.scalar('part_mAP_mean', self.summ_mpart_ap_mean_in)
+            _ = tf.summary.scalar('part_mAP_mean', self.summ_part_map_mean_in)
 
         self.summ = tf.summary.merge_all()
     
