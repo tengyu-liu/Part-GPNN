@@ -10,13 +10,11 @@ total = len(os.listdir(base_dir))
 count = 0
 
 for fn in os.listdir(base_dir):
+    count += 1
     try:
         data = pickle.load(open(os.path.join(base_dir, fn), 'rb'))
     except:
         print(fn)
-        continue
-
-    if 'pairwise_action_mask' in data:
         continue
 
     pairwise_action_mask = np.zeros([data['node_num'], data['node_num'], 117])
@@ -27,5 +25,4 @@ for fn in os.listdir(base_dir):
     data['pairwise_action_mask'] = pairwise_action_mask
     pickle.dump(data, open(os.path.join(base_dir, fn), 'wb'))
 
-    count += 1
     print('\r%d/%d'%(count, total), end='', flush=True)
