@@ -17,4 +17,5 @@ for l in lines:
     action_id = action_classes.index(l[2].strip())
     pair[obj_id, action_id] = 1
 
+print(pair)
 pickle.dump(pair, open('obj_action_pairs.pkl', 'wb'))
