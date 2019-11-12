@@ -12,6 +12,8 @@ f.close()
 pair = np.zeros([81, 117])
 
 for l in lines:
+    if len(l.strip()) == 0:
+        continue
     l = re.sub(" +", ' ', l).split(' ')
     obj_id = hico_classes.index(l[1].strip())
     action_id = action_classes.index(l[2].strip())
