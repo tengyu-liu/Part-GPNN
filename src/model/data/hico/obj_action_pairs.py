@@ -1,6 +1,6 @@
 import re
 import os
-
+import pickle
 import numpy as np
 
 from metadata import hico_classes, action_classes
