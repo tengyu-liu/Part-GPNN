@@ -91,7 +91,7 @@ for epoch in range(flags.epochs):
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
 
-            if np.sum(part_list) == 0:
+            if np.sum(part_list[i_item]) == 0:
                 continue
 
             _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
