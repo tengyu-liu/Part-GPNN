@@ -10,7 +10,7 @@ import tensorflow as tf
 
 from config import flags
 from dataloader_parallel_hico import DataLoader
-from metrics import compute_mAP
+from metrics import compute_mAP, compute_part_mAP
 from model import Model
 
 random.seed(0)
@@ -19,8 +19,8 @@ tf.random.set_random_seed(0)
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
-train_loader = DataLoader('train', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
-test_loader = DataLoader('test', flags.batch_size, flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
 
 model = Model(flags)
 
@@ -62,7 +62,7 @@ for epoch in range(flags.epochs):
         res = train_loader.fetch()
         if res is None:
             break
-        node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num = res
+        node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num, filenames = res
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
@@ -81,6 +81,7 @@ for epoch in range(flags.epochs):
             model.pairwise_label_mask : pairwise_label_mask, 
             model.training: True
         })
+
         tf_t1 = time.time()
         total_tf_time += (tf_t1 - tf_t0)
 
@@ -90,7 +91,10 @@ for epoch in range(flags.epochs):
             avg_prec_max.append(_max)
             avg_prec_mean.append(_mean)
 
-            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
+            if np.sum(part_list[i_item]) == 0:
+                continue
+
+            _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
             part_avg_prec_sum.append(_sum)
             part_avg_prec_max.append(_max)
             part_avg_prec_mean.append(_mean)
@@ -101,10 +105,9 @@ for epoch in range(flags.epochs):
         data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
         print('\r[Train %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
-            epoch, item, len(train_loader), loss, np.mean(losses), 
-            np.mean(avg_prec_sum), np.mean(part_avg_prec_sum), 
-            np.mean(avg_prec_max), np.mean(part_avg_prec_max), 
-            np.mean(avg_prec_mean), np.mean(part_avg_prec_mean), 
+            epoch, item, len(train_loader), np.mean(losses), 
+            np.mean(avg_prec_sum), np.mean(avg_prec_max), np.mean(avg_prec_mean),
+            np.mean(part_avg_prec_sum), np.mean(part_avg_prec_max), np.mean(part_avg_prec_mean), 
             batch_time[-1] / item, total_data_time / item, total_tf_time / item
         ), end='', flush=True)
 
@@ -140,7 +143,7 @@ for epoch in range(flags.epochs):
             res = test_loader.fetch()
             if res is None:
                 break
-            node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num = res
+            node_features, edge_features, adj_mat, gt_action_labels, gt_strength_level, part_human_ids, pairwise_label_mask, part_list, part_classes, batch_node_num, filenames = res
             total_data_time += (time.time() - t0)
             item += len(node_features)
 
@@ -158,6 +161,7 @@ for epoch in range(flags.epochs):
                 model.pairwise_label_mask : pairwise_label_mask,
                 model.training: False
             })
+
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
 
@@ -167,7 +171,10 @@ for epoch in range(flags.epochs):
                 avg_prec_max.append(_max)
                 avg_prec_mean.append(_mean)
 
-                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list, part_classes)
+                if np.sum(part_list[i_item]) == 0:
+                    continue
+
+                _sum, _max, _mean = compute_part_mAP(pred[i_item], part_list[i_item], part_classes[i_item])
                 part_avg_prec_sum.append(_sum)
                 part_avg_prec_max.append(_max)
                 part_avg_prec_mean.append(_mean)
@@ -177,10 +184,9 @@ for epoch in range(flags.epochs):
             data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
             print('\r[Test %d] [%d/%d] Loss: %.4f mAP(SUM): %.4f mAP(MAX): %.4f mAP(MEAN): %.4f p.mAP(SUM): %.4f p.mAP(MAX): %.4f p.mAP(MEAN): %.4f avg.time: %.4f avg.data.time: %.4f avg.tf.time: %.4f'%(
-                epoch, item, len(test_loader), loss, np.mean(losses), 
-                np.mean(avg_prec_sum), np.mean(part_avg_prec_sum), 
-                np.mean(avg_prec_max), np.mean(part_avg_prec_max), 
-                np.mean(avg_prec_mean), np.mean(part_avg_prec_mean), 
+                epoch, item, len(test_loader), np.mean(losses), 
+                np.mean(avg_prec_sum), np.mean(avg_prec_max), np.mean(avg_prec_mean),
+                np.mean(part_avg_prec_sum), np.mean(part_avg_prec_max), np.mean(part_avg_prec_mean), 
                 batch_time[-1] / item, total_data_time / item, total_tf_time / item
             ), end='', flush=True)
 
