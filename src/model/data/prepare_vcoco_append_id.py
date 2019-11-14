@@ -23,9 +23,18 @@ for imageset in ['train', 'test', 'val']:
         x = vu.attach_gt_boxes(x, coco)
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
+    total = len(image_ids)
+    success = 0
+    miss = 0
+
     for i_image, image_id in enumerate(image_ids):
-        filename = coco.loadImgs(ids=[image_id])[0]['file_name']
-        d = filename.split('_')[1][:-4]
-        data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
-        data['img_id'] = image_id
-        pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
+        try:
+            filename = coco.loadImgs(ids=[image_id])[0]['file_name']
+            d = filename.split('_')[1][:-4]
+            data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
+            data['img_id'] = image_id
+            pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
+            success += 1
+        except:
+            miss += 1
+        print('\rSuccess: %d Miss: %d Total: %d/%d'%(success, miss, success+miss, total), end='', flush=True)
