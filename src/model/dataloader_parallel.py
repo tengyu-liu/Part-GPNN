@@ -63,6 +63,9 @@ class BatchThread(threading.Thread):
         self.pairwise_action_mask = []
         self.img_ids = []
         self.human_boxes = []
+        self.obj_nums = []
+        self.obj_boxes = []
+        self.obj_classes = []
 
         empty_count = 0
 
@@ -112,6 +115,9 @@ class BatchThread(threading.Thread):
                         pairwise_action_mask, 
                         self.batch_node_num, 
                         copy.deepcopy(self.data_fn), 
+                        copy.deepcopy(self.obj_nums),
+                        copy.deepcopy(self.obj_boxes),
+                        copy.deepcopy(self.obj_classes),
                         copy.deepcopy(self.img_ids))
 
                 self.batch_queue.put(batch)
@@ -133,6 +139,9 @@ class BatchThread(threading.Thread):
                 self.pairwise_action_mask = []
                 self.img_ids = []
                 self.human_boxes = []
+                self.obj_nums = []
+                self.obj_boxes = []
+                self.obj_classes = []
             
             self.node_features.append(item['node_features'])# [i_file, :node_num, :] = data['node_features']
             self.edge_features.append(item['edge_features'])# [i_file, :node_num, :node_num, :] = data['edge_features']
@@ -147,6 +156,9 @@ class BatchThread(threading.Thread):
             self.img_ids.append(item['img_id'])
             human_box = item['part_boxes'][np.array(item['part_classes']) == 20]
             self.human_boxes.append(human_box)
+            self.obj_nums.append(item['obj_nums'])
+            self.obj_boxes.append(item['obj_boxes'])
+            self.obj_classes.append(item['obj_classes'])
 
 
 class DataLoader:

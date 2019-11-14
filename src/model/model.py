@@ -31,6 +31,8 @@ class Model:
         self.pairwise_label_gt = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_gt')
         self.gt_strength_level = tf.placeholder(tf.float32, [None, None, None], 'gt_strength_level')
         self.pairwise_label_mask = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_mask')
+        if self.dataset == 'vcoco':
+            self.pairwise_role_gt = tf.placeholder(tf.float32, [None, None, None, 3], 'pairwise_role_gt')
 
     def build_model(self):
 
@@ -47,14 +49,18 @@ class Model:
                 message = self.message(hidden_node_feature, message, self.adj_mat)
                 hidden_node_feature = self.update(message, hidden_node_feature)
 
-        self.edge_label = self.readout(message)
+        self.edge_label = self.readout(message, self.label_num)
         self.edge_label_pred = tf.sigmoid(self.edge_label) * self.pairwise_label_mask
+
+        if self.dataset == 'vcoco':
+            self.edge_role = self.readout(message, 3)
+            self.edge_role_pred = tf.sigmoid(self.edge_role)
 
     def build_train(self):
         loss = tf.reduce_sum(tf.losses.sigmoid_cross_entropy(multi_class_labels=self.pairwise_label_gt, logits=self.edge_label, weights=self.pairwise_label_mask) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
-        print(loss.shape)
+        if self.dataset == 'vcoco':
+            loss += tf.reduce_sum(tf.losses.softmax_cross_entropy(onehot_labels=self.pairwise_role_gt, logits=self.edge_role, weights=self.pairwise_label_mask) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
         self.loss = tf.reduce_mean(loss)
-        print(self.loss.shape)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
         self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
     
@@ -116,9 +122,9 @@ class Model:
         node_features = tf.reshape(node_features, [-1, self.batch_node_num, self.node_feature_size])
         return node_features    
 
-    def readout(self, edge_features):
+    def readout(self, edge_features, output_num):
         hidden = tf.layers.dense(edge_features, self.edge_feature_size, activation=tf.nn.relu)
-        output = tf.layers.dense(hidden, self.label_num, activation=None)
+        output = tf.layers.dense(hidden, output_num, activation=None)
         return output
 
 if __name__ == "__main__":

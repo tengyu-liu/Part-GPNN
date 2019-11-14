@@ -22,6 +22,13 @@ def get_vcocoeval(imageset):
                                os.path.join(vcoco_root, 'data/instances_vcoco_all_2014.json'),
                                os.path.join(vcoco_root, 'data/splits/vcoco_{}.ids'.format(imageset)))
 
+def vcoco_evaluation(vcocoeval, imageset, all_results, name, method):
+    print('============ %s ============'%method)
+    det_file = os.path.join(os.path.dirname(__file__), 'eval', name, '%s_detections[%s].pkl'%(imageset, method))
+    pickle.dump(all_results, open(det_file, 'wb'))
+    vcocoeval._do_eval(det_file, ovr_thresh=0.5)
+    print('========== END %s =========='%method)
+
 train_vcocoeval = get_vcocoeval('train')
 val_vcocoeval = get_vcocoeval('val')
 test_vcocoeval = get_vcocoeval('test')
@@ -48,6 +55,8 @@ os.makedirs(os.path.join(os.path.dirname(__file__), 'logs'), exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(__file__), 'logs', flags.name), exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(__file__), 'models'), exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(__file__), 'models', flags.name), exist_ok=True)
+os.makedirs(os.path.join(os.path.dirname(__file__), 'eval'), exist_ok=True)
+os.makedirs(os.path.join(os.path.dirname(__file__), 'eval', flags.name), exist_ok=True)
 log_dir = os.path.join(os.path.dirname(__file__), 'logs', flags.name)
 model_dir = os.path.join(os.path.dirname(__file__), 'models', flags.name)
 fig_dir = os.path.join(os.path.dirname(__file__), 'figs', flags.name)
@@ -68,7 +77,9 @@ for epoch in range(flags.epochs):
     total_data_time = 0
     total_tf_time = 0
 
-    all_results = []
+    all_results_sum = []
+    all_results_mean = []
+    all_results_max = []
 
     while True:
         t0 = time.time()
@@ -76,20 +87,24 @@ for epoch in range(flags.epochs):
         res = train_loader.fetch()
         if res is None:
             break
-        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, img_ids = res
+        node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
+                part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
+                obj_nums, obj_boxes, obj_classes, img_ids = res
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
         tf_t0 = time.time()
-        step, pred, loss, _ = sess.run(fetches=[
+        step, pred_label, pred_role, loss, _ = sess.run(fetches=[
             model.step, 
             model.edge_label_pred, 
+            model.edge_role_pred,
             model.loss, 
             model.train_op], feed_dict={
             model.node_features : node_features,
             model.edge_features : edge_features, 
             model.adj_mat       : adj_mat, 
             model.pairwise_label_gt : gt_action_labels, 
+            model.pairwise_role_gt  : gt_action_roles,
             model.gt_strength_level : gt_strength_level,
             model.batch_node_num : batch_node_num,
             model.pairwise_label_mask : pairwise_label_mask, 
@@ -97,51 +112,9 @@ for epoch in range(flags.epochs):
         })
         tf_t1 = time.time()
         total_tf_time += (tf_t1 - tf_t0)
-
-        """
-        TODO: 
-        Prepare 3 lists of result dictionaries for vcocoeval
-        * human-level label and role predictions
-            1. Add role predictions
-            2. Use existing code in metrics.py to obtain human-level predictions, in sum, mean and max mode respectively
-        """        
-        for i_item in range(len(node_features)):
-            curr_img_id = img_ids[i_item]
-            curr_human_boxes = human_boxes[i_item]
-            for i_human, human_box in enumerate(curr_human_boxes):
-                instance = {
-                    'image_id' : curr_img_id,
-                    'person_box' : human_box,
-                }
-                for action_index, action in enumerate(metadata.action_classes):
-                    if action == 'none':
-                        continue
-                    result = instance.copy()
-                    result['{}_agent'.format(action)] = node_labels[i, action_index]
-                    if node_labels[i, action_index] < 0.5:
-                        all_results.append(result)
-                        continue
-                    for role in metadata.action_roles[action][1:]:
-                        role_index = metadata.role_index[role]
-                        action_role_key = '{}_{}'.format(action, role)
-                        best_score = -np.inf
-                        best_j = -1
-                        for j in range(human_num, human_num+obj_num):
-                            action_role_score = (node_labels[j, action_index] + node_roles[j, role_index] + adj_mat[i, j])/3
-                            if action_role_score > best_score:
-                                best_score = action_role_score
-                                obj_info = np.append(boxes[j, :], action_role_score)
-                                best_j = j
-                        if best_score > 0.0:
-                            # obj_info[4] = 1.0
-                            result[action_role_key] = obj_info
-                            result['{}_class'.format(role)] = classes[best_j]
-                    all_results.append(result)
-
-            # _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
-            # avg_prec_sum.append(_sum)
-            # avg_prec_max.append(_max)
-            # avg_prec_mean.append(_mean)
+        all_results_sum, all_results_max, all_results_mean = metrics.append_results(
+            all_results_sum, all_results_max, all_results_mean, human_boxes, 
+            part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
 
         losses.append(loss)
         batch_time.append(time.time() - t0)
@@ -155,7 +128,9 @@ for epoch in range(flags.epochs):
             batch_time[-1], total_data_time / item, total_tf_time / item
         ), end='', flush=True)
 
-    vcoco_evaluation(train_vcocoeval, 'train', all_results)
+    vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
+    vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+    vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
     
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -179,12 +154,19 @@ for epoch in range(flags.epochs):
         item = 0
         total_data_time = 0
         total_tf_time = 0
+
+        all_results_sum = []
+        all_results_mean = []
+        all_results_max = []
+
         while True:
             t0 = time.time()
             res = val_loader.fetch()
             if res is None:
                 break
-            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, img_ids = res
+            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
+                    part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
+                    obj_nums, obj_boxes, obj_classes, img_ids = res
             total_data_time += (time.time() - t0)
             item += len(node_features)
                     
@@ -205,11 +187,9 @@ for epoch in range(flags.epochs):
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
 
-            for i_item in range(len(node_features)):
-                _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
-                avg_prec_sum.append(_sum)
-                avg_prec_max.append(_max)
-                avg_prec_mean.append(_mean)
+            all_results_sum, all_results_max, all_results_mean = metrics.append_results(
+                all_results_sum, all_results_max, all_results_mean, human_boxes, 
+                part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
 
             losses.append(loss)
             batch_time.append(time.time() - t0)
@@ -223,6 +203,10 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='', flush=True)
 
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+        
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
         summ = sess.run(fetches=model.summ, feed_dict={
@@ -248,12 +232,20 @@ for epoch in range(flags.epochs):
         item = 0
         total_data_time = 0
         total_tf_time = 0
+
+        all_results_sum = []
+        all_results_mean = []
+        all_results_max = []
+
         while True:
             t0 = time.time()
             res = test_loader.fetch()
             if res is None:
                 break
-            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, img_ids = res
+            node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
+                    part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
+                    obj_nums, obj_boxes, obj_classes, img_ids = res
+
             total_data_time += (time.time() - t0)
             item += len(node_features)
 
@@ -274,11 +266,9 @@ for epoch in range(flags.epochs):
             tf_t1 = time.time()
             total_tf_time = (tf_t1 - tf_t0)
 
-            for i_item in range(len(node_features)):
-                _sum, _max, _mean = compute_mAP(pred[i_item], gt_action_labels[i_item], part_human_ids[i_item], batch_node_num)
-                avg_prec_sum.append(_sum)
-                avg_prec_max.append(_max)
-                avg_prec_mean.append(_mean)
+            all_results_sum, all_results_max, all_results_mean = metrics.append_results(
+                all_results_sum, all_results_max, all_results_mean, human_boxes, 
+                part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
 
             losses.append(loss)
             batch_time.append(time.time() - t0)
@@ -292,6 +282,10 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='')
 
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+        vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+        
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
         print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
             epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
