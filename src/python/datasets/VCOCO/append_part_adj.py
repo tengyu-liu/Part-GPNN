@@ -23,37 +23,32 @@ import vsrl_utils as vu
 import metadata
 
 
-part_names = [
-    'Torso',            # 0 
-    'Right Hand',       # 1
-    'Left Hand',        # 2
-    'Left Foot',        # 3
-    'Right Foot',       # 4
-    'Upper Leg Right',  # 5
-    'Upper Leg Left',   # 6
-    'Lower Leg Right',  # 7
-    'Lower Leg Left',   # 8
-    'Upper Arm Left',   # 9
-    'Upper Arm Right',  # 10
-    'Lower Arm Left',   # 11
-    'Lower Arm Right',  # 12
-    'Head']             # 13
+part_names = ['Right Shoulder',
+            'Left Shoulder',
+            'Knee Right',
+            'Knee Left',
+            'Ankle Right',
+            'Ankle Left',
+            'Elbow Left',
+            'Elbow Right',
+            'Hand Left',
+            'Hand Right',
+            'Head',
+            'Hip']
 
 part_dist = []
-part_dist.append([0, 3, 3, 3, 3, 1, 1, 2, 2, 1, 1, 2, 2, 1])
-part_dist.append([3, 0, 6, 6, 6, 4, 4, 5, 5, 4, 2, 5, 1, 4])
-part_dist.append([3, 6, 0, 6, 6, 4, 4, 5, 5, 2, 4, 1, 5, 4])
-part_dist.append([3, 6, 6, 0, 6, 4, 2, 5, 1, 4, 4, 5, 5, 4])
-part_dist.append([3, 6, 6, 6, 0, 2, 4, 1, 5, 4, 4, 5, 5, 4])
-part_dist.append([1, 4, 4, 4, 2, 0, 2, 1, 3, 2, 2, 3, 3, 2])
-part_dist.append([1, 4, 4, 2, 4, 2, 0, 3, 1, 2, 2, 3, 3, 2])
-part_dist.append([2, 5, 5, 5, 1, 1, 3, 0, 4, 3, 3, 4, 4, 3])
-part_dist.append([2, 5, 5, 1, 5, 3, 1, 4, 0, 3, 3, 4, 4, 3])
-part_dist.append([1, 4, 2, 4, 4, 2, 2, 3, 3, 0, 2, 1, 3, 2])
-part_dist.append([1, 2, 4, 4, 4, 2, 2, 3, 3, 2, 0, 3, 1, 2])
-part_dist.append([2, 5, 1, 5, 5, 3, 3, 4, 4, 1, 3, 0, 4, 3])
-part_dist.append([2, 1, 5, 5, 5, 3, 3, 4, 4, 3, 1, 4, 0, 3])
-part_dist.append([1, 4, 4, 4, 4, 2, 2, 3, 3, 2, 2, 3, 3, 0])
+part_dist.append([0, 2, 2, 2, 3, 3, 3, 1, 4, 2, 1, 1])
+part_dist.append([2, 0, 2, 2, 3, 3, 1, 3, 2, 4, 1, 1])
+part_dist.append([2, 2, 0, 2, 1, 3, 3, 3, 4, 4, 3, 1])
+part_dist.append([2, 2, 2, 0, 3, 1, 3, 3, 4, 4, 3, 1])
+part_dist.append([3, 3, 1, 3, 0, 4, 4, 4, 5, 5, 4, 2])
+part_dist.append([3, 3, 3, 1, 4, 0, 4, 4, 5, 5, 4, 2])
+part_dist.append([3, 1, 3, 3, 4, 4, 0, 4, 1, 5, 2, 2])
+part_dist.append([1, 3, 3, 3, 4, 4, 4, 0, 5, 1, 2, 2])
+part_dist.append([4, 2, 4, 4, 5, 5, 1, 5, 0, 6, 3, 3])
+part_dist.append([2, 4, 4, 4, 5, 5, 5, 1, 6, 0, 3, 3])
+part_dist.append([1, 1, 3, 3, 4, 4, 2, 2, 3, 3, 0, 2])
+part_dist.append([1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 2, 0])
 part_dist = np.array(part_dist)
 
 def parse_classes(det_classes):

@@ -32,20 +32,18 @@ import matplotlib.pyplot as plt
 
 feature_mode = 'None'
 
-part_ids = {'Torso': [1, 2],
-            'Right Hand': [3],
-            'Left Hand': [4],
-            'Left Foot': [5],
-            'Right Foot': [6],
-            'Upper Leg Right': [7, 9],
-            'Upper Leg Left': [8, 10],
-            'Lower Leg Right': [11, 13],
-            'Lower Leg Left': [12, 14],
-            'Upper Arm Left': [15, 17],
-            'Upper Arm Right': [16, 18],
-            'Lower Arm Left': [19, 21],
-            'Lower Arm Right': [20, 22], 
-            'Head': [23, 24]
+part_ids = {'Right Shoulder': 2,
+            'Left Shoulder': 5,
+            'Knee Right': 10,
+            'Knee Left': 13,
+            'Ankle Right': 11,
+            'Ankle Left': 14,
+            'Elbow Left': 6,
+            'Elbow Right': 3,
+            'Hand Left': 7,
+            'Hand Right': 4,
+            'Head': 0,
+            'Hip': 8,
             }
 
 part_names = list(part_ids.keys()) 
@@ -62,7 +60,8 @@ class Vgg16(torch.nn.Module):
 
         # if feature_mode == 'roi_vgg':
         #     self.classifier = torch.nn.Sequential()
-        #     self.classifier.add_module(str(0), pretrained_vgg.classifier[0])
+        #     self.classifier.add_modul 
+        # e(str(0), pretrained_vgg.classifier[0])
 
         # self.classifier.add_module(str(1), pretrained_vgg.classifier[1])
         # for x in range(len(pretrained_vgg.classifier)-last_layer):
@@ -167,8 +166,8 @@ def extract_features(paths, imageset):
         # if os.path.exists(os.path.join(feature_path, '{}_obj_classes'.format(img_name))):
         #     continue
 
-        if not os.path.exists(os.path.join('/home/tengyu/Documents/densepose/DensePoseData/infer_out/%s/%s.pkl'%(vcoco_mapping[imageset], img_name))):
-            continue
+        # if not os.path.exists(os.path.join('/home/tengyu/Documents/densepose/DensePoseData/infer_out/%s/%s.pkl'%(vcoco_mapping[imageset], img_name))):
+        #     continue
 
         # Read image
         image_path = os.path.join(vcoco_path, 'coco/', '{}2014'.format(vcoco_mapping[imageset]), img_name)
@@ -183,35 +182,53 @@ def extract_features(paths, imageset):
         edge_boxes_all = np.empty((0,4))
         edge_human_id = list()
 
-        # plt.imshow(original_img)
+        plt.imshow(original_img)
         # Read object detections
         instance = pickle.load(open(os.path.join(siyuan_det_path, img_name + '.p'), 'rb'), encoding='latin1')
         obj_boxes_all = instance['boxes'][instance['human_num']:]
         obj_classes_all = instance['classes'][instance['human_num']:]
 
         # Read human detections
-        boxes, bodies = pickle.load(open(os.path.join('/home/tengyu/Documents/densepose/DensePoseData/infer_out/%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
+        # boxes, bodies = pickle.load(open(os.path.join('/home/tengyu/Documents/densepose/DensePoseData/infer_out/%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
+        openpose = json.load(open(os.path.join(os.path.dirname(__file__), '../../../../data/openpose/vcoco/%s/%s.json'%(vcoco_mapping[imageset], img_name))))
 
-        for human_id in range(len(boxes[1])):
-            if boxes[1][human_id][4] < 0.7:
-                continue
+        for human_id, human in enumerate(openpose['people']):
+            keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
+            w, h, _ = np.max(keypoints, axis=0) - np.min(keypoints, axis=0)
             for part_id, part_name in enumerate(part_names):
-                x, y = np.where(np.isin(bodies[1][human_id], part_ids[part_name]))
-                x = x + boxes[1][human_id][1]
-                y = y + boxes[1][human_id][0]
-                if len(x) > 0:
-                    x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
-                    part_boxes_all = np.vstack([part_boxes_all, np.array([[y0,x0,y1,x1]])])
-                    part_classes_all.append(part_id)
-                    part_human_id.append(human_id)
+                x, y, s = keypoints[part_ids[part_name]]
+                _box = [[y - h * 0.1, x - w * 0.1, y + h * 0.1, x + w * 0.1]]
+                part_boxes_all = np.vstack([part_boxes_all, _box])
+                part_classes_all.append(part_id)
+                part_human_id.append(human_id)
+                plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
 
-                    # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
+                for obj_box in obj_boxes_all:
+                    edge_box = combine_box(obj_box, part_boxes_all[-1,:])
+                    edge_human_id.append(human_id)
+                    edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
+        plt.show()
 
-                    # Add edges
-                    for obj_box in obj_boxes_all:
-                        edge_box = combine_box(obj_box, part_boxes_all[-1,:])
-                        edge_human_id.append(human_id)
-                        edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
+        # for human_id in range(len(boxes[1])):
+        #     if boxes[1][human_id][4] < 0.7:
+        #         continue
+        #     for part_id, part_name in enumerate(part_names):
+        #         x, y = np.where(np.isin(bodies[1][human_id], part_ids[part_name]))
+        #         x = x + boxes[1][human_id][1]
+        #         y = y + boxes[1][human_id][0]
+        #         if len(x) > 0:
+        #             x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
+        #             part_boxes_all = np.vstack([part_boxes_all, np.array([[y0,x0,y1,x1]])])
+        #             part_classes_all.append(part_id)
+        #             part_human_id.append(human_id)
+
+        #             # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
+
+        #             # Add edges
+        #             for obj_box in obj_boxes_all:
+        #                 edge_box = combine_box(obj_box, part_boxes_all[-1,:])
+        #                 edge_human_id.append(human_id)
+        #                 edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
         
         # plt.show()
         
