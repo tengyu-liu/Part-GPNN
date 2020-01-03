@@ -64,6 +64,7 @@ class BatchThread(threading.Thread):
         self.img_ids = []
         self.human_boxes = []
         self.obj_nums = []
+        self.part_nums = []
         self.obj_boxes = []
         self.obj_classes = []
 
@@ -116,6 +117,7 @@ class BatchThread(threading.Thread):
                         self.batch_node_num, 
                         copy.deepcopy(self.data_fn), 
                         copy.deepcopy(self.obj_nums),
+                        copy.deepcopy(self.part_nums),
                         copy.deepcopy(self.obj_boxes),
                         copy.deepcopy(self.obj_classes),
                         copy.deepcopy(self.img_ids))
@@ -140,6 +142,7 @@ class BatchThread(threading.Thread):
                 self.img_ids = []
                 self.human_boxes = []
                 self.obj_nums = []
+                self.part_nums = []
                 self.obj_boxes = []
                 self.obj_classes = []
             
@@ -157,6 +160,7 @@ class BatchThread(threading.Thread):
             human_box = item['part_boxes'][np.array(item['part_classes']) == 20]
             self.human_boxes.append(human_box)
             self.obj_nums.append(item['obj_num'])
+            self.part_nums.append(item['part_num'])
             self.obj_boxes.append(item['obj_boxes'])
             self.obj_classes.append(item['obj_classes'])
 

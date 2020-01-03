@@ -89,7 +89,7 @@ for epoch in range(flags.epochs):
             break
         node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
                 part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
-                obj_nums, obj_boxes, obj_classes, img_ids = res
+                obj_nums, part_nums, obj_boxes, obj_classes, img_ids = res
         total_data_time += (time.time() - t0)
         item += len(node_features)
         
@@ -115,6 +115,12 @@ for epoch in range(flags.epochs):
         all_results_sum, all_results_max, all_results_mean = metrics.append_results(
             all_results_sum, all_results_max, all_results_mean, human_boxes, 
             part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
+
+        for i_item in range(len(pred_label)):
+            __avg_prec_sum, __avg_prec_max, __avg_prec_mean = metrics.compute_mAP(pred_label[i_item], gt_action_labels[i_item], part_human_ids[i_item], obj_nums[i_item] + part_nums[i_item])
+            avg_prec_sum.append(__avg_prec_sum)
+            avg_prec_max.append(__avg_prec_max)
+            avg_prec_mean.append(__avg_prec_mean)
 
         losses.append(loss)
         batch_time.append(time.time() - t0)
@@ -166,7 +172,7 @@ for epoch in range(flags.epochs):
                 break
             node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
                     part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
-                    obj_nums, obj_boxes, obj_classes, img_ids = res
+                    obj_nums, part_nums, obj_boxes, obj_classes, img_ids = res
             total_data_time += (time.time() - t0)
             item += len(node_features)
                     
@@ -190,6 +196,12 @@ for epoch in range(flags.epochs):
             all_results_sum, all_results_max, all_results_mean = metrics.append_results(
                 all_results_sum, all_results_max, all_results_mean, human_boxes, 
                 part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
+
+            for i_item in range(len(pred_label)):
+                __avg_prec_sum, __avg_prec_max, __avg_prec_mean = metrics.compute_mAP(pred_label[i_item], gt_action_labels[i_item], part_human_ids[i_item], obj_nums[i_item] + part_nums[i_item])
+                avg_prec_sum.append(__avg_prec_sum)
+                avg_prec_max.append(__avg_prec_max)
+                avg_prec_mean.append(__avg_prec_mean)
 
             losses.append(loss)
             batch_time.append(time.time() - t0)
