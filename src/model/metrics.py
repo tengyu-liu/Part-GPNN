@@ -124,6 +124,16 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
             }
 
             if i_human not in part_human_ids[i_item]:
+                for action_index, action in enumerate(metadata.action_classes):
+                    if action == 'none':
+                        continue
+                    result_sum = instance.copy()
+                    result_max = instance.copy()
+                    result_mean = instance.copy()
+                    result_sum['{}_agent'.format(action)] = 0.0
+                    result_max['{}_agent'.format(action)] = 0.0
+                    result_mean['{}_agent'.format(action)] = 0.0
+                    all_results_sum.append(result_sum)
                 continue
 
             pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
