@@ -137,10 +137,10 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 result_sum = instance.copy()
                 result_max = instance.copy()
                 result_mean = instance.copy()
-                result_sum['{}_agent'.format(action)] = pred_label_sum[action_index]
-                result_max['{}_agent'.format(action)] = pred_label_max[action_index]
-                result_mean['{}_agent'.format(action)] = pred_label_mean[action_index]
-                if pred_label_sum[action_index] < 0.5:
+                result_sum['{}_agent'.format(action)] = pred_label_sum[:,action_index]
+                result_max['{}_agent'.format(action)] = pred_label_max[:,action_index]
+                result_mean['{}_agent'.format(action)] = pred_label_mean[:,action_index]
+                if np.all(pred_label_sum[:,action_index] < 0.5):
                     all_results_sum.append(result_sum)
                 else:
                     for role in metadata.action_roles[action][1:]:
@@ -160,7 +160,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_sum.append(result_sum)
 
-                if pred_label_max[action_index] < 0.5:
+                if np.all(pred_label_max[action_index] < 0.5):
                     all_results_max.append(result_max)
                 else:
                     for role in metadata.action_roles[action][1:]:
@@ -180,7 +180,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_max.append(result)
 
-                if pred_label_mean[action_index] < 0.5:
+                if np.all(pred_label_mean[action_index] < 0.5):
                     all_results_mean.append(result_mean)
                 else:
                     for role in metadata.action_roles[action][1:]:
