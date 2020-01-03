@@ -11,7 +11,7 @@ import tensorflow as tf
 from config import flags
 from dataloader_parallel import DataLoader
 import metadata
-from metrics import compute_mAP
+import metrics
 from model import Model
 import vsrl_eval
 
