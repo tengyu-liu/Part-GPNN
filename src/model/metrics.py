@@ -113,7 +113,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
         curr_human_boxes = human_boxes[i_item]
 
         part_num = len(part_human_ids[i_item])
-        human_num = len(set(part_num))
+        human_num = len(human_boxes[i_item])
         obj_num = obj_nums[i_item]
 
         pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
