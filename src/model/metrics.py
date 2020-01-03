@@ -108,7 +108,7 @@ def compute_part_mAP(pred, gt, part_classes):
     return avg_prec_sum, avg_prec_max, avg_prec_mean
 
 def append_results(all_results_sum, all_results_max, all_results_mean, human_boxes, part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids):
-    for i_item in range(len(pred_labels)):
+    for i_item in range(len(pred_label)):
         curr_img_id = img_ids[i_item]
         curr_human_boxes = human_boxes[i_item]
 
