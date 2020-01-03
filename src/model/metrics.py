@@ -43,28 +43,27 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
 
     return avg_prec_sum, avg_prec_max, avg_prec_mean
 
-part_ids = {'Torso': [1, 2],
-            'Right Hand': [3],
-            'Left Hand': [4],
-            'Left Foot': [5],
-            'Right Foot': [6],
-            'Upper Leg Right': [7, 9],
-            'Upper Leg Left': [8, 10],
-            'Lower Leg Right': [11, 13],
-            'Lower Leg Left': [12, 14],
-            'Upper Arm Left': [15, 17],
-            'Upper Arm Right': [16, 18],
-            'Lower Arm Left': [19, 21],
-            'Lower Arm Right': [20, 22], 
-            'Head': [23, 24],
-            'Upper Body': [1, 2, 3, 4, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], 
-            'Lower Body': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 
-            'Left Arm': [4, 15, 17, 19, 21], 
-            'Right Arm': [3, 16, 18, 20, 22], 
-            'Left Leg': [5, 8, 10, 12, 14], 
-            'Right Leg': [6, 7, 9, 11, 13], 
-            'Full Body': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+part_ids = {'Right Shoulder': [2],
+            'Left Shoulder': [5],
+            'Knee Right': [10],
+            'Knee Left': [13],
+            'Ankle Right': [11],
+            'Ankle Left': [14],
+            'Elbow Left': [6],
+            'Elbow Right': [3],
+            'Hand Left': [7],
+            'Hand Right': [4],
+            'Head': [0],
+            'Hip': [8],
+            'Upper Body': [2,5,6,3,7,4,0,8],
+            'Lower Body': [10,13,11,14,8],
+            'Left Arm': [5,6,7],
+            'Right Arm': [2,3,4],
+            'Left Leg': [8,10,11],
+            'Right Leg': [8,13,14],
+            'Full Body': [2,5,10,13,11,14,6,3,7,4,0,8], 
             }
+
 
 part_names = list(part_ids.keys())
 
@@ -123,13 +122,20 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 'person_box' : human_box,
             }
 
-            pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
-            pred_label_max = np.max(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
-            pred_label_mean = np.mean(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
-    
-            pred_role_sum = np.sum(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
-            pred_role_max = np.max(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
-            pred_role_mean = np.mean(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+            try:
+                pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+                pred_label_max = np.max(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+                pred_label_mean = np.mean(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+        
+                pred_role_sum = np.sum(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+                pred_role_max = np.max(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+                pred_role_mean = np.mean(pred_role[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
+            except:
+                print('=====')
+                print(pred_label[i_item].shape)
+                print(part_human_ids[i_item])
+                print('=====')
+                raise
 
             for action_index, action in enumerate(metadata.action_classes):
                 if action == 'none':
