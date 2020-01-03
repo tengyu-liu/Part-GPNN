@@ -178,7 +178,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             # obj_info[4] = 1.0
                             result_max[action_role_key] = obj_info
                             result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
-                    all_results_max.append(result)
+                    all_results_max.append(result_max)
 
                 if np.all(pred_label_mean[action_index] < 0.5):
                     all_results_mean.append(result_mean)
