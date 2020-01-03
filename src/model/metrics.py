@@ -8,6 +8,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     # phi : P
 
     gt = gt[:node_num, :node_num, :]
+    pred = pred[:node_num, :node_num, :]
 
     human_ids = set(part_human_ids)
     human_num = len(human_ids)
