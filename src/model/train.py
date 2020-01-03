@@ -15,7 +15,7 @@ from metrics import compute_mAP
 from model import Model
 import vsrl_eval
 
-vcoco_root = '/mnt/hdd-12t/share/v-coco'
+vcoco_root = '/home/tengyu/dataset/v-coco'
 
 def get_vcocoeval(imageset):
     return vsrl_eval.VCOCOeval(os.path.join(vcoco_root, 'data/vcoco/vcoco_{}.json'.format(imageset)),
