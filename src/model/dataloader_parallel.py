@@ -156,7 +156,7 @@ class BatchThread(threading.Thread):
             self.img_ids.append(item['img_id'])
             human_box = item['part_boxes'][np.array(item['part_classes']) == 20]
             self.human_boxes.append(human_box)
-            self.obj_nums.append(item['obj_nums'])
+            self.obj_nums.append(item['obj_num'])
             self.obj_boxes.append(item['obj_boxes'])
             self.obj_classes.append(item['obj_classes'])
 

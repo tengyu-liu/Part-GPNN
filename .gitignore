@@ -5,3 +5,5 @@
 logs
 models
 data/openpose
+*.zip
+data/vcoco_features

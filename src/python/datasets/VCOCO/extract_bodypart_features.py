@@ -30,7 +30,7 @@ import metadata
 
 import matplotlib.pyplot as plt
 
-feature_mode = 'None'
+feature_mode = 'resnet'
 
 part_ids = {'Right Shoulder': 2,
             'Left Shoulder': 5,
@@ -89,7 +89,7 @@ def get_model(paths):
 
     feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
     feature_network.cuda()
-    checkpoint_dir = os.path.join(paths.tmp_root, 'checkpoints', 'vcoco', 'finetune_{}_noisy'.format(feature_mode))
+    checkpoint_dir = os.path.join(os.path.dirname(__file__), '../../../../data/model_resnet_noisy/finetune_{}_noisy'.format(feature_mode))
     best_model_file = os.path.join(checkpoint_dir, 'model_best.pth')
     checkpoint = torch.load(best_model_file)
     for k in list(checkpoint['state_dict'].keys()):
@@ -148,7 +148,8 @@ def extract_features(paths, imageset):
         vgg16, transform = get_model(paths)
 
     # det_res = pickle.load(open('/home/tengyu/Documents/mmdetection/outputs/coco.%s.faster_rcnn_x101_64x4d_fpn_1x_20181218-c9c69c8f.pkl'%vcoco_mapping[imageset], 'rb'))
-    siyuan_det_path = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
+    # siyuan_det_path = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
+    siyuan_det_path = os.path.join(os.path.dirname(__file__), '../../../../data/vcoco_features')
 
     print('Extracting %s'%imageset)
 
@@ -182,32 +183,50 @@ def extract_features(paths, imageset):
         edge_boxes_all = np.empty((0,4))
         edge_human_id = list()
 
-        plt.imshow(original_img)
         # Read object detections
-        instance = pickle.load(open(os.path.join(siyuan_det_path, img_name + '.p'), 'rb'), encoding='latin1')
+        try:
+            instance = pickle.load(open(os.path.join(siyuan_det_path, img_name + '.p'), 'rb'), encoding='latin1')
+        except:
+            continue
         obj_boxes_all = instance['boxes'][instance['human_num']:]
         obj_classes_all = instance['classes'][instance['human_num']:]
 
         # Read human detections
         # boxes, bodies = pickle.load(open(os.path.join('/home/tengyu/Documents/densepose/DensePoseData/infer_out/%s/%s.pkl'%(vcoco_mapping[imageset], img_name)), 'rb'), encoding='latin-1')
-        openpose = json.load(open(os.path.join(os.path.dirname(__file__), '../../../../data/openpose/vcoco/%s/%s.json'%(vcoco_mapping[imageset], img_name))))
+        openpose = json.load(open(os.path.join(os.path.dirname(__file__), '../../../../data/openpose/%s2014openpose/%s_keypoints.json'%(vcoco_mapping[imageset], img_name[:-4]))))
 
         for human_id, human in enumerate(openpose['people']):
+            # plt.clf()
+            # plt.imshow(original_img)
             keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
-            w, h, _ = np.max(keypoints, axis=0) - np.min(keypoints, axis=0)
+            try:
+                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.7], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.7], axis=0)
+            except:
+                continue
+            if w < 60 or h < 60:
+                continue
             for part_id, part_name in enumerate(part_names):
-                x, y, s = keypoints[part_ids[part_name]]
-                _box = [[y - h * 0.1, x - w * 0.1, y + h * 0.1, x + w * 0.1]]
+                y, x, s = keypoints[part_ids[part_name]]
+                if s < 0.7:
+                    continue
+                y0 = np.clip(y - w * 0.1, 0, h)
+                x0 = np.clip(x - w * 0.1, 0, w)
+                y1 = np.clip(y + w * 0.1, 0, h)
+                x1 = np.clip(x + w * 0.1, 0, w)
+                _box = [[y0,x0,y1,x1]]
                 part_boxes_all = np.vstack([part_boxes_all, _box])
                 part_classes_all.append(part_id)
                 part_human_id.append(human_id)
-                plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
+                # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
 
                 for obj_box in obj_boxes_all:
                     edge_box = combine_box(obj_box, part_boxes_all[-1,:])
                     edge_human_id.append(human_id)
                     edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
-        plt.show()
+            # plt.show()
+
+        if len(part_boxes_all) == 0:
+            continue
 
         # for human_id in range(len(boxes[1])):
         #     if boxes[1][human_id][4] < 0.7:
@@ -226,7 +245,7 @@ def extract_features(paths, imageset):
 
         #             # Add edges
         #             for obj_box in obj_boxes_all:
-        #                 edge_box = combine_box(obj_box, part_boxes_all[-1,:])
+        #                 edge_box = combine_box(Noneobj_box, part_boxes_all[-1,:])
         #                 edge_human_id.append(human_id)
         #                 edge_boxes_all = np.vstack([edge_boxes_all, [edge_box]])
         
@@ -254,9 +273,11 @@ def extract_features(paths, imageset):
                 part = part_boxes_all[i_box, :].astype(int)
                 part_image = original_img[part[1]:part[3]+1, part[0]:part[2]+1, :]
                 # print(part_names[part_classes_all[i_box]])
-                # plt.imshow(part_image)
-                # plt.show()
-                part_image = transform(cv2.resize(part_image, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+                try:
+                    part_image = transform(cv2.resize(part_image, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+                except:
+                    print(part[1], part[3], part[0], part[2])
+                    raise
                 part_image = torch.autograd.Variable(part_image.unsqueeze(0)).cuda()
                 feat, pred = vgg16(part_image)
                 part_features[i_box, ...] = feat.data.cpu().numpy()
@@ -267,7 +288,11 @@ def extract_features(paths, imageset):
                 # print classes[det_classes_all[i_box]]
                 # plt.imshow(roi_image)
                 # plt.show()
-                edge_image = transform(cv2.resize(edge_image, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+                try:
+                    edge_image = transform(cv2.resize(edge_image, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
+                except:
+                    print(edge[1], edge[3], edge[0], edge[2])
+                    raise
                 edge_image = torch.autograd.Variable(edge_image.unsqueeze(0)).cuda()
                 feat, pred = vgg16(edge_image)
                 edge_features[i_box, ...] = feat.data.cpu().numpy()

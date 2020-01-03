@@ -9,6 +9,7 @@ Edge label GT
 """
 
 import os
+import json
 import pickle
 import warnings
 from collections import defaultdict
@@ -24,81 +25,73 @@ import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
 
-part_ids = {'Torso': [1, 2],
-            'Right Hand': [3],
-            'Left Hand': [4],
-            'Left Foot': [5],
-            'Right Foot': [6],
-            'Upper Leg Right': [7, 9],
-            'Upper Leg Left': [8, 10],
-            'Lower Leg Right': [11, 13],
-            'Lower Leg Left': [12, 14],
-            'Upper Arm Left': [15, 17],
-            'Upper Arm Right': [16, 18],
-            'Lower Arm Left': [19, 21],
-            'Lower Arm Right': [20, 22], 
-            'Head': [23, 24],
-            'Upper Body': [1, 2, 3, 4, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], 
-            'Lower Body': [5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 
-            'Left Arm': [4, 15, 17, 19, 21], 
-            'Right Arm': [3, 16, 18, 20, 22], 
-            'Left Leg': [5, 8, 10, 12, 14], 
-            'Right Leg': [6, 7, 9, 11, 13], 
-            'Full Body': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+part_ids = {'Right Shoulder': [2],
+            'Left Shoulder': [5],
+            'Knee Right': [10],
+            'Knee Left': [13],
+            'Ankle Right': [11],
+            'Ankle Left': [14],
+            'Elbow Left': [6],
+            'Elbow Right': [3],
+            'Hand Left': [7],
+            'Hand Right': [4],
+            'Head': [0],
+            'Hip': [8],
+            'Upper Body': [2,5,6,3,7,4,0,8],
+            'Lower Body': [10,13,11,14,8],
+            'Left Arm': [5,6,7],
+            'Right Arm': [2,3,4],
+            'Left Leg': [8,10,11],
+            'Right Leg': [8,13,14],
+            'Full Body': [2,5,10,13,11,14,6,3,7,4,0,8], 
             }
-
 
 
 __PART_WEIGHT_L1 = 0.1 # hand
 __PART_WEIGHT_L2 = 0.3 # arm
 __PART_WEIGHT_L3 = 0.5 # upper body
 __PART_WEIGHT_L4 = 1.0 # human
-part_weights = {'Torso': __PART_WEIGHT_L1,
-            'Right Hand': __PART_WEIGHT_L1,
-            'Left Hand': __PART_WEIGHT_L1,
-            'Left Foot': __PART_WEIGHT_L1,
-            'Right Foot': __PART_WEIGHT_L1,
-            'Upper Leg Right': __PART_WEIGHT_L1,
-            'Upper Leg Left': __PART_WEIGHT_L1,
-            'Lower Leg Right': __PART_WEIGHT_L1,
-            'Lower Leg Left': __PART_WEIGHT_L1,
-            'Upper Arm Left': __PART_WEIGHT_L1,
-            'Upper Arm Right': __PART_WEIGHT_L1,
-            'Lower Arm Left': __PART_WEIGHT_L1,
-            'Lower Arm Right': __PART_WEIGHT_L1, 
+part_weights = {'Right Shoulder': __PART_WEIGHT_L1,
+            'Left Shoulder': __PART_WEIGHT_L1,
+            'Knee Right': __PART_WEIGHT_L1,
+            'Knee Left': __PART_WEIGHT_L1,
+            'Ankle Right': __PART_WEIGHT_L1,
+            'Ankle Left': __PART_WEIGHT_L1,
+            'Elbow Left': __PART_WEIGHT_L1,
+            'Elbow Right': __PART_WEIGHT_L1,
+            'Hand Left': __PART_WEIGHT_L1,
+            'Hand Right': __PART_WEIGHT_L1,
             'Head': __PART_WEIGHT_L1,
-            'Upper Body': __PART_WEIGHT_L3, 
-            'Lower Body': __PART_WEIGHT_L3, 
-            'Left Arm': __PART_WEIGHT_L2, 
-            'Right Arm': __PART_WEIGHT_L2, 
-            'Left Leg': __PART_WEIGHT_L2, 
+            'Hip': __PART_WEIGHT_L1,
+            'Upper Body': __PART_WEIGHT_L3,
+            'Lower Body': __PART_WEIGHT_L3,
+            'Left Arm': __PART_WEIGHT_L2,
+            'Right Arm': __PART_WEIGHT_L2,
+            'Left Leg': __PART_WEIGHT_L2,
             'Right Leg': __PART_WEIGHT_L2,
-            'Full Body': __PART_WEIGHT_L4
-            }
+            'Full Body': __PART_WEIGHT_L4}
 
 part_names = list(part_ids.keys())
 
-part_graph = {'Torso': [],
-            'Right Hand': [],
-            'Left Hand': [],
-            'Left Foot': [],
-            'Right Foot': [],
-            'Upper Leg Right': [],
-            'Upper Leg Left': [],
-            'Lower Leg Right': [],
-            'Lower Leg Left': [],
-            'Upper Arm Left': [],
-            'Upper Arm Right': [],
-            'Lower Arm Left': [],
-            'Lower Arm Right': [], 
+part_graph = {'Right Shoulder': [],
+            'Left Shoulder': [],
+            'Knee Right': [],
+            'Knee Left': [],
+            'Ankle Right': [],
+            'Ankle Left': [],
+            'Elbow Left': [],
+            'Elbow Right': [],
+            'Hand Left': [],
+            'Hand Right': [],
             'Head': [],
-            'Upper Body': ['Head', 'Torso', 'Left Arm', 'Right Arm'],
-            'Lower Body': ['Left Leg', 'Right Leg'],
-            'Left Arm': ['Upper Arm Left', 'Lower Arm Left', 'Left Hand'],
-            'Right Arm': ['Upper Arm Right', 'Lower Arm Right', 'Right Hand'],
-            'Left Leg': ['Upper Leg Left', 'Lower Leg Left', 'Left Foot'],
-            'Right Leg': ['Upper Leg Right', 'Lower Leg Right', 'Right Foot'],
-            'Full Body': ['Head', 'Torso', 'Upper Body', 'Lower Body']
+            'Hip': [],
+            'Upper Body': ['Head', 'Hip', 'Left Arm', 'Right Arm'],
+            'Lower Body': ['Hip', 'Left Leg', 'Right Leg'],
+            'Left Arm': ['Left Shoulder', 'Elbow Left', 'Hand Left'],
+            'Right Arm': ['Right Shoulder', 'Elbow Right', 'Hand Right'],
+            'Left Leg': ['Hip', 'Knee Left', 'Ankle Left'],
+            'Right Leg': ['Hip', 'Knee Right', 'Ankle Right'],
+            'Full Body': ['Upper Body', 'Lower Body']
             }
 
 def get_intersection(box1, box2):
@@ -152,9 +145,8 @@ def img_to_torch(img):
     img = torch.autograd.Variable(torch.Tensor(img)).cuda()
     return img
 
-meta_dir = '/home/tengyu/Documents/PartGPNN/gpnn/tmp/vcoco/vcoco_features'
+meta_dir = os.path.join(os.path.dirname(__file__), '../../../data/vcoco_features')
 img_dir = '/home/tengyu/Data/mscoco/coco'
-densepose_path = '/home/tengyu/Documents/densepose/DensePoseData/infer_out'
 checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
 vcoco_root = '/home/tengyu/Data/mscoco/v-coco/data'
 save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/feature_resnet_tengyu'
@@ -180,7 +172,9 @@ input_h, input_w = 224, 224
 part_eye = np.eye(21)
 obj_eye = np.eye(81)
 
-for imageset in ['train', 'test', 'val']:
+vcoco_mapping = {'train': 'train', 'test': 'val', 'val': 'train'}
+
+for imageset in ['test', 'val']: # ['train', 'test', 'val']:
     coco = vu.load_coco(vcoco_root)
     vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), vcoco_root)
     for x in vcoco_all:
@@ -193,14 +187,13 @@ for imageset in ['train', 'test', 'val']:
 
         print('%d/%d: %s'%(i_image, len(image_ids), filename))
 
-        if os.path.exists(os.path.join(save_data_path, filename + '.data')):
-            continue
+        # if os.path.exists(os.path.join(save_data_path, filename + '.data')):
+        #     continue
 
         try:
-            boxes, bodies = pickle.load(open(os.path.join(densepose_path, '%s/%s.pkl'%(d, filename)), 'rb'), encoding='latin1')
+            openpose = json.load(open(os.path.join(os.path.dirname(__file__), '../../../data/openpose/%s2014openpose/%s_keypoints.json'%(vcoco_mapping[imageset], filename[:-4]))))
         except:
-            warnings.warn('DensePose missing ' + filename)
-            print(os.path.join(densepose_path, '%s/%s.pkl'%(d, filename)))
+            warnings.warn('OpenPose missing ' + os.path.join(os.path.dirname(__file__), '../../../data/openpose/%s2014openpose/%s_keypoints.json'%(vcoco_mapping[imageset], filename[:-4])))
             continue
         try:
             image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
@@ -228,24 +221,43 @@ for imageset in ['train', 'test', 'val']:
 
         human_boxes = []
 
-        for human_id in range(len(boxes[1])):
-            if boxes[1][human_id][4] < 0.7:
+        # human_boxes contains parts at different levels        
+        for human_id, human in enumerate(openpose['people']):
+            keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
+            try:
+                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.7], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.7], axis=0)
+            except:
                 continue
-
-            # human_boxes contains parts at different levels        
+            if w < 60 or h < 60:
+                continue
             for part_id, part_name in enumerate(part_names):
-                x, y = np.where(np.isin(bodies[1][human_id], part_ids[part_name]))
-                x = x + boxes[1][human_id][1]
-                y = y + boxes[1][human_id][0]
-                if len(x) > 0:
-                    x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
-                    part_boxes.append([y0,x0,y1,x1])
-                    part_classes.append(part_id)
-                    # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
-                    part_human_ids.append(human_id)
+                yxs = keypoints[part_ids[part_name]]
+                yxs = yxs[yxs[:,2] > 0.7]
+                if len(yxs) == 0:
+                    continue
+                y0 = int(np.clip(yxs[:,0].min() - w * 0.1, 0, img_w))
+                x0 = int(np.clip(yxs[:,1].min() - w * 0.1, 0, img_h))
+                y1 = int(np.clip(yxs[:,0].max() + w * 0.1, 0, img_w))
+                x1 = int(np.clip(yxs[:,1].max() + w * 0.1, 0, img_h))
+                _box = [y0,x0,y1,x1]
+                part_boxes.append(_box)
+                part_classes.append(part_id)
+                part_human_ids.append(human_id)
+                
+                if part_names[part_id] == 'Full Body':
+                    human_boxes.append([y0,x0,y1,x1])
 
-                    if part_names[part_id] == 'Full Body':
-                        human_boxes.append([y0,x0,y1,x1])
+                # import matplotlib.pyplot as plt
+                # print(part_names[part_id])
+                # # print(image.shape, x0, x1, y0, y1)
+                # # print('YXS', yxs)
+                # # print('WH', w, h)
+                # plt.subplot(121)
+                # plt.imshow(image)
+                # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
+                # plt.subplot(122)
+                # plt.imshow(image[x0:x1 + 1, y0:y1 + 1, :])
+                # plt.show()
 
         part_num = len(part_boxes)
         obj_num = len(obj_boxes_all)

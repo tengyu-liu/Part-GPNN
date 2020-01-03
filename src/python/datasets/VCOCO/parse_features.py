@@ -145,7 +145,7 @@ def parse_features(paths, imageset):
     # roi_size = 4096  # VGG fully connected feature
     roi_size = 1000  # ResNet fully connected feature
     feature_size = 1000
-    feature_type = 'None'
+    feature_type = 'resnet'
     action_class_num = len(metadata.action_classes)
     no_action_index = metadata.action_index['none']
     no_role_index = metadata.role_index['none']
@@ -178,7 +178,7 @@ def parse_features(paths, imageset):
         #     continue
         # else:
         #     os.remove(os.path.join(save_data_path, '{}.p'.format(filename)))
-        if not os.path.exists(os.path.join(save_data_path, '{}.p'.format(filename))):
+        if True: # not os.path.exists(os.path.join(save_data_path, '{}.p'.format(filename))):
             try:
                 obj_classes = np.load(os.path.join(feature_path, '{}_obj_classes.npy'.format(filename)))
                 obj_boxes = np.load(os.path.join(feature_path, '{}_obj_boxes.npy'.format(filename)))
