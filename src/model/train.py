@@ -133,6 +133,7 @@ for epoch in range(flags.epochs):
             np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
             batch_time[-1], total_data_time / item, total_tf_time / item
         ), end='', flush=True)
+        break
 
     vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
     vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
