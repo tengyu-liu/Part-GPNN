@@ -153,7 +153,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             if action_role_score > best_score:
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = j
+                                best_j = i_obj
                         if best_score > 0.0:
                             # obj_info[4] = 1.0
                             result_sum[action_role_key] = obj_info
@@ -173,7 +173,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             if action_role_score > best_score:
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = j
+                                best_j = i_obj
                         if best_score > 0.0:
                             # obj_info[4] = 1.0
                             result_max[action_role_key] = obj_info
@@ -193,7 +193,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             if action_role_score > best_score:
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = j
+                                best_j = i_obj
                         if best_score > 0.0:
                             # obj_info[4] = 1.0
                             result_mean[action_role_key] = obj_info
