@@ -185,6 +185,7 @@ for epoch in range(flags.epochs):
                 model.edge_features : edge_features, 
                 model.adj_mat       : adj_mat, 
                 model.pairwise_label_gt : gt_action_labels, 
+                model.pairwise_role_gt  : gt_action_roles,
                 model.gt_strength_level : gt_strength_level,
                 model.batch_node_num : batch_node_num,
                 model.pairwise_label_mask : pairwise_label_mask,
@@ -215,9 +216,9 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='', flush=True)
 
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+        vcoco_evaluation(val_vcocoeval, 'val', all_results_sum, flags.name, 'SUM')
+        vcoco_evaluation(val_vcocoeval, 'val', all_results_max, flags.name, 'MAX')
+        vcoco_evaluation(val_vcocoeval, 'val', all_results_mean, flags.name, 'MEAN')
         
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -256,7 +257,7 @@ for epoch in range(flags.epochs):
                 break
             node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
                     part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
-                    obj_nums, obj_boxes, obj_classes, img_ids = res
+                    obj_nums, part_nums, obj_boxes, obj_classes, img_ids = res
 
             total_data_time += (time.time() - t0)
             item += len(node_features)
@@ -270,6 +271,7 @@ for epoch in range(flags.epochs):
                 model.edge_features : edge_features, 
                 model.adj_mat       : adj_mat, 
                 model.pairwise_label_gt : gt_action_labels, 
+                model.pairwise_role_gt  : gt_action_roles,
                 model.gt_strength_level : gt_strength_level,
                 model.batch_node_num : batch_node_num,
                 model.pairwise_label_mask : pairwise_label_mask,
@@ -281,6 +283,12 @@ for epoch in range(flags.epochs):
             all_results_sum, all_results_max, all_results_mean = metrics.append_results(
                 all_results_sum, all_results_max, all_results_mean, human_boxes, 
                 part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
+
+            for i_item in range(len(pred_label)):
+                __avg_prec_sum, __avg_prec_max, __avg_prec_mean = metrics.compute_mAP(pred_label[i_item], gt_action_labels[i_item], part_human_ids[i_item], obj_nums[i_item] + part_nums[i_item])
+                avg_prec_sum.append(__avg_prec_sum)
+                avg_prec_max.append(__avg_prec_max)
+                avg_prec_mean.append(__avg_prec_mean)
 
             losses.append(loss)
             batch_time.append(time.time() - t0)
@@ -294,9 +302,9 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='')
 
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
-        vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_sum, flags.name, 'SUM')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_max, flags.name, 'MAX')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_mean, flags.name, 'MEAN')
         
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
         print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
