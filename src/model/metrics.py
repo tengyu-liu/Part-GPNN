@@ -133,7 +133,18 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     result_sum['{}_agent'.format(action)] = 0.0
                     result_max['{}_agent'.format(action)] = 0.0
                     result_mean['{}_agent'.format(action)] = 0.0
+                    for role in metadata.action_roles[action][1:]:
+                        action_role_key = '{}_{}'.format(action, role)
+                        obj_info = np.array([0.,0.,0.,0.,0.])
+                        result_sum[action_role_key] = obj_info
+                        result_sum['{}_class'.format(role)] = 0
+                        result_max[action_role_key] = obj_info
+                        result_max['{}_class'.format(role)] = 0
+                        result_mean[action_role_key] = obj_info
+                        result_mean['{}_class'.format(role)] = 0
                     all_results_sum.append(result_sum)
+                    all_results_max.append(result_max)
+                    all_results_mean.append(result_mean)
                 continue
 
             pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
@@ -153,57 +164,49 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
                 result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
                 result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
-                if np.sum(pred_label_sum[:,action_index]) < 0.5:
-                    all_results_sum.append(result_sum)
-                else:
-                    for role in metadata.action_roles[action][1:]:
-                        role_index = metadata.role_index[role]
-                        action_role_key = '{}_{}'.format(action, role)
-                        best_score = -np.inf
-                        best_j = -1
-                        for i_obj in range(obj_num):
-                            action_role_score = pred_label_sum[i_obj, action_index] * pred_role_sum[i_obj, role_index]
-                            if action_role_score > best_score:
-                                best_score = action_role_score
-                                obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = i_obj
-                        result_sum[action_role_key] = obj_info
-                        result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
+
+                for role in metadata.action_roles[action][1:]:
+                    role_index = metadata.role_index[role]
+                    action_role_key = '{}_{}'.format(action, role)
+                    best_score = -np.inf
+                    best_j = -1
+                    for i_obj in range(obj_num):
+                        action_role_score = pred_label_sum[i_obj, action_index] * pred_role_sum[i_obj, role_index]
+                        if action_role_score > best_score:
+                            best_score = action_role_score
+                            obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
+                            best_j = i_obj
+                    result_sum[action_role_key] = obj_info
+                    result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_sum.append(result_sum)
 
-                if np.max(pred_label_max[:,action_index]) < 0.5:
-                    all_results_max.append(result_max)
-                else:
-                    for role in metadata.action_roles[action][1:]:
-                        role_index = metadata.role_index[role]
-                        action_role_key = '{}_{}'.format(action, role)
-                        best_score = -np.inf
-                        best_j = -1
-                        for i_obj in range(obj_num):
-                            action_role_score = pred_label_max[i_obj, action_index] * pred_role_max[i_obj, role_index]
-                            if action_role_score > best_score:
-                                best_score = action_role_score
-                                obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = i_obj
-                        result_max[action_role_key] = obj_info
-                        result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
+                for role in metadata.action_roles[action][1:]:
+                    role_index = metadata.role_index[role]
+                    action_role_key = '{}_{}'.format(action, role)
+                    best_score = -np.inf
+                    best_j = -1
+                    for i_obj in range(obj_num):
+                        action_role_score = pred_label_max[i_obj, action_index] * pred_role_max[i_obj, role_index]
+                        if action_role_score > best_score:
+                            best_score = action_role_score
+                            obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
+                            best_j = i_obj
+                    result_max[action_role_key] = obj_info
+                    result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_max.append(result_max)
 
-                if np.mean(pred_label_mean[:,action_index]) < 0.5:
-                    all_results_mean.append(result_mean)
-                else:
-                    for role in metadata.action_roles[action][1:]:
-                        role_index = metadata.role_index[role]
-                        action_role_key = '{}_{}'.format(action, role)
-                        best_score = -np.inf
-                        best_j = -1
-                        for i_obj in range(obj_num):
-                            action_role_score = pred_label_mean[i_obj, action_index] * pred_role_mean[i_obj, role_index]
-                            if action_role_score > best_score:
-                                best_score = action_role_score
-                                obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
-                                best_j = i_obj
-                        result_mean[action_role_key] = obj_info
-                        result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
+                for role in metadata.action_roles[action][1:]:
+                    role_index = metadata.role_index[role]
+                    action_role_key = '{}_{}'.format(action, role)
+                    best_score = -np.inf
+                    best_j = -1
+                    for i_obj in range(obj_num):
+                        action_role_score = pred_label_mean[i_obj, action_index] * pred_role_mean[i_obj, role_index]
+                        if action_role_score > best_score:
+                            best_score = action_role_score
+                            obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
+                            best_j = i_obj
+                    result_mean[action_role_key] = obj_info
+                    result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_mean.append(result_mean)
     return all_results_sum, all_results_max, all_results_mean
