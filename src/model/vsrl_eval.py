@@ -182,7 +182,6 @@ class VCOCOeval(object):
               try:
                 this_agent[0, 4 + aid] = det[self.actions[aid] + '_' + rid]
               except:
-                print(det.keys(), self.actions[aid], rid)
                 raise
             else:
               this_role[0, 5 * aid: 5 * aid + 5, j-1] = det[self.actions[aid] + '_' + rid]

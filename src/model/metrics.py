@@ -209,10 +209,4 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
             all_results_max.append(result_max)
             all_results_mean.append(result_mean)
 
-    for r in all_results_sum:
-        print(r.keys())
-    for r in all_results_max:
-        print(r.keys())
-    for r in all_results_mean:
-        print(r.keys())
     return all_results_sum, all_results_max, all_results_mean
