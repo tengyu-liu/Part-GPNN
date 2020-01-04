@@ -123,13 +123,14 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 'person_box' : human_box,
             }
 
+            result_sum = instance.copy()
+            result_max = instance.copy()
+            result_mean = instance.copy()
+
             if i_human not in part_human_ids[i_item]:
                 for action_index, action in enumerate(metadata.action_classes):
                     if action == 'none':
                         continue
-                    result_sum = instance.copy()
-                    result_max = instance.copy()
-                    result_mean = instance.copy()
                     result_sum['{}_agent'.format(action)] = 0.0
                     result_max['{}_agent'.format(action)] = 0.0
                     result_mean['{}_agent'.format(action)] = 0.0
@@ -142,9 +143,9 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                         result_max['{}_class'.format(role)] = 0
                         result_mean[action_role_key] = obj_info
                         result_mean['{}_class'.format(role)] = 0
-                    all_results_sum.append(result_sum)
-                    all_results_max.append(result_max)
-                    all_results_mean.append(result_mean)
+                all_results_sum.append(result_sum)
+                all_results_max.append(result_max)
+                all_results_mean.append(result_mean)
                 continue
 
             pred_label_sum = np.sum(pred_label[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], part_num:, :], axis=0)
@@ -158,9 +159,6 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
             for action_index, action in enumerate(metadata.action_classes):
                 if action == 'none':
                     continue
-                result_sum = instance.copy()
-                result_max = instance.copy()
-                result_mean = instance.copy()
                 result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
                 result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
                 result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
@@ -178,7 +176,6 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             best_j = i_obj
                     result_sum[action_role_key] = obj_info
                     result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
-                    all_results_sum.append(result_sum)
 
                 for role in metadata.action_roles[action][1:]:
                     role_index = metadata.role_index[role]
@@ -193,7 +190,6 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             best_j = i_obj
                     result_max[action_role_key] = obj_info
                     result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
-                    all_results_max.append(result_max)
 
                 for role in metadata.action_roles[action][1:]:
                     role_index = metadata.role_index[role]
@@ -208,7 +204,10 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                             best_j = i_obj
                     result_mean[action_role_key] = obj_info
                     result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
-                    all_results_mean.append(result_mean)
+
+            all_results_sum.append(result_sum)
+            all_results_max.append(result_max)
+            all_results_mean.append(result_mean)
 
     for r in all_results_sum:
         print(r.keys())
