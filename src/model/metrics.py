@@ -167,10 +167,8 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
                                 best_j = i_obj
-                        if best_score > 0.0:
-                            # obj_info[4] = 1.0
-                            result_sum[action_role_key] = obj_info
-                            result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
+                        result_sum[action_role_key] = obj_info
+                        result_sum['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_sum.append(result_sum)
 
                 if np.max(pred_label_max[:,action_index]) < 0.5:
@@ -187,10 +185,8 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
                                 best_j = i_obj
-                        if best_score > 0.0:
-                            # obj_info[4] = 1.0
-                            result_max[action_role_key] = obj_info
-                            result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
+                        result_max[action_role_key] = obj_info
+                        result_max['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_max.append(result_max)
 
                 if np.mean(pred_label_mean[:,action_index]) < 0.5:
@@ -207,9 +203,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                                 best_score = action_role_score
                                 obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
                                 best_j = i_obj
-                        if best_score > 0.0:
-                            # obj_info[4] = 1.0
-                            result_mean[action_role_key] = obj_info
-                            result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
+                        result_mean[action_role_key] = obj_info
+                        result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_mean.append(result_mean)
     return all_results_sum, all_results_max, all_results_mean
