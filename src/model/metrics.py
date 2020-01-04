@@ -209,4 +209,11 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     result_mean[action_role_key] = obj_info
                     result_mean['{}_class'.format(role)] = obj_classes[i_item][best_j]
                     all_results_mean.append(result_mean)
+
+    for r in all_results_sum:
+        print(r.keys())
+    for r in all_results_max:
+        print(r.keys())
+    for r in all_results_mean:
+        print(r.keys())
     return all_results_sum, all_results_max, all_results_mean
