@@ -23,10 +23,11 @@ def get_vcocoeval(imageset):
                                os.path.join(vcoco_root, 'data/splits/vcoco_{}.ids'.format(imageset)))
 
 def vcoco_evaluation(vcocoeval, imageset, all_results, name, method):
-    print('%s: '%method)
+    print('%s: '%method, end='')
     det_file = os.path.join(os.path.dirname(__file__), 'eval', name, '%s_detections[%s].pkl'%(imageset, method))
     pickle.dump(all_results, open(det_file, 'wb'))
     vcocoeval._do_eval(det_file, ovr_thresh=0.5)
+    print()
 
 train_vcocoeval = get_vcocoeval('train')
 val_vcocoeval = get_vcocoeval('val')
