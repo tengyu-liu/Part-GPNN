@@ -177,9 +177,10 @@ for epoch in range(flags.epochs):
             item += len(node_features)
                     
             tf_t0 = time.time()
-            step, pred, loss = sess.run(fetches=[
+            step, pred_label, pred_role, loss = sess.run(fetches=[
                 model.step, 
                 model.edge_label_pred, 
+                model.edge_role_pred,
                 model.loss], feed_dict={
                 model.node_features : node_features,
                 model.edge_features : edge_features, 
@@ -263,9 +264,10 @@ for epoch in range(flags.epochs):
             item += len(node_features)
 
             tf_t0 = time.time()
-            step, pred, loss = sess.run(fetches=[
+            step, pred_label, pred_role, loss = sess.run(fetches=[
                 model.step, 
                 model.edge_label_pred, 
+                model.edge_role_pred,
                 model.loss], feed_dict={
                 model.node_features : node_features,
                 model.edge_features : edge_features, 

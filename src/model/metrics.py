@@ -24,11 +24,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     # Step 1. Get lifted prediction
     for i_lifted, i_human in enumerate(human_ids):
         lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))[0][0], part_num:, : ]
-        try:
-            lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
-        except:
-            print(pred.shape, 'H', human_num, 'O', obj_num, 'P', part_num, 'N', node_num)
-            raise
+        lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
 
@@ -163,19 +159,10 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
             for action_index, action in enumerate(metadata.action_classes):
                 if action == 'none':
                     continue
-                
-                if len(pred_label_sum) == 0:
-                    result_sum['{}_agent'.format(action)] = -np.float('inf')
-                else:
-                    result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
-                if len(pred_label_max) == 0:
-                    result_max['{}_agent'.format(action)] = -np.float('inf')
-                else:
-                    result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
-                if len(pred_label_mean) == 0:
-                    result_mean['{}_agent'.format(action)] = -np.float('inf')
-                else:
-                    result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
+                    
+                result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
+                result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
+                result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
 
                 for role in metadata.action_roles[action][1:]:
                     role_index = metadata.role_index[role]
