@@ -131,9 +131,9 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 for action_index, action in enumerate(metadata.action_classes):
                     if action == 'none':
                         continue
-                    result_sum['{}_agent'.format(action)] = 0.0
-                    result_max['{}_agent'.format(action)] = 0.0
-                    result_mean['{}_agent'.format(action)] = 0.0
+                    result_sum['{}_agent'.format(action)] = -np.float('inf')
+                    result_max['{}_agent'.format(action)] = -np.float('inf')
+                    result_mean['{}_agent'.format(action)] = -np.float('inf')
                     for role in metadata.action_roles[action][1:]:
                         action_role_key = '{}_{}'.format(action, role)
                         obj_info = np.array([0.,0.,0.,0.,0.])
@@ -159,9 +159,19 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
             for action_index, action in enumerate(metadata.action_classes):
                 if action == 'none':
                     continue
-                result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
-                result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
-                result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
+                
+                if len(pred_label_sum) == 0:
+                    result_sum['{}_agent'.format(action)] = -np.float('inf')
+                else:
+                    result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
+                if len(pred_label_max) == 0:
+                    result_max['{}_agent'.format(action)] = -np.float('inf')
+                else:
+                    result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
+                if len(pred_label_mean) == 0:
+                    result_mean['{}_agent'.format(action)] = -np.float('inf')
+                else:
+                    result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
 
                 for role in metadata.action_roles[action][1:]:
                     role_index = metadata.role_index[role]
