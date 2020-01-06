@@ -160,9 +160,9 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 if action == 'none':
                     continue
                     
-                result_sum['{}_agent'.format(action)] = np.sum(pred_label_sum[:,action_index])
+                result_sum['{}_agent'.format(action)] = np.max(pred_label_sum[:,action_index])
                 result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
-                result_mean['{}_agent'.format(action)] = np.mean(pred_label_mean[:,action_index])
+                result_mean['{}_agent'.format(action)] = np.max(pred_label_mean[:,action_index])
 
                 for role in metadata.action_roles[action][1:]:
                     role_index = metadata.role_index[role]
