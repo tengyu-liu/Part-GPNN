@@ -179,10 +179,7 @@ class VCOCOeval(object):
         for aid in range(self.num_actions):
           for j, rid in enumerate(self.roles[aid]):
             if rid == 'agent':
-              try:
-                this_agent[0, 4 + aid] = det[self.actions[aid] + '_' + rid]
-              except:
-                raise
+              this_agent[0, 4 + aid] = det[self.actions[aid] + '_' + rid]
             else:
               this_role[0, 5 * aid: 5 * aid + 5, j-1] = det[self.actions[aid] + '_' + rid]
         agents = np.concatenate((agents, this_agent), axis=0)
