@@ -114,7 +114,6 @@ def get_node_index(bbox, det_boxes, index_list):
     bbox = np.array(bbox, dtype=np.float32)
     max_iou = 0.5  # Use 0.5 as a threshold for evaluation
     max_iou_index = -1
-
     for i_node in index_list:
         # check bbox overlap
         iou = compute_iou(bbox, det_boxes[i_node])
@@ -159,6 +158,7 @@ for k in list(checkpoint['state_dict'].keys()):
     if k[:7] == 'module.':
         checkpoint['state_dict'][k[7:]] = checkpoint['state_dict'][k]
         del checkpoint['state_dict'][k]
+
 feature_network.load_state_dict(checkpoint['state_dict'])
 
 transform = torchvision.transforms.Compose([
@@ -174,11 +174,12 @@ obj_eye = np.eye(81)
 
 vcoco_mapping = {'train': 'train', 'test': 'val', 'val': 'train'}
 
-for imageset in ['test', 'val']: # ['train', 'test', 'val']:
+for imageset in ['train', 'test', 'val']:
     coco = vu.load_coco(vcoco_root)
     vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), vcoco_root)
     for x in vcoco_all:
         x = vu.attach_gt_boxes(x, coco)
+    
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
     for i_image, image_id in enumerate(image_ids):
@@ -227,8 +228,10 @@ for imageset in ['test', 'val']: # ['train', 'test', 'val']:
             try:
                 h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.7], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.7], axis=0)
             except:
+                human_boxes.append([0,0,0,0])
                 continue
             if w < 60 or h < 60:
+                human_boxes.append([0,0,0,0])
                 continue
             for part_id, part_name in enumerate(part_names):
                 yxs = keypoints[part_ids[part_name]]
@@ -243,7 +246,6 @@ for imageset in ['test', 'val']: # ['train', 'test', 'val']:
                 part_boxes.append(_box)
                 part_classes.append(part_id)
                 part_human_ids.append(human_id)
-                
                 if part_names[part_id] == 'Full Body':
                     human_boxes.append([y0,x0,y1,x1])
 
@@ -280,7 +282,6 @@ for imageset in ['test', 'val']: # ['train', 'test', 'val']:
                         warnings.warn('human detection missing')
                         continue
                     assert human_index < human_num
-
                     for i_role in range(1, len(x['role_name'])):
                         bbox = role_bbox[i_role, :]
                         if np.isnan(bbox[0]):
@@ -290,7 +291,6 @@ for imageset in ['test', 'val']: # ['train', 'test', 'val']:
                             warnings.warn('object detection missing')
                             continue
                         assert obj_index >= human_num and obj_index < human_num + obj_num
-
                         labels[(human_index, obj_index)].append(action_index - 1)
                         roles[(human_index, obj_index)].append(metadata.role_index[x['role_name'][i_role]] - 1)
                 except IndexError:
