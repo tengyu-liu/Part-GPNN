@@ -145,10 +145,10 @@ def img_to_torch(img):
     return img
 
 meta_dir = os.path.join(os.path.dirname(__file__), '../../../data/vcoco_features')
-img_dir = '/home/tengyu/Data/mscoco/coco'
-checkpoint_dir = '/home/tengyu/Documents/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
-vcoco_root = '/home/tengyu/Data/mscoco/v-coco/data'
-save_data_path = '/home/tengyu/Documents/github/Part-GPNN/data/feature_resnet_tengyu'
+img_dir = '/home/tengyu/dataset/mscoco/images'
+checkpoint_dir = '/home/tengyu/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
+vcoco_root = '/home/tengyu/dataset/v-coco/data'
+save_data_path = '/home/tengyu/github/Part-GPNN/data/feature_resnet_tengyu'
 
 feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
 feature_network.cuda()
