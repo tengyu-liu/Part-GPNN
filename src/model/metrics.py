@@ -44,70 +44,6 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
 
     return avg_prec_sum, avg_prec_max, avg_prec_mean
 
-# part_ids = {'Right Shoulder': [2],
-#             'Left Shoulder': [5],
-#             'Knee Right': [10],
-#             'Knee Left': [13],
-#             'Ankle Right': [11],
-#             'Ankle Left': [14],
-#             'Elbow Left': [6],
-#             'Elbow Right': [3],
-#             'Hand Left': [7],
-#             'Hand Right': [4],
-#             'Head': [0],
-#             'Hip': [8],
-#             'Upper Body': [2,5,6,3,7,4,0,8],
-#             'Lower Body': [10,13,11,14,8],
-#             'Left Arm': [5,6,7],
-#             'Right Arm': [2,3,4],
-#             'Left Leg': [8,10,11],
-#             'Right Leg': [8,13,14],
-#             'Full Body': [2,5,10,13,11,14,6,3,7,4,0,8], 
-#             }
-
-
-# part_names = list(part_ids.keys())
-
-# hake_to_densepose = [
-#     ['Right Foot'], 
-#     ['Upper Leg Right', 'Lower Leg Right', 'Right Leg'], 
-#     ['Upper Leg Left', 'Lower Leg Left', 'Left Leg'], 
-#     ['Left Foot'],
-#     ['Torso', 'Upper Leg Right', 'Upper Leg Left'],
-#     ['Head'],
-#     ['Right Hand'],
-#     ['Upper Arm Right', 'Lower Arm Right', 'Right Arm'],
-#     ['Upper Arm Left', 'Lower Arm Left', 'Left Arm'],
-#     ['Left Hand']
-#     ]
-
-# hake_to_densepose_idx = [[part_names.index(x) for x in y] for y in hake_to_densepose]
-
-# def compute_part_mAP(pred, gt, part_classes):
-#     # pred: N x N x M
-#     # gt: K
-
-#     part_num = len(part_classes)
-    
-#     pred_sum = np.zeros([len(gt)])
-#     pred_max = np.zeros([len(gt)])
-#     pred_mean = np.zeros([len(gt)])
-
-#     pred = pred[:part_num, part_num:, :]
-
-#     for i_part, i_part_list in enumerate(hake_to_densepose_idx):
-#         idx = np.in1d(part_classes, i_part_list)
-#         if idx.sum() > 0:
-#             pred_sum[i_part] = np.sum(pred[ idx , ...])
-#             pred_max[i_part] = np.max(pred[ idx , ...])
-#             pred_mean[i_part] = np.mean(pred[ idx , ...])
-
-#     avg_prec_sum = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_sum]), average='micro')
-#     avg_prec_max = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_max]), average='micro')
-#     avg_prec_mean = sklearn.metrics.average_precision_score(np.array([gt]), np.array([pred_mean]), average='micro')
-
-#     return avg_prec_sum, avg_prec_max, avg_prec_mean
-
 def append_results(all_results_sum, all_results_max, all_results_mean, human_boxes, part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids):
     for i_item in range(len(pred_label)):
         curr_img_id = img_ids[i_item]
@@ -123,14 +59,15 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 'person_box' : human_box,
             }
 
-            result_sum = instance.copy()
-            result_max = instance.copy()
-            result_mean = instance.copy()
-
             if i_human not in part_human_ids[i_item]:
                 for action_index, action in enumerate(metadata.action_classes):
                     if action == 'none':
                         continue
+
+                    result_sum = instance.copy()
+                    result_max = instance.copy()
+                    result_mean = instance.copy()
+
                     result_sum['{}_agent'.format(action)] = -np.float('inf')
                     result_max['{}_agent'.format(action)] = -np.float('inf')
                     result_mean['{}_agent'.format(action)] = -np.float('inf')
@@ -160,6 +97,10 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                 if action == 'none':
                     continue
                     
+                result_sum = instance.copy()
+                result_max = instance.copy()
+                result_mean = instance.copy()
+
                 result_sum['{}_agent'.format(action)] = np.max(pred_label_sum[:,action_index])
                 result_max['{}_agent'.format(action)] = np.max(pred_label_max[:,action_index])
                 result_mean['{}_agent'.format(action)] = np.max(pred_label_mean[:,action_index])
@@ -170,7 +111,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_score = -np.inf
                     best_j = -1
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_sum[i_obj, role_index]
+                        action_role_score = pred_label_sum[i_obj, action_index] + pred_role_sum[i_obj, role_index]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
@@ -184,7 +125,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_score = -np.inf
                     best_j = -1
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_max[i_obj, role_index]
+                        action_role_score = pred_label_max[i_obj, action_index] + pred_role_max[i_obj, role_index]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
@@ -198,7 +139,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_score = -np.inf
                     best_j = -1
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_mean[i_obj, role_index]
+                        action_role_score = pred_label_mean[i_obj, action_index] + pred_role_mean[i_obj, role_index]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
