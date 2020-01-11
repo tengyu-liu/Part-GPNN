@@ -157,7 +157,7 @@ class BatchThread(threading.Thread):
             self.data_fn.append(filename)
             self.pairwise_action_mask.append(item['pairwise_action_mask'])
             self.img_ids.append(item['img_id'])
-            human_box = item['part_boxes'][np.array(item['part_classes']) == 20]
+            human_box = item['part_boxes'][np.array(item['part_classes']) == 18]
             self.human_boxes.append(human_box)
             self.obj_nums.append(item['obj_num'])
             self.part_nums.append(item['part_num'])
