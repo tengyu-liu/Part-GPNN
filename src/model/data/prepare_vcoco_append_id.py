@@ -14,7 +14,7 @@ import pickle
 import vsrl_utils as vu
 
 vcoco_root = '/home/tengyu/dataset/v-coco/data'
-save_data_path = os.path.join(os.path.dirname(__file__), '../../../data/feature_resnet_tengyu')
+save_data_path = os.path.join(os.path.dirname(__file__), '../../../data/feature_resnet_tengyu2')
 
 for imageset in ['train', 'test', 'val']:
     coco = vu.load_coco(vcoco_root)

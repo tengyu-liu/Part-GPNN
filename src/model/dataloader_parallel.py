@@ -166,7 +166,7 @@ class BatchThread(threading.Thread):
 
 
 class DataLoader:
-    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu'), negative_suppression=False, n_jobs=16, part_weight='central'):
+    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu2'), negative_suppression=False, n_jobs=16, part_weight='central'):
         self.imageset = imageset
         self.datadir = datadir
         self.node_num = node_num

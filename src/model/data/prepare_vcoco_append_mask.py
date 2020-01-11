@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 
-base_dir = os.path.join(os.path.dirname(__file__), '../../../data/feature_resnet_tengyu')
+base_dir = os.path.join(os.path.dirname(__file__), '../../../data/feature_resnet_tengyu2')
 
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'obj_action_pairs.pkl'), 'rb'))
 
