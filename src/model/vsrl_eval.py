@@ -413,12 +413,7 @@ class VCOCOeval(object):
       a_tp = np.cumsum(a_tp)
       rec = a_tp / float(npos[aid])
       #check
-      try:
-        assert(np.amax(rec) <= 1)
-      except:
-        print(aid, '/', self.num_actions)
-        print(rec)
-        raise
+      assert(np.amax(rec) <= 1)
       prec = a_tp / np.maximum(a_tp + a_fp, np.finfo(np.float64).eps)
       agent_ap[aid] = voc_ap(rec, prec)
 
