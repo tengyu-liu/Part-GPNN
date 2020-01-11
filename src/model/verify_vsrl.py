@@ -28,8 +28,8 @@ def vcoco_evaluation(vcocoeval, imageset, all_results, name, method):
     print()
 
 train_vcocoeval = get_vcocoeval('train')
-val_vcocoeval = get_vcocoeval('val')
-test_vcocoeval = get_vcocoeval('test')
+# val_vcocoeval = get_vcocoeval('val')
+# test_vcocoeval = get_vcocoeval('test')
 
 # random.seed(0)
 # np.random.seed(0)
