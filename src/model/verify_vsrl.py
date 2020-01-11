@@ -65,8 +65,6 @@ while True:
         all_results_sum, all_results_max, all_results_mean, human_boxes, 
         part_human_ids, gt_action_labels, gt_action_roles, obj_nums, obj_boxes, obj_classes, img_ids)
 
-    print(all_results_sum)
-
 vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
 vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
 vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
