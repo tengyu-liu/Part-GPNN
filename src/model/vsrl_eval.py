@@ -317,14 +317,14 @@ class VCOCOeval(object):
         prec = a_tp / np.maximum(a_tp + a_fp, np.finfo(np.float64).eps)
         role_ap[aid, rid] = voc_ap(rec, prec)
 
-    # print('---------Reporting Role AP (%)------------------')
-    # # for aid in range(self.num_actions):
-    # #   if len(self.roles[aid])<2: continue
-    # #   for rid in range(len(self.roles[aid])-1):
-    # #     print('{: >23}: AP = {:0.2f} (#pos = {:d})'.format(self.actions[aid]+'-'+self.roles[aid][rid+1], role_ap[aid, rid]*100.0, int(npos[aid])))
-    # print('Average Role [%s] AP = %.2f'%(eval_type, np.nanmean(role_ap) * 100.00))  
-    # print('---------------------------------------------') 
-    print(np.nanmean(role_ap), ',', end='')
+    print('---------Reporting Role AP (%)------------------')
+    for aid in range(self.num_actions):
+      if len(self.roles[aid])<2: continue
+      for rid in range(len(self.roles[aid])-1):
+        print('{: >23}: AP = {:0.2f} (#pos = {:d})'.format(self.actions[aid]+'-'+self.roles[aid][rid+1], role_ap[aid, rid]*100.0, int(npos[aid])))
+    print('Average Role [%s] AP = %.2f'%(eval_type, np.nanmean(role_ap) * 100.00))  
+    print('---------------------------------------------') 
+    # print(np.nanmean(role_ap), ',', end='')
 
 
   def _do_agent_eval(self, vcocodb, detections_file, ovr_thresh=0.5):
@@ -417,12 +417,12 @@ class VCOCOeval(object):
       prec = a_tp / np.maximum(a_tp + a_fp, np.finfo(np.float64).eps)
       agent_ap[aid] = voc_ap(rec, prec)
 
-    # print('---------Reporting Agent AP (%)------------------')
-    # # for aid in range(self.num_actions):
-    # #   print('{: >20}: AP = {:0.2f} (#pos = {:d})'.format(self.actions[aid], agent_ap[aid]*100.0, int(npos[aid])))
-    # print('Average Agent AP = %.2f'%(np.nansum(agent_ap) * 100.00/self.num_actions))
-    # print('---------------------------------------------')
-    print(np.nanmean(agent_ap), ',', end='')
+    print('---------Reporting Agent AP (%)------------------')
+    for aid in range(self.num_actions):
+      print('{: >20}: AP = {:0.2f} (#pos = {:d})'.format(self.actions[aid], agent_ap[aid]*100.0, int(npos[aid])))
+    print('Average Agent AP = %.2f'%(np.nansum(agent_ap) * 100.00/self.num_actions))
+    print('---------------------------------------------')
+    # print(np.nanmean(agent_ap), ',', end='')
 
 
 def _load_vcoco(vcoco_file):

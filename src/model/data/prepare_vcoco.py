@@ -148,7 +148,9 @@ meta_dir = os.path.join(os.path.dirname(__file__), '../../../data/vcoco_features
 img_dir = '/home/tengyu/dataset/mscoco/images'
 checkpoint_dir = '/home/tengyu/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
 vcoco_root = '/home/tengyu/dataset/v-coco/data'
-save_data_path = '/home/tengyu/github/Part-GPNN/data/feature_resnet_tengyu'
+save_data_path = '/home/tengyu/github/Part-GPNN/data/feature_resnet_tengyu2'
+
+os.makedirs(save_data_path, exist_ok=True)
 
 feature_network = feature_model.Resnet152(num_classes=len(metadata.action_classes))
 feature_network.cuda()
@@ -286,11 +288,11 @@ for imageset in ['train', 'test', 'val']:
                         bbox = role_bbox[i_role, :]
                         if np.isnan(bbox[0]):
                             continue
-                        obj_index = get_node_index(bbox, obj_boxes_all, np.arange(obj_num)) + human_num
-                        if obj_index == human_num - 1:
+                        obj_index = get_node_index(bbox, obj_boxes_all, np.arange(obj_num))# + human_num
+                        if obj_index == - 1:
                             warnings.warn('object detection missing')
                             continue
-                        assert obj_index >= human_num and obj_index < human_num + obj_num
+                        assert obj_index >= 0 and obj_index < obj_num
                         labels[(human_index, obj_index)].append(action_index - 1)
                         roles[(human_index, obj_index)].append(metadata.role_index[x['role_name'][i_role]] - 1)
                 except IndexError:
