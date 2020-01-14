@@ -184,6 +184,14 @@ for imageset in ['train', 'test', 'val']:
     
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
+for imageset in ['train', 'test', 'val']:
+    coco = vu.load_coco(vcoco_root)
+    vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), vcoco_root)
+    for x in vcoco_all:
+        x = vu.attach_gt_boxes(x, coco)
+    
+    image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
+
     for i_image, image_id in enumerate(image_ids):
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
@@ -251,18 +259,6 @@ for imageset in ['train', 'test', 'val']:
                 if part_names[part_id] == 'Full Body':
                     human_boxes.append([y0,x0,y1,x1])
 
-                # import matplotlib.pyplot as plt
-                # print(part_names[part_id])
-                # # print(image.shape, x0, x1, y0, y1)
-                # # print('YXS', yxs)
-                # # print('WH', w, h)
-                # plt.subplot(121)
-                # plt.imshow(image)
-                # plt.plot([y0,y0,y1,y1,y0], [x0,x1,x1,x0,x0])
-                # plt.subplot(122)
-                # plt.imshow(image[x0:x1 + 1, y0:y1 + 1, :])
-                # plt.show()
-
         part_num = len(part_boxes)
         obj_num = len(obj_boxes_all)
         human_num = len(human_boxes)
@@ -293,7 +289,6 @@ for imageset in ['train', 'test', 'val']:
                             warnings.warn('object detection missing')
                             continue
                         assert obj_index >= 0 and obj_index < obj_num
-                        labels[(human_index, obj_index)].append(action_index - 1)
                         roles[(human_index, obj_index)].append(metadata.role_index[x['role_name'][i_role]] - 1)
                     if len(x['role_name']) == 1:
                         labels[(human_index, -1)].append(action_index - 1)
@@ -301,115 +296,20 @@ for imageset in ['train', 'test', 'val']:
                     warnings.warn('Labels missing for {}'.format(filename))
                     raise
                     pass
-        node_features = np.zeros([node_num, 1000])
-        edge_features = np.zeros((node_num, node_num, 1216))
-        adj_mat = np.zeros((node_num, node_num))
-        gt_strength_level = np.zeros([node_num, node_num])
-        gt_action_labels = np.zeros([node_num, node_num, len(metadata.action_classes) - 1])
-        gt_action_roles = np.zeros([node_num, node_num, len(metadata.roles) - 1])
-        
-        # Extract node features
-        node_patches = []
-        for i_node in range(node_num):
-            if i_node < part_num:
-                box = part_boxes[i_node]
-            else:
-                box = obj_boxes_all[i_node - part_num]
-            box = np.array(box).astype(int)
-            img_patch = image[box[1] : box[3] + 1, box[0] : box[2] + 1, :]
-            img_patch = transform(cv2.resize(img_patch, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
 
-            img_patch = torch.autograd.Variable(img_patch).unsqueeze(0).cuda()
-            feat, pred = feature_network(img_patch)
-            node_features[i_node] = feat.data.cpu().numpy()
-        
-        part_boxes = np.array(part_boxes)
-        obj_boxes_all = np.array(obj_boxes_all)
+        data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
 
-        if len(part_boxes) == 0 or len(obj_boxes_all) == 0:
-            warnings.warn('Zero detection result for {}'.format(filename))
-            continue
-
-        node_features_appd = np.zeros([node_features.shape[0], 6 + 21 + 81])
-        node_features_appd[:part_num,0] = (part_boxes[:,2] - part_boxes[:,0]) / img_w # relative w
-        node_features_appd[:part_num,1] = (part_boxes[:,3] - part_boxes[:,1]) / img_h # relative h
-        node_features_appd[:part_num,2] = ((part_boxes[:,2] + part_boxes[:,0]) / 2) / img_w # relative cx
-        node_features_appd[:part_num,3] = ((part_boxes[:,3] + part_boxes[:,1]) / 2) / img_h # relative cy
-        node_features_appd[:part_num,4] = (part_boxes[:,2] - part_boxes[:,0]) * (part_boxes[:,3] - part_boxes[:,1]) / (img_w * img_h) # relative area
-        node_features_appd[:part_num,5] = (part_boxes[:,2] - part_boxes[:,0]) / (part_boxes[:,3] - part_boxes[:,1]) # aspect ratio
-        node_features_appd[:part_num,6:6+21] = part_eye[part_classes]
-        
-        node_features_appd[part_num:,0] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) / img_w # relative w
-        node_features_appd[part_num:,1] = (obj_boxes_all[:,3] - obj_boxes_all[:,1]) / img_h # relative h
-        node_features_appd[part_num:,2] = ((obj_boxes_all[:,2] + obj_boxes_all[:,0]) / 2) / img_w # relative cx
-        node_features_appd[part_num:,3] = ((obj_boxes_all[:,3] + obj_boxes_all[:,1]) / 2) / img_h # relative cy
-        node_features_appd[part_num:,4] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) * (obj_boxes_all[:,3] - obj_boxes_all[:,1]) / (img_w * img_h) # relative area
-        node_features_appd[part_num:,5] = (obj_boxes_all[:,2] - obj_boxes_all[:,0]) / (obj_boxes_all[:,3] - obj_boxes_all[:,1]) # aspect ratio
-        node_features_appd[part_num:,6+21:] = obj_eye[obj_classes_all]
-
-        node_features_appd[np.isnan(node_features_appd)] = 0
-        node_features_appd[np.isinf(node_features_appd)] = 0
-
-        node_features = np.concatenate([node_features, node_features_appd], axis=-1)
-
-        # Extract edge features
-        edge_patch_mapping = {}
-        edge_patch_feat = []
-        for i_node in range(part_num):
-            # we only consider edges connecting at least one part. inter-object edges are not considered
-            i_box = part_boxes[i_node]
-            for j_node in range(i_node + 1, node_num):
-                j_box = None
-                if (j_node < part_num and \
-                part_human_ids[i_node] == part_human_ids[j_node] and 
-                part_names[part_classes[j_node]] in part_graph[part_names[part_classes[i_node]]]):
-                    j_box = part_boxes[j_node]
-                if j_node >= paopen(os.path.join(save_data_path, filename + '.data'), 'wb')rt_num:
-                    j_box = obj_boxes_all[j_node - part_num]
-                if j_box is not None:
-                    box = combine_box(i_box, j_box)
-                    box = np.array(box).astype(int)
-                    img_patch = image[box[1] : box[3] + 1, box[0] : box[2] + 1, :]
-                    img_patch = transform(cv2.resize(img_patch, (input_h, input_w), interpolation=cv2.INTER_LINEAR))
-                    img_patch = torch.autograd.Variable(torch.unsqueeze(img_patch, dim=0)).cuda()
-                    feat, pred = feature_network(img_patch)
-
-                    edge_patch_mapping[(i_node, j_node)] = len(edge_patch_feat)
-                    edge_patch_feat.append(feat.data.cpu().numpy())
+        gt_strength_level = data['strength_level']
+        gt_action_labels = data['action_labels']
 
         # Organize edge features
         for i_node in range(node_num):
             for j_node in range(node_num):
-                if i_node == j_node:
-                    edge_features[i_node, j_node, :1108] = node_features[i_node, :1108]
-                    edge_features[i_node, j_node, 1108:] = node_features_appd[j_node]
-                    adj_mat[i_node, j_node] = 1
-                else:
-                    key = (min(i_node, j_node), max(i_node, j_node))
-                    if key in edge_patch_mapping:
-                        edge_features[i_node, j_node, :1000] = edge_patch_feat[edge_patch_mapping[key]]
-                        edge_features[i_node, j_node, 1000:1108] = node_features_appd[i_node]
-                        edge_features[i_node, j_node, 1108:] = node_features_appd[j_node]
-                        adj_mat[i_node, j_node] = 1
-                        # Compute GT Labels and GT signal strength on each edge
-                        if i_node < part_num and j_node < part_num and part_human_ids[i_node] == part_human_ids[j_node]:
-                            gt_strength_level[i_node, j_node] = max(part_weights[part_names[part_classes[i_node]]], part_weights[part_names[part_classes[j_node]]])
-                            for label in labels[(part_human_ids[i_node], -1)]:
-                                gt_action_labels[i_node, j_node, label] = 1
-
-                        if i_node < part_num and j_node >= part_num:
-                            gt_strength_level[i_node, j_node] = part_weights[part_names[part_classes[i_node]]]
-                            for label in labels[(part_human_ids[i_node], j_node - part_num)]:
-                                gt_action_labels[i_node, j_node, label] = 1
-                            for role in roles[(part_human_ids[i_node], j_node - part_num)]:
-                                gt_action_roles[i_node, j_node, role] = 1
-
-                        if j_node < part_num and i_node >= part_num:
-                            gt_strength_level[i_node, j_node] = part_weights[part_names[part_classes[j_node]]]
-                            for label in labels[(part_human_ids[j_node], i_node - part_num)]:
-                                gt_action_labels[i_node, j_node, label] = 1
-                            for role in roles[(part_human_ids[j_node], i_node - part_num)]:
-                                gt_action_roles[i_node, j_node, role] = 1
+                # Compute GT Labels and GT signal strength on each edge
+                if i_node < part_num and j_node < part_num and part_human_ids[i_node] == part_human_ids[j_node]:
+                    gt_strength_level[i_node, j_node] = max(part_weights[part_names[part_classes[i_node]]], part_weights[part_names[part_classes[j_node]]])
+                    for label in labels[(part_human_ids[i_node], -1)]:
+                        gt_action_labels[i_node, j_node, label] = 1
 
         data = {
             'node_features'  : node_features,
