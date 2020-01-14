@@ -15,7 +15,7 @@ import warnings
 from collections import defaultdict
 
 import numpy as np
-import skimage.ioaction_index
+import skimage.io
 
 import cv2
 import feature_model
