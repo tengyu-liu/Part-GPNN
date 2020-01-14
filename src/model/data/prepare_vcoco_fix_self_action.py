@@ -301,11 +301,11 @@ for imageset in ['train', 'test', 'val']:
 
         assert part_num == data['part_num']
         assert obj_num == data['obj_num']
-        assert part_human_ids == data['part_human_id']
-        assert part_classes == data['part_classes']
-        assert obj_classes_all == data['obj_classes']
-        assert part_boxes == data['part_boxes']
-        assert obj_boxes_all == data['obj_boxes']
+        assert np.all(part_human_ids == data['part_human_id'])
+        assert np.all(part_classes == data['part_classes'])
+        assert np.all(obj_classes_all == data['obj_classes'])
+        assert np.all(part_boxes == data['part_boxes'])
+        assert np.all(obj_boxes_all == data['obj_boxes'])
 
         gt_strength_level = data['strength_level']
         gt_action_labels = data['action_labels']
