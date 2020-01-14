@@ -299,6 +299,14 @@ for imageset in ['train', 'test', 'val']:
 
         data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
 
+        assert part_num == data['part_num']
+        assert obj_num == data['obj_num']
+        assert part_human_ids == data['part_human_id']
+        assert part_classes == data['part_classes']
+        assert obj_classes_all == data['obj_classes']
+        assert part_boxes == data['part_boxes']
+        assert obj_boxes_all == data['obj_boxes']
+
         gt_strength_level = data['strength_level']
         gt_action_labels = data['action_labels']
 
@@ -311,25 +319,6 @@ for imageset in ['train', 'test', 'val']:
                     for label in labels[(part_human_ids[i_node], -1)]:
                         gt_action_labels[i_node, j_node, label] = 1
 
-        data = {
-            'node_features'  : node_features,
-            'edge_features'  : edge_features,
-            'adj_mat'        : adj_mat, 
-            'action_labels'  : gt_action_labels,
-            'action_roles'   : gt_action_roles,
-            'strength_level' : gt_strength_level,
-            'part_num'       : part_num,
-            'obj_num'        : obj_num,
-            'human_num'      : human_num,
-            'part_human_id'  : part_human_ids,
-            'part_classes'   : part_classes,
-            'obj_classes'    : obj_classes_all, 
-            'part_boxes'     : part_boxes,
-            'obj_boxes'      : obj_boxes_all,
-            'filename'       : filename,
-            'node_num'       : node_num,
-            'img_w'          : img_w, 
-            'img_h'          : img_h
-        }
+        data['action_labels'] = gt_action_labels
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         
