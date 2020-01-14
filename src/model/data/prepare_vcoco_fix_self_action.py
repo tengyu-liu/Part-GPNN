@@ -297,7 +297,11 @@ for imageset in ['train', 'test', 'val']:
                     raise
                     pass
 
-        data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
+        try:
+            data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
+        except FileNotFoundError:
+            warnings.warn('Data missing for {}'.format(filename))
+            continue
 
         assert part_num == data['part_num']
         assert obj_num == data['obj_num']
