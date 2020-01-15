@@ -364,7 +364,7 @@ for imageset in ['train', 'test', 'val']:
                 part_human_ids[i_node] == part_human_ids[j_node] and 
                 part_names[part_classes[j_node]] in part_graph[part_names[part_classes[i_node]]]):
                     j_box = part_boxes[j_node]
-                if j_node >= paopen(os.path.join(save_data_path, filename + '.data'), 'wb')rt_num:
+                if j_node >= part_num:
                     j_box = obj_boxes_all[j_node - part_num]
                 if j_box is not None:
                     box = combine_box(i_box, j_box)
