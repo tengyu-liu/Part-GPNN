@@ -39,6 +39,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     avg_prec_mean = sklearn.metrics.average_precision_score(y_true, y_pred_mean, average='micro')
 
     if np.isnan(avg_prec_max) or np.isnan(avg_prec_sum) or np.isnan(avg_prec_mean):
+        print(human_ids)
         print(y_true.shape, y_true, avg_prec_sum, avg_prec_max, avg_prec_mean)
         exit()
 

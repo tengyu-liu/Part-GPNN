@@ -41,7 +41,7 @@ test_vcocoeval = get_vcocoeval('test')
 
 vcocodb = train_vcocoeval._get_vcocodb()
 
-i = 0
+i = 4
 gt_item = vcocodb[i]
 image_id = gt_item['id']
 my_item = pickle.load(open('../../data/feature_resnet_tengyu2/COCO_train2014_%012d.jpg.data'%image_id, 'rb'))
@@ -51,7 +51,7 @@ image = skimage.io.imread(os.path.join(mscoco_root, 'COCO_train2014_%012d.jpg'%i
 "Compare gt and my human boxes"
 _ = plt.subplot(121)
 _ = plt.imshow(image)
-for i in [1]:
+for i in range(len(gt_item['boxes'])):
     if gt_item['gt_classes'][i] == 1:
         x0,y0,x1,y1 = gt_item['boxes'][i]
         _ = plt.plot([x0,x0,x1,x1,x0], [y0,y1,y1,y0,y0], linewidth=3, c='red')
@@ -59,9 +59,10 @@ for i in [1]:
 _ = plt.subplot(122)
 _ = plt.imshow(image)
 for i in range(len(my_item['part_boxes'])):
-    if my_item['part_classes'][i] == 18:
+    if my_item['part_classes'][i] == 18 or True:
         x0,y0,x1,y1 = my_item['part_boxes'][i]
-        _ = plt.plot([x0,x0,x1,x1,x0], [y0,y1,y1,y0,y0], linewidth=3, c='red')
+        _ = plt.plot([x0,x0,x1,x1,x0], [y0,y1,y1,y0,y0], c='red')
 
 _ = plt.show()
 
+# TODO: replace full body box by human detection bbox

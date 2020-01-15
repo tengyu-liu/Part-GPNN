@@ -15,7 +15,7 @@ import warnings
 from collections import defaultdict
 
 import numpy as np
-import skimage.ioaction_index
+import skimage.io
 
 import cv2
 import feature_model
@@ -228,7 +228,7 @@ for imageset in ['train', 'test', 'val']:
         for human_id, human in enumerate(openpose['people']):
             keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
             try:
-                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.7], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.7], axis=0)
+                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.5], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.5], axis=0)
             except:
                 human_boxes.append([0,0,0,0])
                 continue

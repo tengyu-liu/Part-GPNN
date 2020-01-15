@@ -20,6 +20,10 @@ for fn in os.listdir(base_dir):
     for i_obj in range(data['part_num'], data['node_num']):
         pairwise_action_mask[:, i_obj, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
         pairwise_action_mask[i_obj, :, :] = obj_action_pair[[data['obj_classes'][i_obj - data['part_num']]]]
+    for i_part in range(part_num):
+        for j_part in range(part_num):
+            if part_human_ids[i_part] == part_human_ids[j_part]:
+                pairwise_action_mask[i_part, j_part, [2,5,16,21,24]] = 1.0
 
     data['pairwise_action_mask'] = pairwise_action_mask
     pickle.dump(data, open(os.path.join(base_dir, fn), 'wb'))
