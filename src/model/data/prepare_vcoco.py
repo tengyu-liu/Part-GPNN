@@ -237,7 +237,7 @@ for imageset in ['train', 'test', 'val']:
                 continue
             for part_id, part_name in enumerate(part_names):
                 yxs = keypoints[part_ids[part_name]]
-                yxs = yxs[yxs[:,2] > 0.7]
+                yxs = yxs[yxs[:,2] > 0.5]
                 if len(yxs) == 0:
                     continue
                 y0 = int(np.clip(yxs[:,0].min() - w * 0.1, 0, img_w))

@@ -236,7 +236,7 @@ for imageset in ['train', 'test', 'val']:
         for human_id, human in enumerate(openpose['people']):
             keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
             try:
-                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.7], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.7], axis=0)
+                h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.5], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.5], axis=0)
             except:
                 human_boxes.append([0,0,0,0])
                 continue
@@ -245,7 +245,7 @@ for imageset in ['train', 'test', 'val']:
                 continue
             for part_id, part_name in enumerate(part_names):
                 yxs = keypoints[part_ids[part_name]]
-                yxs = yxs[yxs[:,2] > 0.7]
+                yxs = yxs[yxs[:,2] > 0.5]
                 if len(yxs) == 0:
                     continue
                 y0 = int(np.clip(yxs[:,0].min() - w * 0.1, 0, img_w))
