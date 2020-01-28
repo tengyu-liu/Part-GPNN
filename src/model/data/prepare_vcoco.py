@@ -125,6 +125,20 @@ def get_node_index(bbox, det_boxes, index_list):
 def combine_box(box1, box2):
     return np.hstack((np.minimum(box1[:2], box2[:2]), np.maximum(box1[2:], box2[2:])))
 
+def get_box(_box, human_boxes_all, used_human):
+    max_iou = 0
+    best_box = None
+    best_i = None
+    for i, box in enumerate(human_boxes_all):
+        if i in used_human:
+            continue
+        iou = compute_iou(_box, box)
+        if iou > max_iou:
+            max_iou = iou
+            best_box = box
+            best_i = i
+    return best_i, box
+
 mean = np.array([0.485, 0.456, 0.406])
 std = np.array([0.229, 0.224, 0.225])
 
@@ -149,6 +163,7 @@ img_dir = '/home/tengyu/dataset/mscoco/images'
 checkpoint_dir = '/home/tengyu/github/Part-GPNN/data/model_resnet_noisy/finetune_resnet'
 vcoco_root = '/home/tengyu/dataset/v-coco/data'
 save_data_path = '/home/tengyu/github/Part-GPNN/data/feature_resnet_tengyu2'
+obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'obj_action_pairs.pkl'), 'rb'))
 
 os.makedirs(save_data_path, exist_ok=True)
 
@@ -217,13 +232,15 @@ for imageset in ['train', 'test', 'val']:
 
         obj_boxes_all = image_meta['boxes'][image_meta['human_num']:]
         obj_classes_all = image_meta['classes'][image_meta['human_num']:]
+        human_boxes_all = image_meta['boxes'][:image_meta['human_num']]
 
         part_human_ids = []
         part_classes = []
         part_boxes = []
 
         human_boxes = []
-
+        
+        used_human = []
         # human_boxes contains parts at different levels        
         for human_id, human in enumerate(openpose['people']):
             keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
@@ -249,8 +266,24 @@ for imageset in ['train', 'test', 'val']:
                 part_classes.append(part_id)
                 part_human_ids.append(human_id)
                 if part_names[part_id] == 'Full Body':
-                    human_boxes.append([y0,x0,y1,x1])
-
+                    if len(used_human) == len(human_boxes_all):
+                        human_boxes.append(_box)
+                        continue
+                    i_box, body_box = get_box(_box, human_boxes_all, used_human)
+                    if i_box is None:
+                        human_boxes.append(_box)
+                        continue
+                    human_boxes.append(body_box)
+                    part_boxes[-1] = body_box
+                    used_human.append(i_box)
+        for i in range(len(human_boxes_all)):
+            if i not in used_human:
+                human_id += 1
+                human_boxes.append(human_boxes_all[i])
+                part_boxes.append(human_boxes_all[i])
+                part_classes.append(part_names.index('Full Body'))
+                part_human_ids.append(human_id)
+                    
                 # import matplotlib.pyplot as plt
                 # print(part_names[part_id])
                 # # print(image.shape, x0, x1, y0, y1)
@@ -411,6 +444,15 @@ for imageset in ['train', 'test', 'val']:
                             for role in roles[(part_human_ids[j_node], i_node - part_num)]:
                                 gt_action_roles[i_node, j_node, role] = 1
 
+        pairwise_action_mask = np.zeros([node_num, node_num, 27])
+        for i_obj in range(part_num, node_num):
+            pairwise_action_mask[:, i_obj, :] = obj_action_pair[[obj_classes_all[i_obj - part_num]]]
+            pairwise_action_mask[i_obj, :, :] = obj_action_pair[[obj_classes_all[i_obj - part_num]]]
+        for i_part in range(part_num):
+            for j_part in range(part_num):
+                if part_human_ids[i_part] == part_human_ids[j_part]:
+                    pairwise_action_mask[i_part, j_part, [2,5,16,21,24]] = 1.0
+
         data = {
             'node_features'  : node_features,
             'edge_features'  : edge_features,
@@ -429,7 +471,10 @@ for imageset in ['train', 'test', 'val']:
             'filename'       : filename,
             'node_num'       : node_num,
             'img_w'          : img_w, 
-            'img_h'          : img_h
+            'img_h'          : img_h,
+            'img_id'         : image_id, 
+            'pairwise_action_mask' : pairwise_action_mask
         }
+
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         
