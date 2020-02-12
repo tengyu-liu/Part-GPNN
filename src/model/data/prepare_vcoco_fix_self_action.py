@@ -287,9 +287,10 @@ for imageset in ['train', 'test', 'val']:
                         obj_index = get_node_index(bbox, obj_boxes_all, np.arange(obj_num))# + human_num
                         if obj_index == - 1:
                             warnings.warn('object detection missing')
-                            continue
-                        assert obj_index >= 0 and obj_index < obj_num
-                        roles[(human_index, obj_index)].append(metadata.role_index[x['role_name'][i_role]] - 1)
+                            labels[(human_index, -1)].append(action_index - 1)
+                        else:
+                            assert obj_index >= 0 and obj_index < obj_num
+                            roles[(human_index, obj_index)].append(metadata.role_index[x['role_name'][i_role]] - 1)
                     if len(x['role_name']) == 1:
                         labels[(human_index, -1)].append(action_index - 1)
                 except IndexError:
