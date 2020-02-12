@@ -251,10 +251,8 @@ for imageset in ['train', 'test', 'val']:
             try:
                 h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.5], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.5], axis=0)
             except:
-                human_boxes.append([0,0,0,0])
                 continue
             if w < 60 or h < 60:
-                human_boxes.append([0,0,0,0])
                 continue
             for part_id, part_name in enumerate(part_names):
                 yxs = keypoints[part_ids[part_name]]
