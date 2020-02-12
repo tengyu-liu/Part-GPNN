@@ -13,7 +13,7 @@ import metadata
 import metrics
 import vsrl_eval
 
-vcoco_root = '/home/tengyu/dataset/v-coco'
+vcoco_root = '/home/tengyu/Data/mscoco/v-coco'
 
 def get_vcocoeval(imageset):
     return vsrl_eval.VCOCOeval(os.path.join(vcoco_root, 'data/vcoco/vcoco_{}.json'.format(imageset)),
@@ -28,8 +28,8 @@ def vcoco_evaluation(vcocoeval, imageset, all_results, name, method):
     print()
 
 train_vcocoeval = get_vcocoeval('train')
-val_vcocoeval = get_vcocoeval('val')
-test_vcocoeval = get_vcocoeval('test')
+# val_vcocoeval = get_vcocoeval('val')
+# test_vcocoeval = get_vcocoeval('test')
 
 random.seed(0)
 np.random.seed(0)
@@ -37,8 +37,8 @@ np.random.seed(0)
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
 train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
-val_loader = DataLoader('val', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
-test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+# val_loader = DataLoader('val', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+# test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
 
 
 train_loader.shuffle()
@@ -66,6 +66,6 @@ while True:
         part_human_ids, gt_action_labels, gt_action_roles, obj_nums, obj_boxes, obj_classes, img_ids)
 
 vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
-vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
-vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+# vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+# vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
 

@@ -34,8 +34,8 @@ class IOThread(threading.Thread):
 class BatchThread(threading.Thread):
     def __init__(self, filenames, node_num, negative_suppression=False, n_jobs=16, part_weight='central'):
 
-        self.batch_queue = Queue()
-        self.item_queue = Queue()
+        self.batch_queue = Queue(maxsize=100)
+        self.item_queue = Queue(maxsize=100)
         self.filename_queue = Queue()
         for fn in filenames:
             self.filename_queue.put(fn)
@@ -176,8 +176,8 @@ class DataLoader:
 
         self.thread = None
 
-        self.coco = vu.load_coco('/home/tengyu/dataset/v-coco/data')
-        vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/dataset/v-coco/data')
+        self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
+        vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
         self.filenames = [os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]
 
         pass
