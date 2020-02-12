@@ -54,8 +54,13 @@ all_results_max = []
 res = train_loader.fetch()
 
 node_features, edge_features, adj_mat, gt_action_labels, gt_action_roles, gt_strength_level, \
-        part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
-        obj_nums, part_nums, obj_boxes, obj_classes, img_ids = res
+    part_human_ids, human_boxes, pairwise_label_mask, batch_node_num, fns, \
+    obj_nums, part_nums, obj_boxes, obj_classes, img_ids = res
+
+all_results_sum, all_results_max, all_results_mean = metrics.append_results(
+    all_results_sum, all_results_max, all_results_mean, 
+    human_boxes, part_human_ids, gt_action_labels, gt_action_roles, 
+    obj_nums, obj_boxes, obj_classes, img_ids)
 
 i_item = 2
 
@@ -66,11 +71,7 @@ img = sio.imread('/home/tengyu/Data/mscoco/coco/train2014/COCO_train2014_%012d.j
 # _ = plt.show()
 
 # compare human boxes
-filename = 'COCO_train2014_%012d.jpg'%img_ids[i_item]
-meta_dir = '../../data/vcoco_features'
-image_meta = pickle.load(open(os.path.join(meta_dir, filename + '.p'), 'rb'), encoding='latin1')
-boxes_all = image_meta['boxes'][:image_meta['human_num']]
-print(boxes_all)
+boxes_all = human_boxes[i_item]
 
 _ = plt.imshow(img)
 for i, box in enumerate(gt_item['boxes']):
@@ -83,5 +84,36 @@ for i, box in enumerate(boxes_all):
 
 plt.show()
 
+# compare obj boxes
+boxes_all = obj_boxes[i_item]
 
+_ = plt.imshow(img)
+for i, box in enumerate(gt_item['boxes']):
+    box_class = metadata.coco_classes[gt_item['gt_classes'][i]]
+    if box_class != 'person':
+        draw_box(box, 'blue')
+
+for i, box in enumerate(boxes_all):
+    draw_box(box, 'red')
+
+plt.show()
+
+# compare action labels
+for i_human in set(part_human_ids[i_item]):
+    label_sum = np.sum(gt_action_labels[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], :, :], axis=0).sum(0)
+    if sum(label_sum) > 0:
+        plt.imshow(img)
+        draw_box(human_boxes[i_item][i_human], 'blue')
+        plt.show()
+        for i_action in range(len(label_sum)):
+            if label_sum[i_action] > 0:
+                print(metadata.action_classes[i_action] + ', ', end='')
+    print()
+    gt_item_actions = gt_item['gt_actions']
+    gt_item_roles = gt_item['gt_role_id']
+    for i_obj in range(len(gt_item_actions)):
+        for i_action in range(len(gt_item_actions[i_obj])):
+            if gt_item_actions[i_obj, i_action] > 0:
+                print(metadata.action_classes[i_action + 1] + ', ', end='')
+    print()
 

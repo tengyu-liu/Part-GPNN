@@ -9,6 +9,7 @@ Edge label GT
 """
 
 import os
+import sys
 import json
 import pickle
 import warnings
@@ -24,6 +25,9 @@ import torch
 import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
+
+job_id = int(sys.argv[1])
+n_jobs = int(sys.argv[2])
 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
@@ -199,11 +203,11 @@ for imageset in ['train', 'test', 'val']:
     
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
-    for i_image, image_id in enumerate(image_ids):
+    for i_image, image_id in enumerate(image_ids[job_id::n_jobs]):
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
 
-        print('%d/%d: %s'%(i_image, len(image_ids), filename))
+        print('\r%d/%d: %s'%(i_image, len(image_ids), filename), end='', flush=True)
 
         # if os.path.exists(os.path.join(save_data_path, filename + '.data')):
         #     continue

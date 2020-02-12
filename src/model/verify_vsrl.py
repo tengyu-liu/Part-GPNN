@@ -13,7 +13,7 @@ import metadata
 import metrics
 import vsrl_eval
 
-vcoco_root = '/home/tengyu/dataset/v-coco'
+vcoco_root = '/home/tengyu/Data/mscoco/v-coco'
 
 def get_vcocoeval(imageset):
     return vsrl_eval.VCOCOeval(os.path.join(vcoco_root, 'data/vcoco/vcoco_{}.json'.format(imageset)),
@@ -66,6 +66,6 @@ while True:
         part_human_ids, gt_action_labels, gt_action_roles, obj_nums, obj_boxes, obj_classes, img_ids)
 
 vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
-vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
-vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+# vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+# vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
 
