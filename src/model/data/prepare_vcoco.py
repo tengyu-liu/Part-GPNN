@@ -203,7 +203,8 @@ for imageset in ['train', 'test', 'val']:
     
     image_ids = vcoco_all[0]['image_id'][:, 0].astype(int).tolist()
 
-    for i_image, image_id in enumerate(image_ids[job_id::n_jobs]):
+    for __i_image, image_id in enumerate(image_ids[job_id::n_jobs]):
+        i_image = __i_image * n_jobs + job_id
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
 
