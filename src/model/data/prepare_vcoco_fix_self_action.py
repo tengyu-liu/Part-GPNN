@@ -128,6 +128,20 @@ def combine_box(box1, box2):
 mean = np.array([0.485, 0.456, 0.406])
 std = np.array([0.229, 0.224, 0.225])
 
+def get_box(_box, human_boxes_all, used_human):
+    max_iou = 0
+    best_box = None
+    best_i = None
+    for i, box in enumerate(human_boxes_all):
+        if i in used_human:
+            continue
+        iou = compute_iou(_box, box)
+        if iou > max_iou:
+            max_iou = iou
+            best_box = box
+            best_i = i
+    return best_i, box
+
 def img_to_torch(img):
     """
     input: H x W x C img iterables with range 0-255
