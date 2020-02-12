@@ -207,7 +207,7 @@ for imageset in ['train', 'test', 'val']:
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
 
-        print('\r%d/%d: %s'%(i_image, len(image_ids), filename), end='', flush=True)
+        print('\r[%d] %d/%d: %s'%(job_id, i_image, len(image_ids[job_id::n_jobs]), filename), end='', flush=True)
 
         # if os.path.exists(os.path.join(save_data_path, filename + '.data')):
         #     continue
