@@ -420,6 +420,10 @@ for imageset in ['train', 'test', 'val']:
                     edge_features[i_node, j_node, :1108] = node_features[i_node, :1108]
                     edge_features[i_node, j_node, 1108:] = node_features_appd[j_node]
                     adj_mat[i_node, j_node] = 1
+                    if i_node < part_num:
+                        gt_strength_level[i_node, i_node] = part_weights[part_names[part_classes[i_node]]]
+                        for label in labels[(part_human_ids[i_node], -1)]:
+                            gt_action_labels[i_node, i_node, label] = 1
                 else:
                     key = (min(i_node, j_node), max(i_node, j_node))
                     if key in edge_patch_mapping:
