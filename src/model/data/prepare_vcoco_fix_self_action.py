@@ -225,6 +225,7 @@ for imageset in ['train', 'test', 'val']:
 
         obj_boxes_all = image_meta['boxes'][image_meta['human_num']:]
         obj_classes_all = image_meta['classes'][image_meta['human_num']:]
+        human_boxes_all = image_meta['boxes'][:image_meta['human_num']]
 
         part_human_ids = []
         part_classes = []
