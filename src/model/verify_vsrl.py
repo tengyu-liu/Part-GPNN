@@ -28,8 +28,8 @@ def vcoco_evaluation(vcocoeval, imageset, all_results, name, method):
     print()
 
 train_vcocoeval = get_vcocoeval('train')
-val_vcocoeval = get_vcocoeval('val')
-test_vcocoeval = get_vcocoeval('test')
+# val_vcocoeval = get_vcocoeval('val')
+# test_vcocoeval = get_vcocoeval('test')
 
 random.seed(0)
 np.random.seed(0)
@@ -37,8 +37,8 @@ np.random.seed(0)
 obj_action_pair = pickle.load(open(os.path.join(os.path.dirname(__file__), 'data', 'obj_action_pairs.pkl'), 'rb'))
 
 train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
-val_loader = DataLoader('val', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
-test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+# val_loader = DataLoader('val', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+# test_loader = DataLoader('test', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
 
 
 train_loader.shuffle()
