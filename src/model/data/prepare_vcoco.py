@@ -246,7 +246,7 @@ for imageset in ['train', 'test', 'val']:
         
         used_human = []
         # human_boxes contains parts at different levels        
-        for human_id, human in enumerate(openpose['people']):
+        for human in openpose['people']:
             keypoints = np.array(human['pose_keypoints_2d']).reshape([-1,3])
             try:
                 h, w, _ = np.max(keypoints[keypoints[:,2] >= 0.5], axis=0) - np.min(keypoints[keypoints[:,2] >= 0.5], axis=0)
@@ -268,7 +268,7 @@ for imageset in ['train', 'test', 'val']:
                 _box = [y0,x0,y1,x1]
                 part_boxes.append(_box)
                 part_classes.append(part_id)
-                part_human_ids.append(human_id)
+                part_human_ids.append(len(human_boxes))
                 if part_names[part_id] == 'Full Body':
                     if len(used_human) == len(human_boxes_all):
                         human_boxes.append(_box)
@@ -282,11 +282,10 @@ for imageset in ['train', 'test', 'val']:
                     used_human.append(i_box)
         for i in range(len(human_boxes_all)):
             if i not in used_human:
-                human_id += 1
+                part_human_ids.append(len(human_boxes))
                 human_boxes.append(human_boxes_all[i])
                 part_boxes.append(human_boxes_all[i])
                 part_classes.append(part_names.index('Full Body'))
-                part_human_ids.append(human_id)
                     
                 # import matplotlib.pyplot as plt
                 # print(part_names[part_id])
