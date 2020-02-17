@@ -30,6 +30,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
 
     # Step 2. Compute mAP
     y_true = lifted_gt.reshape([-1, pred.shape[-1]])
+
     y_pred_sum = lifted_pred_sum.reshape([-1, pred.shape[-1]])
     y_pred_max = lifted_pred_max.reshape([-1, pred.shape[-1]])
     y_pred_mean = lifted_pred_mean.reshape([-1, pred.shape[-1]])
@@ -39,7 +40,9 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     avg_prec_mean = sklearn.metrics.average_precision_score(y_true, y_pred_mean, average='micro')
 
     if np.isnan(avg_prec_max) or np.isnan(avg_prec_sum) or np.isnan(avg_prec_mean):
-        print(human_ids)
+        print('human_ids', human_ids)
+        print('part_human_ids', part_human_ids)
+        print('gt', gt)
         print(y_true.shape, y_true, avg_prec_sum, avg_prec_max, avg_prec_mean)
         exit()
 
