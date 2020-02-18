@@ -39,7 +39,7 @@ vcocodb = train_vcocoeval._get_vcocodb()
 random.seed(0)
 np.random.seed(0)
 
-train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight)
+train_loader = DataLoader('train', flags.node_num, negative_suppression=flags.negative_suppression, n_jobs=flags.n_jobs, part_weight=flags.part_weight, debug='148938')
 
 train_loader.shuffle()
 train_loader.prefetch()
@@ -62,7 +62,7 @@ all_results_sum, all_results_max, all_results_mean = metrics.append_results(
     human_boxes, part_human_ids, gt_action_labels, gt_action_roles, 
     obj_nums, obj_boxes, obj_classes, img_ids)
 
-i_item = 2
+i_item = 0
 
 gt_item = [x for x in vcocodb if x['id'] == img_ids[i_item]][0]
 
@@ -108,12 +108,16 @@ for i_human in set(part_human_ids[i_item]):
         for i_action in range(len(label_sum)):
             if label_sum[i_action] > 0:
                 print(metadata.action_classes[i_action] + ', ', end='')
-    print()
-    gt_item_actions = gt_item['gt_actions']
-    gt_item_roles = gt_item['gt_role_id']
-    for i_obj in range(len(gt_item_actions)):
-        for i_action in range(len(gt_item_actions[i_obj])):
-            if gt_item_actions[i_obj, i_action] > 0:
-                print(metadata.action_classes[i_action + 1] + ', ', end='')
-    print()
+        print()
+        gt_item_actions = gt_item['gt_actions']
+        gt_item_roles = gt_item['gt_role_id']
+        for i_obj in range(len(gt_item_actions)):
+            for i_action in range(len(gt_item_actions[i_obj])):
+                if gt_item_actions[i_obj, i_action] > 0:
+                    print(metadata.action_classes[i_action + 1] + ', ', end='')
+        print()
 
+# compare action roles
+for i_human in set(part_human_ids[i_item]):
+    role_sum = np.sum(gt_action_roles[i_item][ np.where(np.equal(part_human_ids[i_item], i_human))[0], :, :], axis=0)
+    
