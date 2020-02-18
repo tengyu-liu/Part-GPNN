@@ -16,17 +16,17 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     part_num = len(part_human_ids)
     obj_num = node_num - part_num
 
-    lifted_pred_sum = np.zeros([human_num, obj_num, pred.shape[-1]])
-    lifted_pred_max = np.zeros([human_num, obj_num, pred.shape[-1]])
-    lifted_pred_mean = np.zeros([human_num, obj_num, pred.shape[-1]])
-    lifted_gt = np.zeros([human_num, obj_num, pred.shape[-1]])
+    lifted_pred_sum = np.zeros([human_num, node_num, pred.shape[-1]])
+    lifted_pred_max = np.zeros([human_num, node_num, pred.shape[-1]])
+    lifted_pred_mean = np.zeros([human_num, node_num, pred.shape[-1]])
+    lifted_gt = np.zeros([human_num, node_num, pred.shape[-1]])
     
     # Step 1. Get lifted prediction
     for i_lifted, i_human in enumerate(human_ids):
-        lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))][0][part_num:, : ]
-        lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
-        lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
-        lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
+        lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))][0]
+        lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], :, :], axis=0)
+        lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], :, :], axis=0)
+        lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], :, :], axis=0)
 
     # Step 2. Compute mAP
     y_true = lifted_gt.reshape([-1, pred.shape[-1]])
