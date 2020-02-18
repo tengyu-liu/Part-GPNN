@@ -42,7 +42,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     if np.isnan(avg_prec_max) or np.isnan(avg_prec_sum) or np.isnan(avg_prec_mean):
         print('human_ids', human_ids)
         print('part_human_ids', part_human_ids)
-        print('gt', gt)
+        print('gt', gt.shape, gt.sum())
         print(y_true.shape, y_true, avg_prec_sum, avg_prec_max, avg_prec_mean)
         exit()
 
