@@ -166,7 +166,7 @@ class BatchThread(threading.Thread):
 
 
 class DataLoader:
-    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu2'), negative_suppression=False, n_jobs=16, part_weight='central'):
+    def __init__(self, imageset, node_num, datadir=os.path.join(os.path.dirname(__file__), '../../data/feature_resnet_tengyu2'), negative_suppression=False, n_jobs=16, part_weight='central', debug=None):
         self.imageset = imageset
         self.datadir = datadir
         self.node_num = node_num
@@ -178,7 +178,12 @@ class DataLoader:
 
         self.coco = vu.load_coco('/home/tengyu/dataset/v-coco/data')
         vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/dataset/v-coco/data')
+        # self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
+        # vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
+
         self.filenames = [os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]
+        if debug is not None:
+            self.filenames = [x for x in self.filenames if debug in x]
 
         pass
 

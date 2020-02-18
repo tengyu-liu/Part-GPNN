@@ -134,9 +134,9 @@ for epoch in range(flags.epochs):
             batch_time[-1], total_data_time / item, total_tf_time / item
         ), end='', flush=True)
 
-    vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
-    vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
-    vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
+    # vcoco_evaluation(train_vcocoeval, 'train', all_results_sum, flags.name, 'SUM')
+    # vcoco_evaluation(train_vcocoeval, 'train', all_results_max, flags.name, 'MAX')
+    # vcoco_evaluation(train_vcocoeval, 'train', all_results_mean, flags.name, 'MEAN')
     
     avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -217,9 +217,9 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='', flush=True)
 
-        vcoco_evaluation(val_vcocoeval, 'val', all_results_sum, flags.name, 'SUM')
-        vcoco_evaluation(val_vcocoeval, 'val', all_results_max, flags.name, 'MAX')
-        vcoco_evaluation(val_vcocoeval, 'val', all_results_mean, flags.name, 'MEAN')
+        # vcoco_evaluation(val_vcocoeval, 'val', all_results_sum, flags.name, 'SUM')
+        # vcoco_evaluation(val_vcocoeval, 'val', all_results_max, flags.name, 'MAX')
+        # vcoco_evaluation(val_vcocoeval, 'val', all_results_mean, flags.name, 'MEAN')
         
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
 
@@ -304,9 +304,9 @@ for epoch in range(flags.epochs):
                 batch_time[-1], total_data_time / item, total_tf_time / item
             ), end='')
 
-        vcoco_evaluation(test_vcocoeval, 'test', all_results_sum, flags.name, 'SUM')
-        vcoco_evaluation(test_vcocoeval, 'test', all_results_max, flags.name, 'MAX')
-        vcoco_evaluation(test_vcocoeval, 'test', all_results_mean, flags.name, 'MEAN')
+        # vcoco_evaluation(test_vcocoeval, 'test', all_results_sum, flags.name, 'SUM')
+        # vcoco_evaluation(test_vcocoeval, 'test', all_results_max, flags.name, 'MAX')
+        # vcoco_evaluation(test_vcocoeval, 'test', all_results_mean, flags.name, 'MEAN')
         
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
         print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
