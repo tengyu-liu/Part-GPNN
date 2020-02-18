@@ -23,7 +23,7 @@ def compute_mAP(pred, gt, part_human_ids, node_num):
     
     # Step 1. Get lifted prediction
     for i_lifted, i_human in enumerate(human_ids):
-        lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, : ]
+        lifted_gt[i_lifted] = gt[ np.where(np.equal(part_human_ids, i_human))[0]][part_num:, : ]
         lifted_pred_sum[i_lifted] = np.sum(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_max[i_lifted] = np.max(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
         lifted_pred_mean[i_lifted] = np.mean(pred[ np.where(np.equal(part_human_ids, i_human))[0], part_num:, :], axis=0)
