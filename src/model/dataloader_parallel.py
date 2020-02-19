@@ -58,7 +58,7 @@ class BatchThread(threading.Thread):
         self.gt_action_roles = []
         self.gt_strength_level = []
         self.part_human_ids = []
-        self.batch_node_num = -1
+        self.batch_node_num = 0
         self.data_fn = []
         self.pairwise_action_mask = []
         self.img_ids = []
@@ -136,7 +136,7 @@ class BatchThread(threading.Thread):
                 self.gt_action_roles = []
                 self.gt_strength_level = []
                 self.part_human_ids = []
-                self.batch_node_num = -1
+                self.batch_node_num = 0
                 self.data_fn = []
                 self.pairwise_action_mask = []
                 self.img_ids = []
@@ -157,7 +157,7 @@ class BatchThread(threading.Thread):
             self.data_fn.append(filename)
             self.pairwise_action_mask.append(item['pairwise_action_mask'])
             self.img_ids.append(item['img_id'])
-            human_box = item['part_boxes'][np.array(item['part_classes']) == 18]
+            human_box = np.array(item['part_boxes'])[np.array(item['part_classes']) == 18]
             self.human_boxes.append(human_box)
             self.obj_nums.append(item['obj_num'])
             self.part_nums.append(item['part_num'])
@@ -179,9 +179,9 @@ class DataLoader:
         self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
         vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
 
-        self.filenames = [os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]
+        self.filenames = list(set([os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]))
         if debug is not None:
-            self.filenames = [x for x in self.filenames if debug in x]
+            self.filenames = [x for x in self.filenames if '%012d'%debug in x]
 
         pass
 
