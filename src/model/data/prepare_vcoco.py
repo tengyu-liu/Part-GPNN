@@ -282,6 +282,11 @@ for imageset in ['train', 'test', 'val']:
                     print(filename)
                     print(len(human_boxes), part_name)
                     print(yxs, y0, x0, y1, x1)
+                    print('----- Y0 -----')
+                    print('YXS:', yxs, 'H', h, 'w', w, 'IMG_H', img_h, 'IMG_W', img_w)
+                    print('yxs[:,0].min()', yxs[:,0].min(), 'h * 0.1', h * 0.1)
+                    print('yxs[:,0].min() - h * 0.1', yxs[:,0].min() - h * 0.1)
+                    print('np.clip(yxs[:,0].min() - h * 0.1, 0, img_h)', np.clip(yxs[:,0].min() - h * 0.1, 0, img_h))
                     raise
                 _box = [y0,x0,y1,x1]
                 # draw_box(_box)
