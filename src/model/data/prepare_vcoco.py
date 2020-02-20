@@ -275,6 +275,14 @@ for imageset in ['train', 'test', 'val']:
                 x0 = int(np.clip(yxs[:,1].min() - w * 0.1, 0, img_w))
                 y1 = int(np.clip(yxs[:,0].max() + h * 0.1, 0, img_h))
                 x1 = int(np.clip(yxs[:,1].max() + w * 0.1, 0, img_w))
+                try:
+                    assert y1 > y0 and x1 > x0
+                except AssertionError:
+                    print('===== MAX < MIN =====')
+                    print(filename)
+                    print(human_id, part_name)
+                    print(yxs, y0, x0, y1, x1)
+                    raise
                 _box = [y0,x0,y1,x1]
                 # draw_box(_box)
                 part_boxes.append(_box)
