@@ -280,7 +280,7 @@ for imageset in ['train', 'test', 'val']:
                 except AssertionError:
                     print('===== MAX < MIN =====')
                     print(filename)
-                    print(human_id, part_name)
+                    print(len(human_boxes), part_name)
                     print(yxs, y0, x0, y1, x1)
                     raise
                 _box = [y0,x0,y1,x1]
