@@ -268,6 +268,10 @@ for imageset in ['train', 'test', 'val']:
             for part_id, part_name in enumerate(part_names):
                 yxs = keypoints[part_ids[part_name]]
                 yxs = yxs[yxs[:,2] > 0.5]
+                yxs = yxs[yxs[:,0] >= 0]
+                yxs = yxs[yxs[:,0] < img_h]
+                yxs = yxs[yxs[:,1] >= 0]
+                yxs = yxs[yxs[:,1] < img_w]
                 # plt.scatter(yxs[:,0], yxs[:,1], c='black', s=2)
                 if len(yxs) == 0:
                     continue
