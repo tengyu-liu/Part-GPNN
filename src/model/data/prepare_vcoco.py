@@ -26,7 +26,7 @@ import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
 
-local = False
+local = True
 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
@@ -279,19 +279,6 @@ for imageset in ['train', 'test', 'val']:
                 x0 = int(np.clip(yxs[:,1].min() - w * 0.1, 0, img_w))
                 y1 = int(np.clip(yxs[:,0].max() + h * 0.1, 0, img_h))
                 x1 = int(np.clip(yxs[:,1].max() + w * 0.1, 0, img_w))
-                try:
-                    assert y1 > y0 and x1 > x0
-                except AssertionError:
-                    print('===== MAX < MIN =====')
-                    print(filename)
-                    print(len(human_boxes), part_name)
-                    print(yxs, y0, x0, y1, x1)
-                    print('----- Y0 -----')
-                    print('YXS:', yxs, 'H', h, 'w', w, 'IMG_H', img_h, 'IMG_W', img_w)
-                    print('yxs[:,0].min()', yxs[:,0].min(), 'h * 0.1', h * 0.1)
-                    print('yxs[:,0].min() - h * 0.1', yxs[:,0].min() - h * 0.1)
-                    print('np.clip(yxs[:,0].min() - h * 0.1, 0, img_h)', np.clip(yxs[:,0].min() - h * 0.1, 0, img_h))
-                    raise
                 _box = [y0,x0,y1,x1]
                 # draw_box(_box)
                 part_boxes.append(_box)
@@ -338,9 +325,23 @@ for imageset in ['train', 'test', 'val']:
             data = pickle.load(open(os.path.join(save_data_path, filename + '.data'), 'rb'))
             labels = data['labels']
             roles = data['roles']
+            if local:
+                node_features = data['node_features']
+                edge_features = data['edge_features']
+                adj_mat = data['adj_mat']
+                gt_action_labels = data['action_labels']
+                gt_action_roles = data['action_roles']
+                gt_strength_level = data['strength_level']
         else:
             labels = defaultdict(list)
             roles = defaultdict(list)
+            if local:
+                node_features = np.zeros([node_num, 1108])
+                edge_features = np.zeros([node_num, node_num, 1216])
+                adj_mat = np.zeros((node_num, node_num))
+                gt_strength_level = np.zeros([node_num, node_num])
+                gt_action_labels = np.zeros([node_num, node_num, len(metadata.action_classes) - 1])
+                gt_action_roles = np.zeros([node_num, node_num, len(metadata.roles) - 1])
 
         # Extract GT labels
         for x in vcoco_all:
@@ -396,9 +397,31 @@ for imageset in ['train', 'test', 'val']:
             'd'              : d
         }
         
+        if local:
+            for human_index, obj_index in labels.keys():
+                for i_part, i_human in enumerate(part_human_ids):
+                    if obj_index != -1:
+                        if i_human == human_index:
+                            gt_action_labels[i_part, obj_index + part_num, labels[human_index, obj_index]] = 1
+                            gt_action_roles[i_part, obj_index + part_num, roles[human_index, obj_index]] = 1
+                    for j_part, j_human in enumerate(part_human_ids):
+                        if i_human == human_index and j_human == human_index:
+                            gt_action_labels[i_part, j_part, labels[human_index, obj_index]] = 1
+        
+            data['node_features']  = node_features
+            data['edge_features']  = edge_features
+            data['adj_mat']        = adj_mat
+            data['action_labels']  = gt_action_labels
+            data['action_roles']   = gt_action_roles
+            data['strength_level'] = gt_strength_level
+
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         
+if local:
+    exit()
+
 for fn in os.listdir(save_data_path):
+    print(fn)
     data = pickle.load(open(os.path.join(save_data_path, fn), 'rb'))
     d = data['d']
     filename = data['filename']

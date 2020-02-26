@@ -155,7 +155,8 @@ class BatchThread(threading.Thread):
             self.part_human_ids.append(item['part_human_id'])
             self.batch_node_num = max(self.batch_node_num, item['node_features'].shape[0])
             self.data_fn.append(filename)
-            self.pairwise_action_mask.append(item['pairwise_action_mask'])
+            # self.pairwise_action_mask.append(item['pairwise_action_mask'])
+            self.pairwise_action_mask.append(1)
             self.img_ids.append(item['img_id'])
             human_box = np.array(item['part_boxes'])[np.array(item['part_classes']) == 18]
             self.human_boxes.append(human_box)
@@ -176,10 +177,10 @@ class DataLoader:
 
         self.thread = None
 
-        self.coco = vu.load_coco('/home/tengyu/dataset/v-coco/data')
-        vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/dataset/v-coco/data')
-        # self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
-        # vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
+        # self.coco = vu.load_coco('/home/tengyu/dataset/v-coco/data')
+        # vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/dataset/v-coco/data')
+        self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
+        vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
 
         self.filenames = list(set([os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]))
         if debug is not None:
