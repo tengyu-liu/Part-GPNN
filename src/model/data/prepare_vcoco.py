@@ -26,7 +26,7 @@ import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
 
-local = True
+local = False
 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
@@ -216,6 +216,9 @@ for imageset in ['train', 'test', 'val']:
     for i_image, image_id in enumerate(image_ids):
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
+
+        if '410498' not in filename:
+            continue
 
         print('%d/%d: %s'%(i_image, len(image_ids), filename), end='\n', flush=True)
 
@@ -417,9 +420,6 @@ for imageset in ['train', 'test', 'val']:
 
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
         
-if local:
-    exit()
-
 for fn in os.listdir(save_data_path):
     print(fn)
     data = pickle.load(open(os.path.join(save_data_path, fn), 'rb'))
@@ -442,6 +442,8 @@ for fn in os.listdir(save_data_path):
     roles = data['roles']
 
     image = skimage.io.imread(os.path.join(img_dir, '%s2014'%d, filename))
+    if len(image.shape) == 2:
+        image = np.tile(np.expand_dims(image, axis=-1), [1, 1, 3])
 
     node_features = np.zeros([node_num, 1000])
     edge_features = np.zeros((node_num, node_num, 1216))
