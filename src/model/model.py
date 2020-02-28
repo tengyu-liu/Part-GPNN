@@ -32,7 +32,7 @@ class Model:
         self.gt_strength_level = tf.placeholder(tf.float32, [None, None, None], 'gt_strength_level')
         self.pairwise_label_mask = tf.placeholder(tf.float32, [None, None, None, self.label_num], 'pairwise_label_mask')
         if self.dataset == 'vcoco':
-            self.pairwise_role_gt = tf.placeholder(tf.float32, [None, None, None, 3], 'pairwise_role_gt')
+            self.pairwise_role_gt = tf.placeholder(tf.float32, [None, None, None, self.label_num, 3], 'pairwise_role_gt')
 
     def build_model(self):
 
@@ -53,7 +53,8 @@ class Model:
         self.edge_label_pred = tf.sigmoid(self.edge_label) * self.pairwise_label_mask
 
         if self.dataset == 'vcoco':
-            self.edge_role = self.readout(message, 3)
+            edge_role = self.readout(message, 3)
+            self.edge_role = tf.expand_dims(edge_role, axis=-2) * tf.expand_dims(self.edge_label, axis=-1)
             self.edge_role_pred = tf.sigmoid(self.edge_role)
 
     def build_train(self):

@@ -26,7 +26,7 @@ import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
 
-local = False
+local = True
 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
@@ -217,9 +217,6 @@ for imageset in ['train', 'test', 'val']:
         filename = coco.loadImgs(ids=[image_id])[0]['file_name']
         d = filename.split('_')[1][:-4]
 
-        if '410498' not in filename:
-            continue
-
         print('%d/%d: %s'%(i_image, len(image_ids), filename), end='\n', flush=True)
 
         try:
@@ -344,7 +341,7 @@ for imageset in ['train', 'test', 'val']:
                 adj_mat = np.zeros((node_num, node_num))
                 gt_strength_level = np.zeros([node_num, node_num])
                 gt_action_labels = np.zeros([node_num, node_num, len(metadata.action_classes) - 1])
-                gt_action_roles = np.zeros([node_num, node_num, len(metadata.roles) - 1])
+                gt_action_roles = np.zeros([node_num, node_num, len(metadata.action_classes) - 1, len(metadata.roles) - 1])
 
         # Extract GT labels
         for x in vcoco_all:
@@ -406,7 +403,7 @@ for imageset in ['train', 'test', 'val']:
                     if obj_index != -1:
                         if i_human == human_index:
                             gt_action_labels[i_part, obj_index + part_num, labels[human_index, obj_index]] = 1
-                            gt_action_roles[i_part, obj_index + part_num, roles[human_index, obj_index]] = 1
+                            gt_action_roles[i_part, obj_index + part_num, labels[human_index, obj_index], roles[human_index, obj_index]] = 1
                     for j_part, j_human in enumerate(part_human_ids):
                         if i_human == human_index and j_human == human_index:
                             gt_action_labels[i_part, j_part, labels[human_index, obj_index]] = 1
@@ -419,7 +416,10 @@ for imageset in ['train', 'test', 'val']:
             data['strength_level'] = gt_strength_level
 
         pickle.dump(data, open(os.path.join(save_data_path, filename + '.data'), 'wb'))
-        
+
+if local:
+    exit()
+
 for fn in os.listdir(save_data_path):
     print(fn)
     data = pickle.load(open(os.path.join(save_data_path, fn), 'rb'))
@@ -548,14 +548,14 @@ for fn in os.listdir(save_data_path):
                     for label in labels[(part_human_ids[i_node], j_node - part_num)]:
                         gt_action_labels[i_node, j_node, label] = 1
                     for role in roles[(part_human_ids[i_node], j_node - part_num)]:
-                        gt_action_roles[i_node, j_node, role] = 1
+                        gt_action_roles[i_node, j_node, label, role] = 1
 
                 if j_node < part_num and i_node >= part_num:
                     gt_strength_level[i_node, j_node] = part_weights[part_names[part_classes[j_node]]]
                     for label in labels[(part_human_ids[j_node], i_node - part_num)]:
                         gt_action_labels[i_node, j_node, label] = 1
                     for role in roles[(part_human_ids[j_node], i_node - part_num)]:
-                        gt_action_roles[i_node, j_node, role] = 1
+                        gt_action_roles[i_node, j_node, label, role] = 1
 
                 key = (min(i_node, j_node), max(i_node, j_node))
                 if key in edge_patch_mapping:

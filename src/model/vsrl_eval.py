@@ -292,6 +292,8 @@ class VCOCOeval(object):
                 tp[aid][rid].append(1)
                 covered[jmax] = True
             else:
+              if aid == 7 and agent_scores[j] > 0:
+                print(image_id, is_true_action, ovmax, ov_role)
               fp[aid][rid].append(1)
               tp[aid][rid].append(0)
 

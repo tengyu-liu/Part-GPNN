@@ -94,7 +94,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_j = -1
                     obj_info = [0,0,0,0,0]
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_sum[i_obj, role_index] * result_sum['{}_agent'.format(action)]
+                        action_role_score = pred_role_sum[i_obj, action_index, role_index] * result_sum['{}_agent'.format(action)]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
@@ -113,7 +113,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_j = -1
                     obj_info = [0,0,0,0,0]
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_max[i_obj, role_index] * result_max['{}_agent'.format(action)]
+                        action_role_score = pred_role_max[i_obj, action_index, role_index] * result_max['{}_agent'.format(action)]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
@@ -133,7 +133,7 @@ def append_results(all_results_sum, all_results_max, all_results_mean, human_box
                     best_j = -1
                     obj_info = [0,0,0,0,0]
                     for i_obj in range(obj_num):
-                        action_role_score = pred_role_mean[i_obj, role_index] * result_mean['{}_agent'.format(action)]
+                        action_role_score = pred_role_mean[i_obj, action_index, role_index] * result_mean['{}_agent'.format(action)]
                         if action_role_score > best_score:
                             best_score = action_role_score
                             obj_info = np.append(obj_boxes[i_item][i_obj, :], action_role_score)
