@@ -27,7 +27,7 @@ import torchvision.models
 import vsrl_utils as vu
 
 local = False
-
+ 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
             'Knee Right': [10],
