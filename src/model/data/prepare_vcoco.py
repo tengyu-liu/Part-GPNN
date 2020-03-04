@@ -450,7 +450,7 @@ for fn in os.listdir(save_data_path):
     adj_mat = np.zeros((node_num, node_num))
     gt_strength_level = np.zeros([node_num, node_num])
     gt_action_labels = np.zeros([node_num, node_num, len(metadata.action_classes) - 1])
-    gt_action_roles = np.zeros([node_num, node_num, len(metadata.roles) - 1])
+    gt_action_roles = np.zeros([node_num, node_num, len(metadata.action_classes) - 1, len(metadata.roles) - 1])
     
     # Extract node features
     if not local:
