@@ -26,7 +26,7 @@ import torch.autograd
 import torchvision.models
 import vsrl_utils as vu
 
-local = True
+local = False
 
 part_ids = {'Right Shoulder': [2],
             'Left Shoulder': [5],
