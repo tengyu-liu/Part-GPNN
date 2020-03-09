@@ -59,7 +59,7 @@ class Model:
 
     def build_train(self):
         loss = tf.reduce_sum(tf.losses.sigmoid_cross_entropy(multi_class_labels=self.pairwise_label_gt, logits=self.edge_label, weights=self.pairwise_label_mask) * tf.expand_dims(self.gt_strength_level, axis=-1), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
-        p1 = tf.print("action loss: ", tf.reduce_mean(loss))
+        p1 = tf.print("\naction loss: ", tf.reduce_mean(loss))
         if self.dataset == 'vcoco':
             with tf.control_dependencies([p1]):
                 loss += tf.reduce_sum(tf.losses.softmax_cross_entropy(onehot_labels=self.pairwise_role_gt, logits=self.edge_role) * tf.expand_dims(tf.expand_dims(self.gt_strength_level, axis=-1), axis=-1), axis=[1,2,3,4]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
