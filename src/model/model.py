@@ -61,7 +61,7 @@ class Model:
         loss = tf.reduce_sum(tf.losses.sigmoid_cross_entropy(
             multi_class_labels=self.pairwise_label_gt, 
             logits=self.edge_label, 
-            weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1)), axis=[1,2,3]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
+            weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1)), axis=[1,2]) / tf.reduce_sum(self.gt_strength_level, axis=[1,2])
         if self.dataset == 'vcoco':
             role_loss = tf.reduce_sum(tf.losses.softmax_cross_entropy(
                 onehot_labels=self.pairwise_role_gt, 
