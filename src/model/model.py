@@ -54,7 +54,7 @@ class Model:
 
         if self.dataset == 'vcoco':
             edge_role = self.readout(message, 3)
-            self.edge_role = tf.expand_dims(edge_role, axis=-2) * tf.expand_dims(self.edge_label, axis=-1)
+            self.edge_role = tf.expand_dims(edge_role, axis=-2) + tf.expand_dims(self.edge_label, axis=-1)
             self.edge_role_pred = tf.sigmoid(self.edge_role)
 
     def build_train(self):
