@@ -70,7 +70,7 @@ class Model:
         p1 = tf.print('\n', loss, role_loss)
         p2 = tf.print('\n', tf.reduce_mean(loss), tf.reduce_mean(role_loss))
         with tf.control_dependencies([p1, p2]):
-            self.loss = tf.reduce_mean(loss + role_loss)
+            self.loss = loss + role_loss
             self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
             self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
     
