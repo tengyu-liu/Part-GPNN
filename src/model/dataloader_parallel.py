@@ -182,7 +182,7 @@ class DataLoader:
         # self.coco = vu.load_coco('/home/tengyu/Data/mscoco/v-coco/data')
         # vcoco_all = vu.load_vcoco('vcoco_{}'.format(imageset), '/home/tengyu/Data/mscoco/v-coco/data')
 
-        self.filenames = list(set([os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]))[:100]
+        self.filenames = list(set([os.path.join(self.datadir, x['file_name'] + '.data') for x in self.coco.loadImgs(ids=vcoco_all[0]['image_id'][:, 0].astype(int).tolist()) if os.path.exists(os.path.join(self.datadir, x['file_name'] + '.data'))]))
         if debug is not None:
             self.filenames = [x for x in self.filenames if '%012d'%debug in x]
 

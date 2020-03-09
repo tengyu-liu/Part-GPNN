@@ -58,21 +58,20 @@ class Model:
             self.edge_role_pred = tf.sigmoid(self.edge_role)
 
     def build_train(self):
+
         loss = tf.losses.sigmoid_cross_entropy(
             multi_class_labels=self.pairwise_label_gt, 
             logits=self.edge_label, 
             weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
-        if self.dataset == 'vcoco':
-            role_loss = tf.losses.softmax_cross_entropy(
-                onehot_labels=self.pairwise_role_gt, 
-                logits=self.edge_role, 
-                weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
-        p1 = tf.print('\n', loss, role_loss)
-        p2 = tf.print('\n', tf.reduce_mean(loss), tf.reduce_mean(role_loss))
-        with tf.control_dependencies([p1, p2]):
-            self.loss = loss + role_loss
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
-            self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
+
+        role_loss = tf.losses.softmax_cross_entropy(
+            onehot_labels=self.pairwise_role_gt, 
+            logits=self.edge_role, 
+            weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
+
+        self.loss = loss + role_loss
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
+        self.train_op = self.optimizer.minimize(self.loss, global_step=self.step)
     
     def build_summary(self):
         self.summ_loss_in = tf.placeholder(tf.float32, [], 'loss_summ')
