@@ -184,8 +184,8 @@ class VCOCOeval(object):
               this_role[0, 5 * aid: 5 * aid + 5, j-1] = det[self.actions[aid] + '_' + rid]
         agents = np.concatenate((agents, this_agent), axis=0)
         roles  = np.concatenate((roles, this_role), axis=0)
-    if len(agents) == 0 and len(roles) == 0:
-      print('Detection missing for %d'%image_id)
+    # if len(agents) == 0 and len(roles) == 0:
+    #   print('Detection missing for %d'%image_id)
     return agents, roles
 
 
