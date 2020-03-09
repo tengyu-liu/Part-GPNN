@@ -286,33 +286,33 @@ for epoch in range(flags.epochs):
                 all_results_sum, all_results_max, all_results_mean, human_boxes, 
                 part_human_ids, pred_label, pred_role, obj_nums, obj_boxes, obj_classes, img_ids)
 
-            for i_item in range(len(pred_label)):
-                __avg_prec_sum, __avg_prec_max, __avg_prec_mean = metrics.compute_mAP(pred_label[i_item], gt_action_labels[i_item], part_human_ids[i_item], obj_nums[i_item] + part_nums[i_item])
-                avg_prec_sum.append(__avg_prec_sum)
-                avg_prec_max.append(__avg_prec_max)
-                avg_prec_mean.append(__avg_prec_mean)
+            # for i_item in range(len(pred_label)):
+            #     __avg_prec_sum, __avg_prec_max, __avg_prec_mean = metrics.compute_mAP(pred_label[i_item], gt_action_labels[i_item], part_human_ids[i_item], obj_nums[i_item] + part_nums[i_item])
+            #     avg_prec_sum.append(__avg_prec_sum)
+            #     avg_prec_max.append(__avg_prec_max)
+            #     avg_prec_mean.append(__avg_prec_mean)
 
-            losses.append(loss)
-            batch_time.append(time.time() - t0)
-            data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
+            # losses.append(loss)
+            # batch_time.append(time.time() - t0)
+            # data_time.append(batch_time[-1] - (tf_t1 - tf_t0))
 
-            print('\r[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
-                item, len(test_loader), loss, np.mean(losses), 
-                np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
-                np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
-                np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
-                batch_time[-1], total_data_time / item, total_tf_time / item
-            ), end='')
+            # print('\r[TEST] [%d/%d] Loss: %.4f(%.4f) mAP(SUM): %.4f(%.4f) mAP(MAX): %.4f(%.4f) mAP(MEAN): %.4f(%.4f) time: %.4f avg.data.time: (%.4f) avg.tf.time: (%.4f)'%(
+            #     item, len(test_loader), loss, np.mean(losses), 
+            #     np.mean(avg_prec_sum[-flags.batch_size:]), np.mean(avg_prec_sum), 
+            #     np.mean(avg_prec_max[-flags.batch_size:]), np.mean(avg_prec_max), 
+            #     np.mean(avg_prec_mean[-flags.batch_size:]), np.mean(avg_prec_mean), 
+            #     batch_time[-1], total_data_time / item, total_tf_time / item
+            # ), end='')
 
-        # vcoco_evaluation(test_vcocoeval, 'test', all_results_sum, flags.name, 'SUM')
-        # vcoco_evaluation(test_vcocoeval, 'test', all_results_max, flags.name, 'MAX')
-        # vcoco_evaluation(test_vcocoeval, 'test', all_results_mean, flags.name, 'MEAN')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_sum, flags.name, 'SUM')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_max, flags.name, 'MAX')
+        vcoco_evaluation(test_vcocoeval, 'test', all_results_mean, flags.name, 'MEAN')
         
-        avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
-        print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
-            epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
-        ))
+        # avg_prec_sum, avg_prec_max, avg_prec_mean, losses = map(np.mean, [avg_prec_sum, avg_prec_max, avg_prec_mean, losses])
+        # print('\r======== [Test %d] Loss: %.4f mAP(SUM) %.4f mAP(MAX): %.4f mAP(MEAN): %.4f ========'% (
+        #     epoch, losses, avg_prec_sum, avg_prec_max, avg_prec_mean
+        # ))
 
-        f = open('validate.txt', 'a')
-        f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
-        f.close()
+        # f = open('validate.txt', 'a')
+        # f.write('%s/%d: %f, %f, %f, %f\n'%(flags.name, epoch, avg_prec_sum, avg_prec_max, avg_prec_mean, losses))
+        # f.close()
