@@ -239,7 +239,7 @@ for epoch in range(flags.epochs):
         ))
 
 
-    if epoch % 5 == 4:
+    if not flags.debug and epoch % 5 == 4:
         # Test
         avg_prec_sum, avg_prec_max, avg_prec_mean, losses, batch_time, data_time = [], [], [], [], [], []
         test_loader.prefetch()
