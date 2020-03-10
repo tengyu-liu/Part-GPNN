@@ -64,8 +64,8 @@ class Model:
             logits=self.edge_label) #, 
         #    weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
 
-        role_loss = tf.losses.softmax_cross_entropy(
-            onehot_labels=self.pairwise_role_gt, 
+        role_loss = tf.losses.sigmoid_cross_entropy(
+            multi_class_labels=self.pairwise_role_gt, 
             logits=self.edge_role) #, 
         #    weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
 
