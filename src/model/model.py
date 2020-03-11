@@ -67,7 +67,7 @@ class Model:
         role_loss = tf.losses.sigmoid_cross_entropy(
             multi_class_labels=self.pairwise_role_gt, 
             logits=self.edge_role, 
-            weights=self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1))
+            weights=tf.expand_dims(self.pairwise_label_mask * tf.expand_dims(self.gt_strength_level, axis=-1), axis=-1))
 
         self.loss = loss + role_loss
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2)
